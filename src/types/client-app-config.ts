@@ -51,36 +51,3 @@ export interface IClientApp {
 export const getChildrenArray = (component) => {
     return Array.isArray(component.children) ? component.children : [component.children];
 };
-
-/**
- * Evaluates the children of the component and applies them,
- *
- * to be called once the app is running.
- *
- * @param ClientAppComponent
- *
-export const applyAppClientModules = (clientAppComponent): IClientApp => {
-
-    //console.log("clientAppComponent: ", clientAppComponent);
-    getChildrenArray(clientAppComponent).forEach(child => {
-
-        const parsedChild = parseCustomComponent(child);
-
-        //console.log("applyAppClientModules: ", parsedChild, child);
-        if (parsedChild !== undefined  && parsedChild.infrastructureType === "datalayer" ) {
-
-            console.log("found data layer: ", parsedChild);
-
-            //&& parsedChild.toDataLayer !== undefined
-            //clientAppComponent.dataLayer = parsedChild.toDataLayer()
-        }
-
-
-        
-    });
-
-
-    //console.log("create server, clientApp: " , clientApp.children[0].props);
-    
-    return clientAppComponent;
-}*/

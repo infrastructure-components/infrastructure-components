@@ -84,7 +84,7 @@ const parseMiddlewares = (component) => {
 
 const applyClientApp = (caComponent) => {
 
-    console.log("applyClientApp: " , caComponent);
+    //console.log("applyClientApp: " , caComponent);
 
     return Object.assign(
         Object.assign({}, caComponent.props),
@@ -109,7 +109,7 @@ export const applyCustomComponents = (component: any, addToTopLevelConfig, compi
 
 
         if (customComponent !== undefined && compileMode) {
-            console.log("CustomComponent: ", customComponent);
+            //console.log("CustomComponent: ", customComponent);
 
             // now add to the configuration
             addToTopLevelConfig(customComponent);
@@ -125,7 +125,7 @@ export const applyCustomComponents = (component: any, addToTopLevelConfig, compi
             //console.log("applyCustomComponents | customComponent ")
 
             if (React.isValidElement(component)) {
-                console.log("custom component is a react-component, " , component)
+                //console.log("custom component is a react-component, " , component)
                 if (Array.isArray(customComponent.children)) {
                     throw new Error("custom Component must have a single one child!");
                 }
@@ -135,7 +135,7 @@ export const applyCustomComponents = (component: any, addToTopLevelConfig, compi
                 var customProps = {}
                 customProps[customComponent.infrastructureType] = React.cloneElement(component, Object.assign({}, component.props, {infrastructureMode: "component"}))
 
-                console.log("customProps: " , customProps);
+                //console.log("customProps: " , customProps);
                 
                 return React.cloneElement(component, Object.assign({}, child.props, customProps))
                 //return React.cloneElement(component, Object.assign({}, component.props, {infrastructureMode: "component"}))
@@ -188,7 +188,7 @@ export function loadIsoConfigFromComponent(component: any, compileMode: boolean 
 
     var arrConfigs = [];
     const addToTopLevelConfig = (c) => {
-        console.log("addToTopLevelConfig: ", c);
+        //console.log("addToTopLevelConfig: ", c);
 
         const allowed = ['slsConfig', 'ssrConfig'];
 
@@ -224,7 +224,7 @@ export function loadIsoConfigFromComponent(component: any, compileMode: boolean 
     }, ...arrConfigs
     ]);
 
-    console.log("loaded IsoConfig: " , result);
+    //console.log("loaded IsoConfig: " , result);
     return result;
 
 }

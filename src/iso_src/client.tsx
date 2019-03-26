@@ -37,7 +37,6 @@ const createClientWebApp = () => {
 
     var IsoConfig = require('IsoConfig');
     if (IsoConfig && IsoConfig.default && IsoConfig.default.props) {
-        console.log("found component!");
         IsoConfig = loadIsoConfigFromComponent(IsoConfig.default, false);
     }
 
