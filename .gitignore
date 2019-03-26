@@ -1,0 +1,19 @@
+# Idea / WebStorm
+.idea/
+
+# Environment variables
+.env
+*.env
+
+# Serverless files
+.serverless
+
+# output-folders
+container/
+build/
+dist/
+node_modules/
+v8-compile-cache-0/
+
+# files from the mac
+.DS_Store
