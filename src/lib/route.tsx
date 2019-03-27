@@ -5,7 +5,9 @@ export interface IRoute {
 
     name: string,
 
-    render: any
+    render?: any,
+
+    component?: any
 }
 
 
@@ -13,6 +15,8 @@ export class Route extends React.Component<IRoute, {}> {
 
     constructor(props) {
         super(props);
+
+        //console.log("route: ", props)
     }
 
     render () {

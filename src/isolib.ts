@@ -33,7 +33,7 @@ const isRoute = (component) => {
 
     return component.props &&
         component.props.path !== undefined &&
-        component.props.render !== undefined &&
+        (component.props.render !== undefined || component.props.component !== undefined) &&
         component.props.name !== undefined ? true : false;
 };
 
@@ -68,6 +68,10 @@ export const parseCustomComponent = (component, compileMode) => {
 }
 
 export const getChildrenArray = (component) => {
+    if (component.props.children == undefined) {
+        return [];
+    }
+
     return Array.isArray(component.props.children) ? component.props.children : [component.props.children];
 };
 

@@ -35,8 +35,9 @@ export interface IRoute {
      * @param props any props to be passed to the Component to be rendered
      * @return rendered(!) ReactNode of the Route, e.g. (<TestPage {...props}/>)
      */
-    render: (props: any) => ReactNode,
+    render?: (props: any) => ReactNode,
 
+    component?: any,
 
     /**
      * The displayed name of the route (e.g. in Menu)
@@ -81,13 +82,15 @@ interface RoutedAppProps {
 const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
     //.filter(({ customType }) => customType !== Types.IFRAME)
 
-    const routes = props.routes.map(({ path, render, exact }, i) => {
+    const routes = props.routes.map(({ path, exact, component, render }, i) => {
+        //console.log("component, ", component)
         // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
-        return <Route key={Math.random() + 'ROUTE_'} exact={exact} path={path} render={render} />
+        return render !== undefined ? <Route key={'ROUTE_'+i} exact={exact} path={path} render={render} /> :
+            <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />
     });
 
     const redirects = props.redirects.map(({ from, to, status }, i) =>
-        <RedirectWithStatus key={Math.random() + 'REDIRECT_'} from={from} to={to} status={status} />
+        <RedirectWithStatus key={'REDIRECT_'+i} from={from} to={to} status={status} />
 );
 
 

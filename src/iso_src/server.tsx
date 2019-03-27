@@ -14,7 +14,6 @@ import helmet from 'react-helmet';
 import {createServerApp} from "./routed-app";
 
 import { getClientFilename } from '../types/app-config';
-
 import {loadIsoConfigFromComponent, applyCustomComponents} from "../isolib";
 //import { applyAppClientModules } from '../types/client-app-config';
 
