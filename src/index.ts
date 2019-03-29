@@ -10,6 +10,7 @@ export const ClientApp = require('./lib/client-app').default;
 export const Middleware = require('./lib/middleware').default;
 export const Redirect = require('./lib/redirect').default;
 export const Route = require('./lib/route').default;
+export const Environment = require('./lib/environment').default;
 
 export const loadIsoConfigFromComponent = require("./isolib").loadIsoConfigFromComponent;
 

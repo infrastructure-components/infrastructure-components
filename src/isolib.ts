@@ -137,8 +137,11 @@ export const applyCustomComponents = (component: any, addToTopLevelConfig, addDa
                 {infrastructureMode: "component"}
             )
 
+            const child = component.props.children;
+
             // add the custom props to the child that is forwarded
-            return React.cloneElement(component.props.children, Object.assign({}, component.props.children.props, customProps))
+            return child !== undefined ? React.cloneElement(child,
+                Object.assign({}, child, customProps)) : () => {}
 
 
 
@@ -154,11 +157,13 @@ export const applyCustomComponents = (component: any, addToTopLevelConfig, addDa
                 const child = component["props"]["children"];
                 
                 var customProps = {}
-                customProps[customComponent.infrastructureType] = React.cloneElement(component, Object.assign({}, component.props, {infrastructureMode: "component"}))
+                customProps[customComponent.infrastructureType] = React.cloneElement(component,
+                    Object.assign({}, component.props, {infrastructureMode: "component"}))
 
                 console.log("customProps: " , customProps);
                 
-                const result = React.cloneElement(component, Object.assign({}, child.props, customProps));
+                const result = React.cloneElement(component,
+                    Object.assign({}, child !== undefined ? child.props : {}, customProps));
 
                 if (customComponent.infrastructureType === "dataLayer") {
                     addDataLayer(result);
