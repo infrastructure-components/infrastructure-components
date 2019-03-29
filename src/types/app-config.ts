@@ -19,6 +19,10 @@ export const getClientFilename = (name: string): string => {
     return name+".bundle.js";
 }
 
+export const getServerFilename = (name: string): string => {
+    return name+".js";
+}
+
 /**
  * transform a Client-Config to a Webpack-Client-Config
  * @param config
@@ -39,14 +43,19 @@ export const toClientWebpackConfig = (config: AppConfig, buildPath: string) => {
 
 export const toServerWebpackConfig = (config: AppConfig, buildPath: string) => {
 
+    // here we need to take care of multiple entries
+
+
+
     return {
-        entry: {
+        /*entry: {
             handler: config.entry
-        },
+        },*/
+        entry: config.entry,
         output: {
             libraryTarget: "commonjs2",
             path: getBuildPath(config, buildPath),
-            filename: 'index.js',
+            filename: getServerFilename(config.name), //'[name].js',
             publicPath: '/'
         },
         target: "node"

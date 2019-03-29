@@ -107,23 +107,40 @@ const applyClientApp = (caComponent) => {
 };
 
 
-export const applyCustomComponents = (component: any, addToTopLevelConfig, compileMode) => {
+export const applyCustomComponents = (component: any, addToTopLevelConfig, addDataLayer, compileMode) => {
     //getChildrenArray(caComponent).forEach( c => {
         const customComponent = parseCustomComponent(component, compileMode);
 
-
         if (customComponent !== undefined && compileMode) {
-            //console.log("CustomComponent: ", customComponent);
+            console.log("CustomComponent: ", customComponent);
+
+            if (customComponent.infrastructureType === "dataLayer") {
+                addDataLayer(customComponent);
+            }
 
             // now add to the configuration
             addToTopLevelConfig(customComponent);
 
             // we expect a single one child!!
             if (Array.isArray(customComponent.children)) {
-                throw new Error("custom Component must have a single one child!");
+                throw new Error("custom Components must have a single one child!");
             }
+
+
             //console.log("component: " , component);
-            return component.props.children
+            //return component.props.children
+
+            var customProps = {}
+            customProps[customComponent.infrastructureType] = Object.assign(
+                {},
+                customComponent /*component.props*/,
+                {infrastructureMode: "component"}
+            )
+
+            // add the custom props to the child that is forwarded
+            return React.cloneElement(component.props.children, Object.assign({}, component.props.children.props, customProps))
+
+
 
         } else if (customComponent !== undefined) {
             //console.log("applyCustomComponents | customComponent ")
@@ -131,7 +148,7 @@ export const applyCustomComponents = (component: any, addToTopLevelConfig, compi
             if (React.isValidElement(component)) {
                 //console.log("custom component is a react-component, " , component)
                 if (Array.isArray(customComponent.children)) {
-                    throw new Error("custom Component must have a single one child!");
+                    throw new Error("custom Components must have a single one child!");
                 }
 
                 const child = component["props"]["children"];
@@ -139,9 +156,15 @@ export const applyCustomComponents = (component: any, addToTopLevelConfig, compi
                 var customProps = {}
                 customProps[customComponent.infrastructureType] = React.cloneElement(component, Object.assign({}, component.props, {infrastructureMode: "component"}))
 
-                //console.log("customProps: " , customProps);
+                console.log("customProps: " , customProps);
                 
-                return React.cloneElement(component, Object.assign({}, child.props, customProps))
+                const result = React.cloneElement(component, Object.assign({}, child.props, customProps));
+
+                if (customComponent.infrastructureType === "dataLayer") {
+                    addDataLayer(result);
+                }
+
+                return result;
                 //return React.cloneElement(component, Object.assign({}, component.props, {infrastructureMode: "component"}))
 
             }
@@ -204,18 +227,27 @@ export function loadIsoConfigFromComponent(component: any, compileMode: boolean 
             }, {})
         );
     }
+
+    var arrDataLayers = [];
+    const addDataLayer = (dlComponent) => {
+        arrDataLayers.push(dlComponent);
+    }
     
     const clientApps= getChildrenArray(component)
-        .map(child => applyCustomComponents(child, addToTopLevelConfig, compileMode))
+        .map(child => applyCustomComponents(child, addToTopLevelConfig, addDataLayer, compileMode))
         .filter(child => isClientApp(child))
         .map(child => applyClientApp(child));
+
+    console.log("arrConfigs: " , arrConfigs)
 
     const result = deepmerge.all([{
         type: ConfigTypes.ISOMORPHIC,
         isoConfig: {
             middlewares: parseMiddlewares(component),
 
-            clientApps: clientApps
+            clientApps: clientApps,
+            
+            dataLayers: arrDataLayers
         },
 
         ssrConfig: {

@@ -165,7 +165,8 @@ async function serve (req, res, next, clientApp, assetsDir) {
             clientApp.redirects,
             basename,
             req.url,
-            context, req)).then(({connectedApp, getState}) => {
+            context, req)
+    ).then(({connectedApp, getState}) => {
 
         console.log("resolved...")
 
