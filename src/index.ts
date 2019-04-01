@@ -20,3 +20,4 @@ export const toServerWebpackConfig = require ('./types/app-config').toServerWebp
 export const getBuildPath = require ('./types/app-config').getBuildPath;
 
 export const IClientApp = require ("./types/client-app-config").IClientApp;
+export const withRequest = require("./iso_src/attach-request").withRequest;

@@ -68,7 +68,17 @@ export const parseCustomComponent = (component, compileMode) => {
 }
 
 export const getChildrenArray = (component) => {
-    if (component.props.children == undefined) {
+
+    if (component == undefined) {
+        return [];
+    }
+
+    if (Array.isArray(component) && component.length > 0) {
+        console.log("component is array: ", component)
+        return [...component] ;
+    }
+
+    if (component.props == undefined || component.props.children == undefined) {
         return [];
     }
 
@@ -88,7 +98,7 @@ const parseMiddlewares = (component) => {
 
 const applyClientApp = (caComponent) => {
 
-    //console.log("applyClientApp: " , caComponent);
+    console.log("applyClientApp: " , caComponent);
 
     return Object.assign(
         Object.assign({}, caComponent.props),
@@ -100,7 +110,7 @@ const applyClientApp = (caComponent) => {
                 caComponent.props.redirects : []).concat(parseRedirects(caComponent)),
 
             routes: (caComponent.props.routes !== undefined ?
-                caComponent.props.routes : []).concat(parseRoutes(caComponent)),
+                caComponent.props.routes : []).concat(parseRoutes(caComponent, caComponent.props.method)),
         }
     );
 
@@ -194,14 +204,31 @@ const applyRedirect = (redirectComponent) => {
     return redirectComponent.props
 };
 
-const parseRoutes = (component) => {
-    return getChildrenArray(component)
+const parseRoutes = (component, method) => {
+    /*return getChildrenArray(component)
         .filter(child => isRoute(child))
         .map(child => applyRoute(child, component.props.method));
+
+     */
+
+    return getChildrenArray(component)
+        .map(child => {
+            console.log("child: ", child)
+
+            if (isRoute(child)) {
+                return applyRoute(child, method);
+            } else if (!isMiddleware(child) && !isRedirect(child)) {
+
+                console.log("investigate child: ", child)
+
+                return parseRoutes(child, method)
+            } else return [];
+        })
+        .flat();
 };
 
 const applyRoute = (routeComponent, method) => {
-    //console.log("route: ", routeComponent.props);
+    console.log("route: ", routeComponent.props);
     return Object.assign(
         Object.assign({}, routeComponent.props),
         {
@@ -216,7 +243,7 @@ const applyRoute = (routeComponent, method) => {
 
 export function loadIsoConfigFromComponent(component: any, compileMode: boolean = true) {
 
-    //console.log("child: ", component.props.children.props);
+    console.log("child: ", component.props.children.props);
 
     var arrConfigs = [];
     const addToTopLevelConfig = (c) => {
@@ -258,14 +285,15 @@ export function loadIsoConfigFromComponent(component: any, compileMode: boolean 
         ssrConfig: {
             stackName: component.props.stackName,
             buildPath: component.props.buildPath,
-            assetsPath: component.props.assetsPath
+            assetsPath: component.props.assetsPath,
+            region: component.props.region
         },
 
         slsConfig: {}
     }, ...arrConfigs
     ]);
 
-    //console.log("loaded IsoConfig: " , result);
+    console.log("loaded IsoConfig: " , result);
     return result;
 
 }

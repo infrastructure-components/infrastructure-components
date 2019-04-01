@@ -4,6 +4,7 @@ export interface Props {
     stackName: string,
     buildPath: string,
     assetsPath: string,
+    region: string,
 
     isoConfig: any,
 }

@@ -52,11 +52,23 @@ export default (props: IEnvironment | any) => {
     return Object.assign({}, props,
         {
             infrastructureType: "environment",
+            slsConfig: {
+                provider: {
+                    STAGE: props.name
+                }
+            }
         },
         props.offlinePort !== undefined ? {
             slsConfig: {
                 provider: {
                     PORT: props.offlinePort
+                }
+            }
+        } : {},
+        props.stagePath !== undefined ? {
+            slsConfig: {
+                provider: {
+                    STAGE_PATH: props.stagePath
                 }
             }
         } : {}
