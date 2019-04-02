@@ -91,7 +91,7 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
 
     const redirects = props.redirects.map(({ from, to, status }, i) =>
         <RedirectWithStatus key={'REDIRECT_'+i} from={from} to={to} status={status} />
-);
+    );
 
 
     return <Switch>
@@ -124,8 +124,6 @@ export const createServerApp = (
     url: string,
     context: any,
     request: any) => {
-
-
 
     return <StaticRouter context={context} location={url} basename={basename}>
         <AttachRequest request={request}>

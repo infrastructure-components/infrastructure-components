@@ -28,10 +28,15 @@ const AttachRequest: React.SFC<AttachRequestProps> = (props) => {
  * @returns {function(any): any}
  */
 export function withRequest(Component) {
+
+
     return function WrapperComponent(props) {
         return (
             <RequestContext.Consumer>
-                {value => <Component {...props} request={value} />}
+                {value => {
+                    console.log("with request: ", value);
+                    return <Component {...props} request={value} />
+                }}
             </RequestContext.Consumer>
         );
     };

@@ -149,7 +149,7 @@ async function serve (req, res, next, clientApp, assetsDir) {
     console.log("routePath: ", routePath);
     ////////// END OF REFACTORING required
 
-    console.log("app data layer: ", clientApp.dataLayer);
+    //console.log("app data layer: ", clientApp.dataLayer);
 
     const connectWithDataLayer = clientApp.dataLayer !== undefined ?
         clientApp.dataLayer.type({infrastructureMode: "component"}).connectWithDataLayer :

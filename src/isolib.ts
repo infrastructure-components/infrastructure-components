@@ -74,7 +74,7 @@ export const getChildrenArray = (component) => {
     }
 
     if (Array.isArray(component) && component.length > 0) {
-        console.log("component is array: ", component)
+        //console.log("component is array: ", component)
         return [...component] ;
     }
 
@@ -98,7 +98,7 @@ const parseMiddlewares = (component) => {
 
 const applyClientApp = (caComponent) => {
 
-    console.log("applyClientApp: " , caComponent);
+    //console.log("applyClientApp: " , caComponent);
 
     return Object.assign(
         Object.assign({}, caComponent.props),
@@ -122,7 +122,7 @@ export const applyCustomComponents = (component: any, addToTopLevelConfig, addDa
         const customComponent = parseCustomComponent(component, compileMode);
 
         if (customComponent !== undefined && compileMode) {
-            console.log("CustomComponent: ", customComponent);
+            //console.log("CustomComponent: ", customComponent);
 
             if (customComponent.infrastructureType === "dataLayer") {
                 addDataLayer(customComponent);
@@ -170,7 +170,7 @@ export const applyCustomComponents = (component: any, addToTopLevelConfig, addDa
                 customProps[customComponent.infrastructureType] = React.cloneElement(component,
                     Object.assign({}, component.props, {infrastructureMode: "component"}))
 
-                console.log("customProps: " , customProps);
+                //console.log("customProps: " , customProps);
                 
                 const result = React.cloneElement(component,
                     Object.assign({}, child !== undefined ? child.props : {}, customProps));
@@ -213,13 +213,13 @@ const parseRoutes = (component, method) => {
 
     return getChildrenArray(component)
         .map(child => {
-            console.log("child: ", child)
+            //console.log("child: ", child)
 
             if (isRoute(child)) {
                 return applyRoute(child, method);
             } else if (!isMiddleware(child) && !isRedirect(child)) {
 
-                console.log("investigate child: ", child)
+                //console.log("investigate child: ", child)
 
                 return parseRoutes(child, method)
             } else return [];
@@ -228,7 +228,7 @@ const parseRoutes = (component, method) => {
 };
 
 const applyRoute = (routeComponent, method) => {
-    console.log("route: ", routeComponent.props);
+    //console.log("route: ", routeComponent.props);
     return Object.assign(
         Object.assign({}, routeComponent.props),
         {
@@ -243,7 +243,7 @@ const applyRoute = (routeComponent, method) => {
 
 export function loadIsoConfigFromComponent(component: any, compileMode: boolean = true) {
 
-    console.log("child: ", component.props.children.props);
+    //console.log("child: ", component.props.children.props);
 
     var arrConfigs = [];
     const addToTopLevelConfig = (c) => {
@@ -270,7 +270,7 @@ export function loadIsoConfigFromComponent(component: any, compileMode: boolean 
         .filter(child => isClientApp(child))
         .map(child => applyClientApp(child));
 
-    console.log("arrConfigs: " , arrConfigs)
+    //console.log("arrConfigs: " , arrConfigs)
 
     const result = deepmerge.all([{
         type: ConfigTypes.ISOMORPHIC,
@@ -293,7 +293,7 @@ export function loadIsoConfigFromComponent(component: any, compileMode: boolean 
     }, ...arrConfigs
     ]);
 
-    console.log("loaded IsoConfig: " , result);
+    //console.log("loaded IsoConfig: " , result);
     return result;
 
 }
