@@ -3,21 +3,30 @@
  * Add the exports of the library here
  *
  */
-export const ConfigTypes = require('./lib/config').ConfigTypes;
+export const WebApp = require('./webapp/webapp-component').default;
+export const Middleware = require('./middleware/middleware-component').default;
+export const Route = require('./route/route-component').default;
+export const withRequest = require('./components/attach-request').withRequest;
 
-export const SlsIsomorphic = require('./lib/sls-isomorphic').default;
-export const ClientApp = require('./lib/client-app').default;
-export const Middleware = require('./lib/middleware').default;
-export const Redirect = require('./lib/redirect').default;
-export const Route = require('./lib/route').default;
-export const Environment = require('./lib/environment').default;
+export const Link = require('../node_modules/react-router-dom/Link');
 
-export const loadIsoConfigFromComponent = require("./isolib").loadIsoConfigFromComponent;
+export const INFRASTRUCTURE_MODES = require('./libs/loader').INFRASTRUCTURE_MODES;
+export const loadInfrastructureComponent = require('./libs/loader').loadInfrastructureComponent;
 
-export const AppConfig = require ('./types/app-config').AppConfig;
-export const toClientWebpackConfig = require ('./types/app-config').toClientWebpackConfig;
-export const toServerWebpackConfig = require ('./types/app-config').toServerWebpackConfig;
-export const getBuildPath = require ('./types/app-config').getBuildPath;
 
-export const IClientApp = require ("./types/client-app-config").IClientApp;
-export const withRequest = require("./iso_src/attach-request").withRequest;
+export const loadConfiguration = require('./libs/loader').loadConfiguration;
+export const IConfigParseResult = require('./libs/config-parse-result').IConfigParseResult;
+export const parseForPlugins = require('./libs/parser').parseForPlugins;
+export const extractConfigs = require('./libs/parser').extractConfigs;
+
+export const IPlugin = require('./libs/plugin').IPlugin;
+export const isWebApp = require('./webapp/webapp-component').isWebApp;
+export const isMiddleware = require('./middleware/middleware-component').isMiddleware;
+
+
+export const Types = require('./types').default;
+export const IConfiguration = require('./types/configuration').IConfiguration;
+export const IInfrastructure = require('./types/configuration').IInfrastructure;
+
+
+export const getChildrenArray = require('./libs').getChildrenArray;

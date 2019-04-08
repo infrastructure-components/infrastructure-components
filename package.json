@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -21,9 +21,7 @@
     "@types/node": "^11.11.1",
     "@types/react": "^16.4.13",
     "@types/react-dom": "^16.0.7",
-    "aws-lambda": "^0.1.2",
     "deepmerge": "^3.2.0",
-    "dotenv": "^7.0.0",
     "express": "^4.16.4",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
