@@ -8,7 +8,7 @@ export const Middleware = require('./middleware/middleware-component').default;
 export const Route = require('./route/route-component').default;
 export const withRequest = require('./components/attach-request').withRequest;
 export const AttachRequest = require('./components/attach-request').default;
-
+export const IsomorphicApp = require('./isomorphic/iso-component').default;
 
 export const Link = require('../node_modules/react-router-dom/Link');
 
@@ -33,3 +33,5 @@ export const IInfrastructure = require('./types/configuration').IInfrastructure;
 
 
 export const getChildrenArray = require('./libs').getChildrenArray;
+export const getStaticBucketName = require('./libs/iso-libs').getStaticBucketName;
+
