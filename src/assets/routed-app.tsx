@@ -7,7 +7,7 @@ import { Switch, Route, BrowserRouter, Link } from 'react-router-dom';
 //import {__RouterContext} from "react-router"
 
 import RedirectWithStatus from './redirect-w-status';
-import AttachRequest from '../dist/components/attach-request';
+import AttachRequest from '../components/attach-request';
 
 /**
  * Implementation of the RoutingAbstractionLayer

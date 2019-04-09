@@ -1,3 +1,7 @@
+declare var __ASSETS_PATH__: any;
+declare var __RESOLVED_ASSETS_PATH__: any;
+declare var __ISOMORPHIC_ID__: any;
+
 // this must be imported to allow async-functions within an AWS lambda environment
 // see: https://github.com/babel/babel/issues/5085
 import "@babel/polyfill";
@@ -13,8 +17,8 @@ import { matchPath } from 'react-router';
 import helmet from 'react-helmet';
 import {createServerApp} from "./routed-app";
 
-import Types from '../src/types';
-import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../src/libs/loader';
+import Types from '../types';
+import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
 
 //import { getClientFilename } from '../types/app-config';
 export const getClientFilename = (name: string): string => {

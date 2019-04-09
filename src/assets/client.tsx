@@ -1,3 +1,5 @@
+declare var __ISOMORPHIC_ID__: any;
+
 /**
  * The global declaration is required of the typedoc documentation
  */
@@ -14,8 +16,8 @@ import "@babel/polyfill";
 import React from 'react';
 import { hydrate } from 'react-dom';
 import { createClientApp } from './routed-app';
-import Types from '../src/types';
-import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../src/libs/loader';
+import Types from '../types';
+import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
 
 
 /**
