@@ -17,7 +17,7 @@ interface AttachRequestProps {
  */
 const AttachRequest: React.SFC<AttachRequestProps> = (props) => {
 
-    console.log("attached request: " , props.request);
+    //console.log("attached request: " , props.request);
     return <RequestContext.Provider value={props.request}>{props.children}</RequestContext.Provider>
 
 
@@ -35,7 +35,7 @@ export function withRequest(Component) {
         return (
             <RequestContext.Consumer>
                 {value => {
-                    console.log("with request: ", value);
+                    //console.log("with request: ", value);
                     return <Component {...props} request={value} />
                 }}
             </RequestContext.Consumer>

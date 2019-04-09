@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.0.12",
+  "version": "0.0.21",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -33,5 +33,8 @@
   },
   "devDependencies": {
     "typescript": "^3.3.3333"
-  }
+  },
+  "bundledDependencies": [
+    "react-router-dom"
+  ]
 }

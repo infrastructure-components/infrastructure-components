@@ -18,6 +18,15 @@ export interface IConfigParseResult {
      * TODO specify type!!!
      */
     postBuilds: Array<any>,
+
+    // the following fields are taken directly from the TopLevelConfiguration
+    stackName?: string,
+    
+    assetsPath?: string,
+
+    buildPath?: string,
+
+    region?: string
 }
 
 /**
@@ -33,7 +42,13 @@ export function mergeParseResults(results: Array<IConfigParseResult>) {
         return {
             slsConfigs: deepmerge.all([merged.slsConfigs, item.slsConfigs]),
             webpackConfigs: merged.webpackConfigs.concat(item.webpackConfigs),
-            postBuilds: merged.postBuilds.concat(item.postBuilds)
+            postBuilds: merged.postBuilds.concat(item.postBuilds),
+
+            // usually, these fields should not be defined here, but only from the top-level configuration
+            stackName: item.stackName !== undefined ? item.stackName : merged.stackName,
+            assetsPath: item.assetsPath !== undefined ? item.assetsPath : merged.assetsPath,
+            buildPath: item.buildPath !== undefined ? item.buildPath : merged.buildPath,
+            region: item.region !== undefined ? item.region : merged.region
         }
     }, {
         slsConfigs: {},
