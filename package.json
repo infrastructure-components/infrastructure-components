@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.0.22",
+  "version": "0.0.28",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -36,6 +36,13 @@
     "typescript": "^3.3.3333"
   },
   "bundledDependencies": [
-    "react-router-dom"
+    "react-dom",
+    "react-helmet",
+    "react-router",
+    "react-router-dom",
+    "serverless-http",
+    "styled-components"
+
+
   ]
 }
