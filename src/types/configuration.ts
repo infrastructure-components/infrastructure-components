@@ -11,7 +11,7 @@ export interface IConfiguration {
     /**
      * An Infrastructure may provide plugins, the Plugins may need some data that we provide here!
      */
-    createPlugins: (configPath: string) => Array<IPlugin>
+    createPlugins: (configPath: string, stage: string | undefined) => Array<IPlugin>
 
 }
 
@@ -44,9 +44,9 @@ export const isConfiguration = (parsedComponent): boolean => {
  * @param configPath specifies the path to the original configuration of the project, as passes as argument in the command
  *
  */
-export function extractPlugins(infrastructure: IConfiguration, configPath: string) {
+export function extractPlugins(infrastructure: IConfiguration, configPath: string, stage: string | undefined) {
     
-    return infrastructure.createPlugins(configPath);
+    return infrastructure.createPlugins(configPath, stage);
 }
 
 

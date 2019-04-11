@@ -42,7 +42,5 @@
     "react-router-dom",
     "serverless-http",
     "styled-components"
-
-
   ]
 }

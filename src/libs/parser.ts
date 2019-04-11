@@ -13,12 +13,12 @@ import { INFRASTRUCTURE_MODES, loadInfrastructureComponent } from './loader';
  * @param configPath the path to the compiled and evaluable configuration
  * @param origConfigPath the path to the original uncompiled configuration source!
  */
-export function parseForPlugins (parsedComponent: any, origConfigPath: string): Array<IPlugin> {
+export function parseForPlugins (parsedComponent: any, origConfigPath: string, stage: string | undefined): Array<IPlugin> {
 
     //console.log("configPath: ", configPath);
 
     if (isConfiguration(parsedComponent)) {
-        return extractPlugins(parsedComponent, origConfigPath);
+        return extractPlugins(parsedComponent, origConfigPath, stage);
 
     } else {
         console.error("main component is not a valid app!")

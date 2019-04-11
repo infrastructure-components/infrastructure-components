@@ -6,7 +6,6 @@ import { resolveAssetsPath } from '../libs/iso-libs';
 import * as deepmerge from 'deepmerge';
 import { IConfigParseResult } from '../libs/config-parse-result';
 import { IPlugin } from '../libs/plugin';
-import { isWebApp } from '../webapp/webapp-component'
 
 /**
  * Parameters that apply to the whole Plugin, passed by other plugins
@@ -40,7 +39,11 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
         },
 
         // convert the component into configuration parts
-        process: (component: any, childConfigs: Array<IConfigParseResult>, infrastructureMode: string | undefined): IConfigParseResult => {
+        process: (
+            component: any,
+            childConfigs: Array<IConfigParseResult>,
+            infrastructureMode: string | undefined
+    ): IConfigParseResult => {
 
             const path = require('path');
 

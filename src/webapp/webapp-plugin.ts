@@ -37,7 +37,11 @@ export const WebAppPlugin = (props: IWebAppPlugin): IPlugin => {
 
         // convert the component into configuration parts
         // while the component is of Type `any`, its props must be of type `IWebApp`
-        process: (component: any, childConfigs: Array<IConfigParseResult>, infrastructureMode: string | undefined): IConfigParseResult => {
+        process: (
+            component: any,
+            childConfigs: Array<IConfigParseResult>,
+            infrastructureMode: string | undefined
+        ): IConfigParseResult => {
 
             return {
                 slsConfigs: [],

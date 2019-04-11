@@ -26,7 +26,9 @@ export interface IConfigParseResult {
 
     buildPath?: string,
 
-    region?: string
+    region?: string,
+
+    domain?: string
 }
 
 /**
@@ -48,7 +50,8 @@ export function mergeParseResults(results: Array<IConfigParseResult>) {
             stackName: item.stackName !== undefined ? item.stackName : merged.stackName,
             assetsPath: item.assetsPath !== undefined ? item.assetsPath : merged.assetsPath,
             buildPath: item.buildPath !== undefined ? item.buildPath : merged.buildPath,
-            region: item.region !== undefined ? item.region : merged.region
+            region: item.region !== undefined ? item.region : merged.region,
+            domain: item.domain !== undefined ? item.domain : merged.domain
         }
     }, {
         slsConfigs: {},

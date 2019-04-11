@@ -19,5 +19,9 @@ export interface IPlugin {
      * type: Array<{Array<slsConfigs>, Array<webpackConfigs>, Array<postBuilds>}>
      * @param compileMode boolean, if true, the components have beeen loaded statically only!
      */
-    process: (component: any, childConfigs: Array<IConfigParseResult>, infrastructureMode: string | undefined) => IConfigParseResult,
+    process: (
+        component: any,
+        childConfigs: Array<IConfigParseResult>,
+        infrastructureMode: string | undefined,
+        stage: string | undefined) => IConfigParseResult,
 }

@@ -9,11 +9,9 @@ import { isMiddleware } from '../middleware/middleware-component';
 import { isWebApp } from '../webapp/webapp-component';
 import { getChildrenArray } from '../libs';
 
-//import { loadInfrastructureComponent, INFRASTRUCTURE_MODES } from '../libs/loader';
-
 import { IsoPlugin } from './iso-plugin';
 import { WebAppPlugin } from '../webapp/webapp-plugin';
-
+import { EnvironmentPlugin } from '../environment/environment-plugin';
 
 export const ISOMORPHIC_INSTANCE_TYPE = "IsomorphicComponent";
 
@@ -40,7 +38,12 @@ export interface IIsomorphicArgs {
     /**
      * The AWS region
      */
-    region: string
+    region: string,
+
+    /**
+     * optional, custom domain name
+     */
+    domain?: string
 }
 
 /**
@@ -78,7 +81,7 @@ export default (props: IIsomorphicArgs | any) => {
         instanceType: ISOMORPHIC_INSTANCE_TYPE,
 
         // only load plugins during compilation
-        createPlugins: (configPath: string) => props.infrastructureMode === "COMPILATION" ? [
+        createPlugins: (configPath: string, stage: string | undefined) => props.infrastructureMode === "COMPILATION" ? [
             // be able to process IsomorphicApps (as top-level-node)
             IsoPlugin({
                 buildPath: props.buildPath,
@@ -89,6 +92,11 @@ export default (props: IIsomorphicArgs | any) => {
             WebAppPlugin({
                 buildPath: props.buildPath,
                 configFilePath: configPath
+            }),
+
+            // isomorphic apps can have different environments
+            EnvironmentPlugin({
+                stage: stage
             })
 
         ] : []
