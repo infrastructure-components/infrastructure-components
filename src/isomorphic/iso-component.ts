@@ -81,7 +81,7 @@ export default (props: IIsomorphicArgs | any) => {
         instanceType: ISOMORPHIC_INSTANCE_TYPE,
 
         // only load plugins during compilation
-        createPlugins: (configPath: string, stage: string | undefined) => props.infrastructureMode === "COMPILATION" ? [
+        createPlugins: (configPath: string, stage: string | undefined, parserMode: string) => props.infrastructureMode === "COMPILATION" ? [
             // be able to process IsomorphicApps (as top-level-node)
             IsoPlugin({
                 buildPath: props.buildPath,
@@ -96,7 +96,8 @@ export default (props: IIsomorphicArgs | any) => {
 
             // isomorphic apps can have different environments
             EnvironmentPlugin({
-                stage: stage
+                stage: stage,
+                parserMode: parserMode
             })
 
         ] : []

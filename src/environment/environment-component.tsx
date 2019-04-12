@@ -14,11 +14,6 @@ export interface IEnvironmentArgs {
     name: string,
 
     /**
-     * the path of the stage at the end of the domain/url
-     */
-    stagePath?: string,
-
-    /**
      * the domain that this page should be deployed to
      */
     domain?: string,

@@ -36,3 +36,5 @@ export const IInfrastructure = require('./types/configuration').IInfrastructure;
 export const getChildrenArray = require('./libs').getChildrenArray;
 export const getStaticBucketName = require('./libs/iso-libs').getStaticBucketName;
 
+export const IEnvironmentArgs = require('./environment/environment-component').IEnvironmentArgs;
+export const PARSER_MODES = require('./libs/parser').PARSER_MODES;

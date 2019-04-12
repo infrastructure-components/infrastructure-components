@@ -91,14 +91,16 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                         component.assetsPath,
                         component.region),
 
-                    ],
                     ...childConfigs.map(config => config.slsConfigs)
+                    ]
                 ),
                 
                 // add the server config 
                 webpackConfigs: webpackConfigs.concat([serverWebPack]),
 
                 postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild]),
+
+                environments: childConfigs.reduce((result, config) => (result !== undefined ? result : []).concat(config.environments !== undefined ? config.environments : []), []),
 
                 stackName: component.stackName,
 

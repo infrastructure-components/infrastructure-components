@@ -1,4 +1,5 @@
 import * as deepmerge from 'deepmerge';
+import {IEnvironmentArgs} from "../environment/environment-component";
 
 export interface IConfigParseResult {
 
@@ -18,6 +19,8 @@ export interface IConfigParseResult {
      * TODO specify type!!!
      */
     postBuilds: Array<any>,
+
+    environments?: Array<IEnvironmentArgs>,
 
     // the following fields are taken directly from the TopLevelConfiguration
     stackName?: string,
@@ -41,10 +44,19 @@ export function mergeParseResults(results: Array<IConfigParseResult>) {
     //console.log("mergeParseResults: ", results);
 
     return results.reduce((merged, item) => {
+        //console.log("afterMerge: ", merged.slsConfigs);
+
+        //console.log("mergeParseResults: ", item.slsConfigs);
+
+
         return {
-            slsConfigs: deepmerge.all([merged.slsConfigs, item.slsConfigs]),
+            slsConfigs: deepmerge.all([
+                ...(Array.isArray(item.slsConfigs) ? item.slsConfigs : [item.slsConfigs])
+            ], merged.slsConfigs),
             webpackConfigs: merged.webpackConfigs.concat(item.webpackConfigs),
             postBuilds: merged.postBuilds.concat(item.postBuilds),
+            environments: (merged.environments !== undefined ? merged.environments : []).concat(
+                item.environments !== undefined ? item.environments : []),
 
             // usually, these fields should not be defined here, but only from the top-level configuration
             stackName: item.stackName !== undefined ? item.stackName : merged.stackName,

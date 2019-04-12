@@ -5,6 +5,7 @@ import { IConfigParseResult } from '../libs/config-parse-result';
 import { IPlugin } from '../libs/plugin';
 import { isEnvironment } from './environment-component'
 import * as deepmerge from 'deepmerge';
+import {PARSER_MODES} from "../libs/parser";
 
 /**
  * Parameters that apply to the whole Plugin, passed by other plugins
@@ -15,6 +16,11 @@ export interface IEnvironmentPlugin {
      * the stage is the environment to apply
      */
     stage: string,
+
+    /**
+     * one of the [[PARSER_MODES]]
+     */
+    parserMode: string
 }
 
 /**
@@ -38,8 +44,21 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                   infrastructureMode:string | undefined
         ):IConfigParseResult => {
 
-            // we ignore any environment that does not match the specified one!
-            if (props.stage !== component.name) {
+            // when we did not provide a stage, we evaluate all stages, but only with regard to the b
+            if (props.stage === undefined) {
+
+                console.log(`No stage specified, load environment ${component.name} in build mode`);
+
+                
+                return {
+                    slsConfigs: [],
+                    webpackConfigs: [],
+                    postBuilds: [],
+                    environments: [component]
+                }
+                
+            } else if (props.stage !== component.name) {
+                // we ignore any environment that does not match the specified one!
                 console.log(`environment ${component.name} does not apply to specified ${props.stage}`);
                 return {
                     slsConfigs: [],
@@ -48,6 +67,7 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                 }
             }
 
+            console.log("apply environment: ", component);
 
             return {
 
@@ -58,18 +78,19 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                             STAGE: component.name
                         }
                     },
-                    component.offlinePort !== undefined ? {
+                    component.offlinePort !== undefined && props.parserMode === PARSER_MODES.MODE_START ? {
                         provider: {
                             PORT: component.offlinePort
                         }
                     } : {},
-                    component.stagePath !== undefined ? {
+                    // the stage path is valid only
+                    component.stagePath !== undefined && props.parserMode === PARSER_MODES.MODE_DEPLOY ? {
                         provider: {
-                            STAGE_PATH: component.stagePath
+                            STAGE_PATH: component.name
                         }
                     } : {},
                     component.domain !== undefined ? {
-                        plugins: ["serverless-domain-manager"],
+                        plugins: "- serverless-domain-manager",
 
                         custom: {
                             customDomain: {
@@ -86,6 +107,7 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                 webpackConfigs: [],
 
                 postBuilds: [],
+                environments: [component]
             }
         }
     };
