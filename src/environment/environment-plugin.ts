@@ -75,18 +75,18 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                     {
                         // set the stage-name
                         provider: {
-                            STAGE: component.name
+                            stage: component.name
                         }
                     },
                     component.offlinePort !== undefined && props.parserMode === PARSER_MODES.MODE_START ? {
                         provider: {
-                            PORT: component.offlinePort
+                            port: component.offlinePort
                         }
                     } : {},
                     // the stage path is valid only
                     component.stagePath !== undefined && props.parserMode === PARSER_MODES.MODE_DEPLOY ? {
                         provider: {
-                            STAGE_PATH: component.name
+                            stage_path: component.name
                         }
                     } : {},
                     component.domain !== undefined ? {
