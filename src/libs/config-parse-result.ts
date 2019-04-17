@@ -24,14 +24,30 @@ export interface IConfigParseResult {
 
     // the following fields are taken directly from the TopLevelConfiguration
     stackName?: string,
-    
+
+    // may not be there in every app!, e.g. SPA does not use it
     assetsPath?: string,
 
     buildPath?: string,
 
     region?: string,
 
-    domain?: string
+    domain?: string,
+
+    /** if an environment provides the ARN of a certificate, required of SPAs */
+    certArn?: string,
+
+    /**
+     * optional flag (default: true), whether the `start` command should be added to the scripts,
+     * evaluation of the flag takes place in [[infrastructure-scripts.build.writeScriptsToPackageJson]]
+     */
+    supportOfflineStart?: boolean,
+
+    /**
+     * optional flag (default: true), whether the `domain` command should be added to the scripts,
+     * evaluation of the flag takes place in [[infrastructure-scripts.build.writeScriptsToPackageJson]]
+     */
+    supportCreateDomain?: boolean
 }
 
 /**
@@ -63,7 +79,10 @@ export function mergeParseResults(results: Array<IConfigParseResult>) {
             assetsPath: item.assetsPath !== undefined ? item.assetsPath : merged.assetsPath,
             buildPath: item.buildPath !== undefined ? item.buildPath : merged.buildPath,
             region: item.region !== undefined ? item.region : merged.region,
-            domain: item.domain !== undefined ? item.domain : merged.domain
+            domain: item.domain !== undefined ? item.domain : merged.domain,
+            certArn: item.certArn !== undefined ? item.certArn : merged.certArn,
+            supportOfflineStart: item.supportOfflineStart !== undefined ? item.supportOfflineStart : merged.supportOfflineStart,
+            supportCreateDomain: item.supportCreateDomain !== undefined ? item.supportCreateDomain : merged.supportCreateDomain
         }
     }, {
         slsConfigs: {},

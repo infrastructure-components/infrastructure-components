@@ -82,6 +82,24 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                 webpackConfigs.map(config => require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").copyAssets( config.output.path, path.join(serverBuildPath, serverName, component.assetsPath)));
             };
 
+            const domain = childConfigs.map(config => config.domain).reduce((result, domain) => result !== undefined ? result : domain, undefined);
+            const certArn = childConfigs.map(config => config.certArn).reduce((result, certArn) => result !== undefined ? result : certArn, undefined);
+
+
+            const domainConfig = domain !== undefined ? {
+                    plugins: "- serverless-domain-manager",
+
+                    custom: {
+                        customDomain: {
+                            domainName: component.domain,
+                            basePath: '',
+                            stage: component.name,
+                            createRoute53Record: true
+                        }
+                    }
+
+                } : {};
+
             return {
                 slsConfigs: deepmerge.all([
                     require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").toSlsConfig(
@@ -90,6 +108,9 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                         component.buildPath,
                         component.assetsPath,
                         component.region),
+
+                    // add the domain config
+                    domainConfig,
 
                     ...childConfigs.map(config => config.slsConfigs)
                     ]
@@ -108,7 +129,15 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
                 buildPath: component.buildPath,
 
-                region: component.region
+                region: component.region,
+
+                domain: domain,
+
+                certArn: certArn,
+
+                supportOfflineStart: true,
+
+                supportCreateDomain: true
             }
         }
     }

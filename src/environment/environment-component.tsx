@@ -18,6 +18,9 @@ export interface IEnvironmentArgs {
      */
     domain?: string,
 
+
+    certArn?: string,
+    
     /**
      * The used port when running offline
      */

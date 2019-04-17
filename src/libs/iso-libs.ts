@@ -13,6 +13,6 @@ export const resolveAssetsPath = (buildPath: string, serverName: string, assetsP
 };
 
 
-export const getStaticBucketName = (stackName: string, assetsPath: string, stage: string) => {
-    return `${stackName}-${assetsPath}-${stage}`;
+export const getStaticBucketName = (stackName: string, assetsPath: string | undefined, stage: string) => {
+    return `${stackName}-${assetsPath !== undefined ? assetsPath+"-" : ""}${stage}`;
 }

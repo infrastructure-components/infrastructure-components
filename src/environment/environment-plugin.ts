@@ -89,25 +89,24 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                             stage_path: component.name
                         }
                     } : {},
-                    component.domain !== undefined ? {
-                        plugins: "- serverless-domain-manager",
 
-                        custom: {
-                            customDomain: {
-                                domainName: component.domain,
-                                basePath: '',
-                                stage: component.name,
-                                createRoute53Record: true
-                            }
-                        }
+                    // adding the domain to the sls-config is to be done by the app for
+                    // there is a difference of the kind of app and how it uses the domain
 
-                    } : {}
+
                 ]),
 
                 webpackConfigs: [],
 
                 postBuilds: [],
-                environments: [component]
+                environments: [component],
+
+                // here, we provide the name of the domain to the upper-level components
+                domain: component.domain,
+
+                // and the certArn
+
+                certArn: component.certArn
             }
         }
     };
