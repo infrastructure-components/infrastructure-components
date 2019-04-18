@@ -10,7 +10,8 @@ import { INFRASTRUCTURE_MODES, loadInfrastructureComponent } from './loader';
 export const PARSER_MODES = {
     MODE_BUILD: "MODE_BUILD",
     MODE_START: "MODE_START",
-    MODE_DEPLOY: "MODE_DEPLOY"
+    MODE_DEPLOY: "MODE_DEPLOY",
+    MODE_DOMAIN: "MODE_DOMAIN"
 }
 
 /**

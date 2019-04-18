@@ -84,6 +84,7 @@ export default (props: IIsomorphicArgs | any) => {
         createPlugins: (configPath: string, stage: string | undefined, parserMode: string) => props.infrastructureMode === "COMPILATION" ? [
             // be able to process IsomorphicApps (as top-level-node)
             IsoPlugin({
+                parserMode: parserMode,
                 buildPath: props.buildPath,
                 configFilePath: configPath
             }),

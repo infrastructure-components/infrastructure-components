@@ -6,11 +6,18 @@ import { resolveAssetsPath } from '../libs/iso-libs';
 import * as deepmerge from 'deepmerge';
 import { IConfigParseResult } from '../libs/config-parse-result';
 import { IPlugin } from '../libs/plugin';
+import { PARSER_MODES } from '../libs/parser';
+
 
 /**
  * Parameters that apply to the whole Plugin, passed by other plugins
  */
 export interface IIsoPlugin {
+
+    /**
+     * one of the [[PARSER_MODES]]
+     */
+    parserMode: string,
 
     /**
      * path to a directory where we put the final bundles
@@ -77,10 +84,23 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
             const webpackConfigs: any = childConfigs.reduce((result, config) => result.concat(config.webpackConfigs), []);
 
             const copyAssetsPostBuild = () => {
-                console.log("now copy the assets!");
+                //console.log("check for >>copyAssetsPostBuild<<");
+                if (props.parserMode === PARSER_MODES.MODE_BUILD) {
+                    console.log("copyAssetsPostBuild: now copy the assets!");
 
-                webpackConfigs.map(config => require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").copyAssets( config.output.path, path.join(serverBuildPath, serverName, component.assetsPath)));
+                    webpackConfigs.map(config => require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").copyAssets( config.output.path, path.join(serverBuildPath, serverName, component.assetsPath)));
+
+                }
             };
+
+            async function initDomain () {
+                //console.log("check for >>initDomain<<");
+                if (props.parserMode === PARSER_MODES.MODE_DOMAIN) {
+                    console.log("initDomain!")
+                    await require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").initDomain();
+                }
+
+            }
 
             const domain = childConfigs.map(config => config.domain).reduce((result, domain) => result !== undefined ? result : domain, undefined);
             const certArn = childConfigs.map(config => config.certArn).reduce((result, certArn) => result !== undefined ? result : certArn, undefined);
@@ -119,7 +139,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                 // add the server config 
                 webpackConfigs: webpackConfigs.concat([serverWebPack]),
 
-                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild]),
+                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild, initDomain]),
 
                 environments: childConfigs.reduce((result, config) => (result !== undefined ? result : []).concat(config.environments !== undefined ? config.environments : []), []),
 
