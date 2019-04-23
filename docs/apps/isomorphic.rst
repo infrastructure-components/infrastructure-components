@@ -1,3 +1,5 @@
+.. _isomorphicapp:
+
 **************
 Isomorphic-App
 **************
