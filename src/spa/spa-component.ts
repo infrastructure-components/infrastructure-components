@@ -7,6 +7,8 @@ import { IInfrastructure } from "../types";
 
 import { isMiddleware } from '../middleware/middleware-component';
 import { isWebApp } from '../webapp/webapp-component';
+import { isRoute } from '../route/route-component';
+
 import { getChildrenArray } from '../libs';
 
 import { SpaPlugin } from './spa-plugin';
@@ -38,12 +40,7 @@ export interface ISinglePageArgs {
     /**
      * optional, custom domain name
      */
-    domain?: string,
-
-    /**
-     * a function that needs to return the app to be rendered
-     */
-    render: () => ReactNode
+    domain?: string
 }
 
 /**
@@ -101,7 +98,11 @@ export default (props: ISinglePageArgs | any) => {
 
     // TODO maybe edit to support the web-mode?!
     const spaProps: ISinglePageProps = {
-        id: props.stackName
+        id: props.stackName,
+
+        routes: getChildrenArray(props.children)
+            .filter(child => isRoute(child)),
+
     }
     
 
