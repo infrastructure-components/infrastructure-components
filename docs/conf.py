@@ -1,3 +1,1 @@
-html_theme_options = {
-
-}
+html_title = "Infrastructure Components"
