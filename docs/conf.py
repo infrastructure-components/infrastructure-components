@@ -1,4 +1,7 @@
 html_theme_options = {
+    'project': 'Infrastructure-Components',
+    'author': 'Dr. Frank Zickert',
+    'copyright': '2019, Frank Zickert',
     #'canonical_url': '',
     #'analytics_id': 'UA-XXXXXXX-1',  #  Provided by Google in your dashboard
     #'logo_only': False,
