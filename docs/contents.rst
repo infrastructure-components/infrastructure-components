@@ -3,4 +3,4 @@
    :maxdepth: 2
 
    installation
-   help
+   help and support

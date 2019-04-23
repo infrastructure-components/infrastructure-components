@@ -3,6 +3,5 @@
    :maxdepth: 2
 
    installation
-   gettingstarted
-   help
+   help and support
 
