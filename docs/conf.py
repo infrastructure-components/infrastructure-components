@@ -1,1 +1,0 @@
-html_title = "Infrastructure Components"
