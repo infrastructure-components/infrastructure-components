@@ -1,3 +1,6 @@
+*************************
+Infrastructure-Components
+*************************
 
 
 .. toctree::
@@ -5,4 +8,5 @@
    :maxdepth: 2
 
    installation
+   spa
    help
