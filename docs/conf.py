@@ -1,4 +1,5 @@
 html_theme_options = {
+    'html_title':'Infrastructure-Components',
     'project': 'Infrastructure-Components',
     'author': 'Dr. Frank Zickert',
     'copyright': '2019, Frank Zickert',
