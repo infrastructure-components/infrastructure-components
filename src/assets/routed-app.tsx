@@ -87,7 +87,7 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
     //console.log("RoutedApp: " , useContext(__RouterContext))
 
     const routes = props.routes.map(({ path, exact, component, render }, i) => {
-        console.log("routepath: ", path)
+        //console.log("routepath: ", path)
         // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
         return render !== undefined ? <Route key={'ROUTE_'+i} exact={exact} path={path} render={render} />:
             <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />

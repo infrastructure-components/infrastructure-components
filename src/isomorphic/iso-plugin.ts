@@ -128,6 +128,19 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                         component.buildPath,
                         component.assetsPath,
                         component.region),
+                    
+                    // # allows running the stack locally on the dev-machine
+                    {
+                        plugins: "- serverless-offline",
+                        custom: {
+
+                            "serverless-offline": {
+                                host: "0.0.0.0",
+                                port: "${self:provider.port, env:PORT, '3000'}"
+                            }
+                        }
+
+                    },
 
                     // add the domain config
                     domainConfig,

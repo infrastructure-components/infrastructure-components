@@ -46,5 +46,10 @@ of a Serverless Isomorphic React App with Infrastructure-Components.
    :maxdepth: 2
 
    installation
-   spa
+   apps/spa
+   apps/isomorphic
+   components/webapp
+   components/route
+   components/middleware
+   components/environment
    help

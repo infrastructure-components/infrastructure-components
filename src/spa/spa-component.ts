@@ -57,6 +57,13 @@ export interface ISinglePageProps {
      * Routes of the webapp
      */
     routes: Array<any>,
+
+    /**
+     * redirects of the webapp
+     */
+    redirects: Array<any>,
+
+    basename: string
 }
 
 /**
@@ -103,6 +110,9 @@ export default (props: ISinglePageArgs | any) => {
         routes: getChildrenArray(props.children)
             .filter(child => isRoute(child)),
 
+        redirects: [],
+
+        basename: ""
     }
     
 
