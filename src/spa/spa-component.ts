@@ -61,9 +61,7 @@ export interface ISinglePageProps {
     /**
      * redirects of the webapp
      */
-    redirects: Array<any>,
-
-    basename: string
+    redirects: Array<any>
 }
 
 /**
@@ -110,9 +108,7 @@ export default (props: ISinglePageArgs | any) => {
         routes: getChildrenArray(props.children)
             .filter(child => isRoute(child)),
 
-        redirects: [],
-
-        basename: ""
+        redirects: []
     }
     
 

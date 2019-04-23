@@ -107,7 +107,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
 
             const domainConfig = domain !== undefined ? {
-                    plugins: "- serverless-domain-manager",
+                    plugins: ["serverless-domain-manager"],
 
                     custom: {
                         customDomain: {
@@ -131,7 +131,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                     
                     // # allows running the stack locally on the dev-machine
                     {
-                        plugins: "- serverless-offline",
+                        plugins: ["serverless-offline"],
                         custom: {
 
                             "serverless-offline": {

@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 
 import { StaticRouter, matchPath } from 'react-router';
-import { Switch, Route, BrowserRouter, Link } from 'react-router-dom';
+import { Switch, Route, BrowserRouter, HashRouter, Link } from 'react-router-dom';
 
 //import {useContext} from "react"
 //import {__RouterContext} from "react-router"
@@ -134,4 +134,10 @@ export const createServerApp = (
             <RoutedApp routes={routes} redirects={redirects}/>
         </AttachRequest>
     </StaticRouter>;
+};
+
+export const createSinglePageApp = (routes: Array<IRoute>, redirects: Array<IRedirect>) => {
+    return <HashRouter>
+        <RoutedApp routes={routes} redirects={redirects}/>
+    </HashRouter>;
 };

@@ -84,7 +84,7 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                         }
                     } : {},
                     // the stage path is valid only
-                    component.stagePath !== undefined && props.parserMode === PARSER_MODES.MODE_DEPLOY ? {
+                    component.domain == undefined && props.parserMode === PARSER_MODES.MODE_DEPLOY ? {
                         provider: {
                             stage_path: component.name
                         }
