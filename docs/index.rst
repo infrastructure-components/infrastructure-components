@@ -1,7 +1,3 @@
-.. toctree::
-   :caption: Infrastructure-Components
-   :maxdepth: 2
-
-   installation
-   help and support
-
+*************************
+Infrastructure-Components
+*************************
