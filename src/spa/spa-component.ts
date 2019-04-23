@@ -54,7 +54,12 @@ export interface ISinglePageProps {
     /**
      * the SPA is webapp and must have an id
      */
-    id: string
+    id: string,
+
+    /**
+     * Routes of the webapp
+     */
+    routes: Array<any>,
 }
 
 /**
