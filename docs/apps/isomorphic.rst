@@ -1,4 +1,4 @@
-.. _isomorphicapp:
+.. _IsomorphicApp:
 
 **************
 Isomorphic-App

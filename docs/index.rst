@@ -63,8 +63,6 @@ Deploy your application with a single command! Infrastructure-Components create 
 * ...
 
 .. image:: assets/teaser.png
-   :height: 400 px
-   :width: 400 px
    :scale: 50 %
 
 
@@ -72,7 +70,8 @@ Deploy your application with a single command! Infrastructure-Components create 
    :caption: Contents
    :maxdepth: 2
 
-   installation
+   getstarted
    apps
    components
+   scripts
    help
