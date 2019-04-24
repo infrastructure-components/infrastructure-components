@@ -30,7 +30,7 @@ Each app-component supports running it offline (on your development machine) and
 (AWS) cloud with a single command!
 
 
-:ref:`_SinglePageApp`
+:ref:`SinglePageApp`
 =====================
 
 A Single-Page-App (SPA) is an interactive web application that rewrites the current page rather than loading new pages
@@ -41,7 +41,7 @@ application than a traditional website.
 :doc:`apps/spa` provides further details on Infrastructure-Component's ``SinglePageApp``.
 
 
-:ref:`_IsomorphicApp`
+:ref:`IsomorphicApp`
 ====================
 
 An Ismorphic-App (aka universal app) is an interactive web application that complements the advantages of a single-page-app
