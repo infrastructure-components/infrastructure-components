@@ -2,43 +2,70 @@
 Infrastructure-Components
 *************************
 
-Infrastructure-Components configure the infrastructure of your React-App as part of your React-Components.
+This is a complete Serverless React App!
+========================================
 
-This piece of code is all you need to create, build, and deploy a **Serverless Isomorphic React App**!
+Create, Start, and Deploy React Apps easily!::
 
-.. code-block:: typescript
-    /** index.tsx */
     import * as React from 'react';
 
-    import {
-        IsomorphicApp,
-        WebApp,
-        Route
-    } from "infrastructure-components";
+    import { Route, SinglePageApp } from "infrastructure-components";
 
     export default (
-      <IsomorphicApp
-        stackName = "my-isomorphic-app"
-        buildPath = 'build'
-        assetsPath = 'assets'
-        region='eu-west-1'>
+        <SinglePageApp
+            stackName = "example"
+            buildPath = 'build'
+            region='eu-west-1' >
 
-        <WebApp
-          id="main"
-          path="*"
-          method="GET">
+            <Route
+                path='/'
+                name='Infrastructure-Components'
+                render={() => <div>Hello from a React Web App!</div>}/>
 
-          <Route
-            path='/'
-            name='My Serverless Isomorphic React App'
-            render={(props) => <div>Hello World</div>}
-          />
+        </SinglePageApp>
+    );
 
-        </WebApp>
-    </IsomorphicApp>);
 
-[This repository](https://github.com/infrastructure-components/isomorphic_example) provides a working example
-of a Serverless Isomorphic React App with Infrastructure-Components.
+Infrastructure-Components do all the technical configuration for you
+====================================================================
+
+**Compile and Pack**
+
+Infrastructure-Components transpile your Typescript-based React components and bundle them into ready-to-use
+packages--without any further configuration required.
+
+* Webpack
+* Babel + Loaders
+* Typescript
+
+**Application**
+
+Use state-of-the-art libraries to speed up app development.
+
+* React Router
+* ExpressJs
+* Styled Components
+* React Helmet
+* GraphQL
+* ...
+
+**Deploy and Serve**
+
+Deploy your application with a single command! Infrastructure-Components create the whole infrastructure stack for you.
+
+* Lambda-Functions
+* API-Gateway
+* S3
+* DynamoDB
+* CloudFront
+* Route53
+* CloudFormation
+* ...
+
+.. image:: assets/teaser.png
+   :height: 400 px
+   :width: 400 px
+   :scale: 50 %
 
 
 .. toctree::
