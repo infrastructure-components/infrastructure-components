@@ -13,6 +13,10 @@ The SinglePageApp-component further requires the ``serverless-single-page-app-pl
 
     npm install --save-dev serverless-single-page-app-plugin
 
+Further, the ``<SinglePageApp />``-component requires the following libraries during runtime::
+
+    npm install --save react react-dom
+
 Have a look at our `Single-Page-App-Example <https://github.com/infrastructure-components/singlepage_example>`_.
 
 

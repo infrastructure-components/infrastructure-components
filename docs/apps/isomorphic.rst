@@ -10,10 +10,34 @@ Installation
 
 Please follow the general installation instructions: :doc:`../installation`.
 
-The IsomorphicApp-component further requires the ``serverless-domain-manager`` and the ``serverless-offline`` libraries
+The ``<IsomorphicApp />``-component  further requires the ``serverless-domain-manager`` and the ``serverless-offline`` libraries
 as devDependencies::
 
     npm install --save-dev serverless-domain-manager serverless-offline
+
+Further, the ``<IsomorphicApp />``-component requires the following libraries during runtime::
+
+* express
+* infrastructure-components
+* react
+* react-dom
+* react-helmet
+* react-router
+* react-router-dom
+* serverless-http
+* styled-components
+
+    npm install --save \
+        express \
+        infrastructure-components \
+        react \
+        react-dom \
+        react-helmet \
+        react-router \
+        react-router-dom \
+        serverless-http \
+        styled-components
+
 
 Have a look at our `IsomorphicApp-Example <https://github.com/infrastructure-components/isomorphic_example>`_.
 

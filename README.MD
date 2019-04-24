@@ -20,7 +20,7 @@ export default (
     stackName = "my-isomorphic-app"
     buildPath = 'build'
     assetsPath = 'assets'
-    region='eu-west-1'>
+    region='us-east-1'>
 
     <WebApp
       id="main"
@@ -43,50 +43,34 @@ of a Serverless Isomorphic React App with Infrastructure-Components.
 
 ## Installation
 
-Infrastructure-Components require the following libraries during runtime:
-
-- express
-- infrastructure-components
-- react
-- react-dom
-- react-helmet
-- react-router
-- react-router-dom
-- serverless-http
-- styled-components
-
+You can install [infrastructure-components](https://github.com/infrastructure-components/infrastructure-components) easily
 
 ```
-npm install --save \
-    express \
-    infrastructure-components \
-    react \
-    react-dom \
-    react-helmet \
-    react-router \
-    react-router-dom \
-    serverless-http \
-    styled-components
+npm install --save infrastructure-components
 ```
 
-The library [infrastructure-scripts](https://github.com/infrastructure-components/infrastructure-scripts) comprise
-the scripts required of building, starting, and deploying the app.For this lib contains many libraries that you only
-need during development/deployment, install this library as devDependency:
+
+[infrastructure-scripts](https://github.com/infrastructure-components/infrastructure-scripts)
+provide all the scripts required to `build`, `start`, and `deploy`. This lib contains many libraries that you only
+need during development/deployment. Thus, install this library as devDependency::
 
 ```
 npm install --save-dev infrastructure-scripts
 ```
 
-Infrastructure-Components use the [Serverless framework](https://serverless.com/) that you need to install globally.
-`serverless-offline` lets you start your application on localhost
+Infrastructure-components use the `Serverless framework <https://serverless.com/>`_ that you need to install globally::
 
 ```
 npm install -g serverless
-npm install --save-dev serverless-offline
 ```
+
+Finally, apps (e.g. single-page-app, isomorphic-app) and components (environment, webapp) can have further dependencies.
+Have a look at them in [our documentation](https://infrastructure-components.readthedocs.io).
 
 
 ## Help and Support
+
+Have a look at our [documentation](https://infrastructure-components.readthedocs.io).
 
 Infrastructure-Components are under active development. If you find a bug or need support of any kind,
 please have a look at our [Spectrum-Chat](https://spectrum.chat/infrastructure).
