@@ -39,11 +39,6 @@ export interface IIsomorphicArgs {
      * The AWS region
      */
     region: string,
-
-    /**
-     * optional, custom domain name
-     */
-    domain?: string
 }
 
 /**

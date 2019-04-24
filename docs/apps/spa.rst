@@ -25,12 +25,8 @@ Properties
 
 The SinglePageApp-component requires you to define the following properties:
 
-* ``stackName`` the (arbitrary) name of your app, please use only lower case characters and hyphens for the
-name serves as identifier within AWS
-
-* ``buildPath`` the relative path to the folder within your project, where to put the build-resources, e.g. "build".
-You may want to add this name to your .gitignore file to keep your repository free from compiled files.
-
+* ``stackName`` the (arbitrary) name of your app, please use only lower case characters and hyphens for the name serves as identifier within AWS
+* ``buildPath`` the relative path to the folder within your project, where to put the build-resources, e.g. "build". You may want to add this name to your .gitignore file to keep your repository free from compiled files.
 * ``region`` the AWS-region you want your infrastructure to reside after deployment, e.g. 'us-east-1'
 
 
@@ -39,9 +35,7 @@ Allowed Children
 
 The SinglePageApp-component supports the following infrastructure-components as direct children:
 
-* a :doc:`../components/route` lets you specify a custom path (at the domain of your app) that gets served by its
-render-function. You should have at least the home-path-route ("/") in any meaningful web-application.
-
+* a :doc:`../components/route` lets you specify a custom path (at the domain of your app) that gets served by its render-function. You should have at least the home-path-route ("/") in any meaningful web-application.
 * an :doc:`../components/environment` defines a runtime environment of your app.
 
 Example
@@ -132,6 +126,7 @@ Deploying your app requires:
 2. A technical user (with programmatic access / API-key)
 
 In your AWS-console, open the IAM menu and create a new user with the following policy::
+
     {
         "Statement": [
             {
