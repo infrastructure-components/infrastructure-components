@@ -5,7 +5,7 @@ Getting Started
 Start with an Example
 =====================
 
-Our `GitHub-Repository <https://github.com/infrastructure-components>` contains exemplary projects of each supported
+Our `GitHub-Repository <https://github.com/infrastructure-components>`_ contains exemplary projects of each supported
 architecture topology:
 
 * `Single-Page-App <https://github.com/infrastructure-components/singlepage_example>`_
@@ -23,8 +23,8 @@ easily::
     npm install --save infrastructure-components
 
 
-The library **`infrastructure-scripts <https://github.com/infrastructure-components/infrastructure-scripts>`_**
-provides all the scripts required to `build`, `start`, and `deploy`. This lib contains many libraries that you only
+`infrastructure-scripts <https://github.com/infrastructure-components/infrastructure-scripts>`_
+provide all the scripts required to `build`, `start`, and `deploy`. This lib contains many libraries that you only
 need during development/deployment. Thus, install this library as devDependency::
 
     npm install --save-dev infrastructure-scripts

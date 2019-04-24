@@ -35,12 +35,7 @@ export interface ISinglePageArgs {
     /**
      * The AWS region
      */
-    region: string,
-
-    /**
-     * optional, custom domain name
-     */
-    domain?: string
+    region: string
 }
 
 /**

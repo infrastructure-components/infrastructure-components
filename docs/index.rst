@@ -63,7 +63,7 @@ Deploy your application with a single command! Infrastructure-Components create 
 * ...
 
 .. image:: assets/teaser.png
-   :scale: 20 %
+   :scale: 25 %
 
 
 .. toctree::
