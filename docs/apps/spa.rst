@@ -193,4 +193,15 @@ and once you deployed your app, you can initialize the domain with the following
 
     npm run domain-{your_environment_name}
 
-Note: You only need to run this command once. But it may take quite some time (an hour) to complete!
+**Note:** The ``domain``-script adds an entry to your ``.env``-file: ``DOMAIN_{your_environment_name}=TRUE``
+You must not remove this flag or the connection to the domain might stop working. If you use a git-repository (what
+you should do), make sure you add this flag to all the local copies.
+
+**Note:** You only need to run this command once. But it may take quite some time (an hour) to complete!
+
+**Note:** Once the script finishes, you can start using your domain. But you'll notice that the URL redirects to the
+URL like https://{your_stackName}-{your_environment_name}.s3.amazonaws.com. This is a temporary redirect (code 307) that
+AWS adds automatically. It may a day until AWS removes the redirect. Per AWS documentation
+(http://docs.aws.amazon.com/AmazonS3/latest/dev/Redirects.html): Due to the distributed nature of Amazon S3,
+requests can be temporarily routed to the wrong facility. This is most likely to occur immediately after
+buckets are created or deleted. The redirect should circumvent this problem.
