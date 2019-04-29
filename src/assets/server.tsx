@@ -282,7 +282,8 @@ function renderHtmlPage(html, styles, preloadedState, helmet, basename, routePat
 }
 
 const getBasename = () => {
-    return process.env.STAGE_PATH !== "undefined" ? "/"+process.env.STAGE_PATH : "/";
+    return process.env.STAGE_PATH !== undefined && process.env.STAGE_PATH !== "undefined" ?
+    "/"+process.env.STAGE_PATH : "/";
 };
 
 // we're exporting the handler-function as default, must match the sls-config!

@@ -87,7 +87,8 @@ export default (props: IIsomorphicArgs | any) => {
             // isomorphic apps can have webapps (i.e. clients!)
             WebAppPlugin({
                 buildPath: props.buildPath,
-                configFilePath: configPath
+                configFilePath: configPath,
+                assetsPath: props.assetsPath
             }),
 
             // isomorphic apps can have different environments

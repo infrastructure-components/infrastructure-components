@@ -71,7 +71,9 @@ export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
                     .createClientWebpackConfig(
                         "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "spa.js"), //entryPath: string,
                         path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath), //use the buildpath from the parent plugin
-                        component.id,
+                        component.id, //appName
+                        undefined, //assetsPath
+                        undefined, // stagePath: TODO take from Environment!
                         {
                             __CONFIG_FILE_PATH__: require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").pathToConfigFile(props.configFilePath), // replace the IsoConfig-Placeholder with the real path to the main-config-bundle
                         }, {

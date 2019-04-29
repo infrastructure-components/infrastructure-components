@@ -18,7 +18,12 @@ export interface IWebAppPlugin {
     /**
      * path to the main config file
      */
-    configFilePath: string
+    configFilePath: string,
+
+    /**
+     * relative path to the assets folder
+     */
+    assetsPath: string
 }
 
 /**
@@ -48,16 +53,20 @@ export const WebAppPlugin = (props: IWebAppPlugin): IPlugin => {
 
                 // a webapp has its own webpack configuration
                 webpackConfigs: [
-                    require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").complementWebpackConfig(require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").createClientWebpackConfig(
-                        "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "client.js"), //entryPath: string,
-                        path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath), //use the buildpath from the parent plugin
-                        component.id,
-                        {
-                            __CONFIG_FILE_PATH__: require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").pathToConfigFile(props.configFilePath), // replace the IsoConfig-Placeholder with the real path to the main-config-bundle
-                        }, {
-                            __ISOMORPHIC_ID__: `"${component.instanceId}"`,
-                        }
-                    ))
+                    require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").complementWebpackConfig(
+                        require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").createClientWebpackConfig(
+                            "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "client.js"), //entryPath: string,
+                            path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath), //use the buildpath from the parent plugin
+                            component.id, // appName
+                            props.assetsPath, //assetsPath
+                            "",//undefined, // stagePath: TODO take from Environment!
+                            {
+                                __CONFIG_FILE_PATH__: require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").pathToConfigFile(props.configFilePath), // replace the IsoConfig-Placeholder with the real path to the main-config-bundle
+                            }, {
+                                __ISOMORPHIC_ID__: `"${component.instanceId}"`,
+                            }
+                        )
+                    )
                 ],
 
                 postBuilds: [],
