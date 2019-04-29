@@ -79,9 +79,23 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                     }
                 )
             );
+            
+            const domain = childConfigs.map(config => config.domain).reduce((result, domain) => result !== undefined ? result : domain, undefined);
+            const certArn = childConfigs.map(config => config.certArn).reduce((result, certArn) => result !== undefined ? result : certArn, undefined);
+
+            const environments = childConfigs.reduce((result, config) => (result !== undefined ? result : []).concat(config.environments !== undefined ? config.environments : []), []);
 
             // provide all client configs in a flat list
-            const webpackConfigs: any = childConfigs.reduce((result, config) => result.concat(config.webpackConfigs), []);
+            const webpackConfigs: any = childConfigs.reduce((result, config) => result.concat(
+                
+                config.webpackConfigs.map(wp => wp({
+                    // when we deploy an Isomorphic App without a domain, we need to add the stagename!
+                    stagePath: props.parserMode === PARSER_MODES.MODE_DEPLOY &&
+                        domain == undefined && 
+                        environments !== undefined &&
+                        environments.length > 0 ? environments[0].name : undefined
+                }))
+            ), []);
 
             const copyAssetsPostBuild = () => {
                 //console.log("check for >>copyAssetsPostBuild<<");
@@ -102,9 +116,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
             }
 
-            const domain = childConfigs.map(config => config.domain).reduce((result, domain) => result !== undefined ? result : domain, undefined);
-            const certArn = childConfigs.map(config => config.certArn).reduce((result, certArn) => result !== undefined ? result : certArn, undefined);
-
+            
 
             const domainConfig = domain !== undefined ? {
                     plugins: ["serverless-domain-manager"],
@@ -154,7 +166,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
                 postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild, initDomain]),
 
-                environments: childConfigs.reduce((result, config) => (result !== undefined ? result : []).concat(config.environments !== undefined ? config.environments : []), []),
+                environments: environments,
 
                 stackName: component.stackName,
 

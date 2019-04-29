@@ -109,14 +109,21 @@ export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
 
 
 
+            // check whether we already created the domain of this environment
+            const deployedDomain = process.env[`DOMAIN_${props.stage}`] !== undefined;
+
+
             const domain = childConfigs.map(config => config.domain).reduce((result, domain) => result !== undefined ? result : domain, undefined);
             const certArn = childConfigs.map(config => config.certArn).reduce((result, certArn) => result !== undefined ? result : certArn, undefined);
 
+            const invalidateCloudFrontCache = () => {
+                if (deployedDomain && props.parserMode === PARSER_MODES.MODE_DEPLOY) {
+                    require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").invalidateCloudFrontCache(domain);
+                }
+            }
 
             const hostedZoneName = domain !== undefined ? extractDomain(domain.toString()) : {};
 
-            // check whether we already created the domain of this environment
-            const deployedDomain = process.env[`DOMAIN_${props.stage}`] !== undefined;
 
             /** post build function to write to the .env file that the domain has been deployed */
             const writeDomainEnv = () => {
@@ -260,7 +267,7 @@ export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
                 // add the server config 
                 webpackConfigs: webpackConfigs.concat([spaWebPack]),
 
-                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild, writeDomainEnv, showStaticPageName, deployWithDomain]),
+                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild, writeDomainEnv, showStaticPageName, deployWithDomain, invalidateCloudFrontCache]),
 
                 environments: childConfigs.reduce((result, config) => (result !== undefined ? result : []).concat(config.environments !== undefined ? config.environments : []), []),
 
