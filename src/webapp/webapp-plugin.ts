@@ -64,6 +64,9 @@ export const WebAppPlugin = (props: IWebAppPlugin): IPlugin => {
                                 __CONFIG_FILE_PATH__: require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").pathToConfigFile(props.configFilePath), // replace the IsoConfig-Placeholder with the real path to the main-config-bundle
                             }, {
                                 __ISOMORPHIC_ID__: `"${component.instanceId}"`,
+
+                                // when there is a DataLayer, we provide it, otherwise an empty string
+                                __DATALAYER_ID__: `"${args["datalayerid"] !== undefined ? args["datalayerid"] : ""}"`
                             }
                         )
                     )

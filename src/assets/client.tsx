@@ -1,4 +1,5 @@
 declare var __ISOMORPHIC_ID__: any;
+declare var __DATALAYER_ID__: any;
 
 /**
  * The global declaration is required of the typedoc documentation
@@ -18,7 +19,7 @@ import { hydrate } from 'react-dom';
 import { createClientApp } from './routed-app';
 import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
-
+import { hydrateFromDataLayer } from './datalayer-integration';
 
 /**
  *
@@ -46,24 +47,29 @@ const createClientWebApp = () => {
         isoConfig,
         Types.INFRASTRUCTURE_TYPE_CLIENT,
         __ISOMORPHIC_ID__
-    )
+    );
 
+    // try to get the dataLayer
+    /*const dataLayer = extractObject(
+        isoConfig,
+        Types.INFRASTRUCTURE_TYPE_COMPONENT,
+        __DATALAYER_ID__
+    );*/
 
-    // TODO!!!!
-    //const clientApp = IsoConfig.isoConfig.clientApps["INDEX_OF_CLIENT"];
-
-    /*const hydrateFromDataLayer = clientApp.dataLayer !== undefined ?
-        clientApp.dataLayer.type({infrastructureMode: "component"}).hydrateFromDataLayer :
+    // when we have a datalayer, we can hydrate the state!
+    const fHydrate = webApp.dataLayerId !== undefined ? hydrateFromDataLayer :
         (node) => {
-            console.log("this is the dummy data layer hydration")
+            console.log("this is the dummy data layer hydration");
             return node;
-        }*/
+        };
 
-    hydrate(//hydrateFromDataLayer(
-        createClientApp(
-            webApp.routes,
-            webApp.redirects,
-            basename),//),
+    hydrate(
+        fHydrate(
+            createClientApp(
+                webApp.routes,
+                webApp.redirects,
+                basename)
+        ),
         document.getElementById('root')
     );
 

@@ -19,6 +19,7 @@ import {createServerApp} from "./routed-app";
 
 import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
+import { connectWithDataLayer } from './datalayer-integration';
 
 //import { getClientFilename } from '../types/app-config';
 export const getClientFilename = (name: string): string => {
@@ -53,6 +54,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
     // connect the middlewares
     isoApp.middlewares.map(mw => app.use(mw.callback));
 
+    console.log("webApps: ",isoApp.webApps.length, " -> ", isoApp.webApps);
 
     // split the clientApps here and define a function for each of the clientApps, with the right middleware
     isoApp.webApps
@@ -146,17 +148,19 @@ async function serve (req, res, next, clientApp, assetsDir) {
     console.log("routePath: ", routePath);
     ////////// END OF REFACTORING required
 
-    //console.log("app data layer: ", clientApp.dataLayer);
+    console.log("app data layer id: ", clientApp.dataLayerId);
 
-    const connectWithDataLayer = clientApp.dataLayer !== undefined ?
-        clientApp.dataLayer.type({infrastructureMode: "component"}).connectWithDataLayer :
+
+
+    const fConnectWithDataLayer = clientApp.dataLayerId !== undefined ?
+        connectWithDataLayer(clientApp.dataLayerId) :
         async function (app) {
             console.log("default dummy data layer")
             return {connectedApp: app, getState: () => ""};
         };
 
     // create the app and connect it with the DataAbstractionLayer
-    await connectWithDataLayer(
+    await fConnectWithDataLayer(
         createServerApp(
             clientApp.routes,
             clientApp.redirects,

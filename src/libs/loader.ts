@@ -76,7 +76,7 @@ export const loadInfrastructureComponent = (component, infrastructureMode: strin
         console.error("NOT an infrastructure component --> ", error);
         return undefined;
     };
-}
+};
 
 
 /**

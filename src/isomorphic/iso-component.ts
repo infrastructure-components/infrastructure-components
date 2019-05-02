@@ -12,6 +12,8 @@ import { getChildrenArray } from '../libs';
 import { IsoPlugin } from './iso-plugin';
 import { WebAppPlugin } from '../webapp/webapp-plugin';
 import { EnvironmentPlugin } from '../environment/environment-plugin';
+import { DataLayerPlugin } from '../datalayer/datalayer-plugin';
+import {isDataLayer} from "../datalayer/datalayer-component";
 
 export const ISOMORPHIC_INSTANCE_TYPE = "IsomorphicComponent";
 
@@ -84,6 +86,12 @@ export default (props: IIsomorphicArgs | any) => {
                 configFilePath: configPath
             }),
 
+
+            DataLayerPlugin({
+                buildPath: props.buildPath,
+                configFilePath: configPath,
+            }),
+
             // isomorphic apps can have webapps (i.e. clients!)
             WebAppPlugin({
                 buildPath: props.buildPath,
@@ -105,7 +113,11 @@ export default (props: IIsomorphicArgs | any) => {
             .filter(child => isMiddleware(child)),
 
         webApps: getChildrenArray(props.children)
-            .filter(child => isWebApp(child))
+            .filter(child => isWebApp(child)).concat(
+                getChildrenArray(props.children)
+                    .filter(child => isDataLayer(child))
+                    .reduce((result,dl) => result.concat(getChildrenArray(dl.children).filter(child => isWebApp(child))), [])
+            )
     }
     
 

@@ -59,6 +59,8 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
             const serverBuildPath = path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath);
 
+
+
             // the isomorphic app has a server application
             const serverWebPack = require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").complementWebpackConfig(
                 require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").createServerWebpackConfig(
@@ -76,6 +78,8 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                             serverName, 
                             component.assetsPath ) 
                         }"`
+
+                        // TODO add replacements of datalayers here!
                     }
                 )
             );
