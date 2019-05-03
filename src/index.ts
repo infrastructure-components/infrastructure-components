@@ -41,3 +41,7 @@ export const getStaticBucketName = require('./libs/iso-libs').getStaticBucketNam
 
 export const IEnvironmentArgs = require('./environment/environment-component').IEnvironmentArgs;
 export const PARSER_MODES = require('./libs/parser').PARSER_MODES;
+
+export const setEntry = require('./datalayer/datalayer-libs').setEntry;
+export const listEntries = require('./datalayer/datalayer-libs').listEntries;
+export const getEntry = require('./datalayer/datalayer-libs').getEntry;

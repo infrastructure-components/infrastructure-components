@@ -6,7 +6,6 @@ declare var __DATALAYER_ID__: any;
 // this must be imported to allow async-functions within an AWS lambda environment
 // see: https://github.com/babel/babel/issues/5085
 import "@babel/polyfill";
-import AWS from 'aws-sdk';
 
 import {
     graphql,
@@ -20,18 +19,6 @@ import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
 
 
-/**
- * transforms a function into a Promise
- */
-const promisify = foo => new Promise((resolve, reject) => {
-    foo((error, result) => {
-        if(error) {
-            reject(error)
-        } else {
-            resolve(result)
-        }
-    })
-});
 
 /*
 const dbSchema = {

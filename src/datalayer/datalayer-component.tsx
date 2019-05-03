@@ -22,12 +22,12 @@ export interface IDataLayerArgs {
     /**
      * TODO: should become a component
      */
-    queries: Array<any>,
+    queries: any,
 
     /**
      * TODO: should become a component
      */
-    mutations: Array<any>
+    mutations: any
 }
 
 /**

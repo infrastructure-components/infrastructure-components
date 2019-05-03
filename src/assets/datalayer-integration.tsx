@@ -76,6 +76,8 @@ export const hydrateFromDataLayer = (app) => {
         delete window.__APOLLO_STATE__;
     }
 
+    console.log("uri: ", window.__GRAPHQL__);
+
     const client = new ApolloClient({
         cache: new InMemoryCache().restore(preloadedState),
         link: createHttpLink({
@@ -147,7 +149,7 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
            */
 
-        const graphqlUrl = process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
+        const graphqlUrl = "https://yfse1b9v0m.execute-api.eu-west-1.amazonaws.com/dev/query";// process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
 
         console.log("graphqlUrl: ", graphqlUrl);
         //console.log("schema: ", schema);
@@ -170,7 +172,7 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
         });
 
-        //console.log("client: ", client);
+        console.log("client: ", client);
 
         const connectedApp = <ApolloProvider client={client}>
             <ApolloConsumer>
