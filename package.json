@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.2.0-alpha.8",
+  "version": "0.2.0-alpha.35",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -40,7 +40,8 @@
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
     "serverless-http": "^1.9.1",
-    "styled-components": "^4.2.0"
+    "styled-components": "^4.2.0",
+    "typed-graphqlify": "^2.2.2"
   },
   "devDependencies": {
     "typescript": "^3.3.3333"

@@ -12,6 +12,7 @@ export const IsomorphicApp = require('./isomorphic/iso-component').default;
 export const Environment = require('./environment/environment-component').default;
 export const SinglePageApp = require('./spa/spa-component').default;
 export const DataLayer = require('./datalayer/datalayer-component').default;
+export const Entry = require('./datalayer/entry-component').default;
 
 
 export const Link = require('../node_modules/react-router-dom/Link');
@@ -43,5 +44,10 @@ export const IEnvironmentArgs = require('./environment/environment-component').I
 export const PARSER_MODES = require('./libs/parser').PARSER_MODES;
 
 export const setEntry = require('./datalayer/datalayer-libs').setEntry;
-export const listEntries = require('./datalayer/datalayer-libs').listEntries;
+export const getEntryListQuery = require('./datalayer/datalayer-libs').getEntryListQuery;
 export const getEntry = require('./datalayer/datalayer-libs').getEntry;
+export const mutate = require('./datalayer/datalayer-libs').mutate;
+export const select = require('./datalayer/datalayer-libs').select;
+export const withDataLayer = require('./assets/attach-data-layer').withDataLayer;
+export const AttachDataLayer = require('./assets/attach-data-layer').AttachDataLayer;
+

@@ -21,7 +21,7 @@ import ApolloClient from 'apollo-client';
 require('es6-promise').polyfill();
 import 'isomorphic-fetch';
 
-import AttachDataLayer from './attach-data-layer';
+//import AttachDataLayer from './attach-data-layer';
 
 import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
@@ -66,9 +66,11 @@ window.__GRAPHQL__ = "${url}"`;
  *
  * @param app the ReactApp to connect with the DataLayer
  */
-export const hydrateFromDataLayer = (app) => {
+export const hydrateFromDataLayer = (app, dataLayer) => {
 
-    //console.log("graphql-rehydration", schema);
+    const AttachDataLayer = require('infrastructure-components').AttachDataLayer;
+
+    console.log("hydration, dataLayer: ", dataLayer);
 
     var preloadedState = {};
     if (typeof window != 'undefined' && window.__APOLLO_STATE__) {
@@ -89,7 +91,7 @@ export const hydrateFromDataLayer = (app) => {
 
     return <ApolloProvider client={ client } >
         <ApolloConsumer>
-            {client => <AttachDataLayer apolloClient={client}>{app}</AttachDataLayer>}
+            {client => <AttachDataLayer apolloClient={client} dataLayer={dataLayer}>{app}</AttachDataLayer>}
         </ApolloConsumer>
 
     </ApolloProvider>
@@ -107,6 +109,9 @@ export const hydrateFromDataLayer = (app) => {
  */
 export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
+    const AttachDataLayer = require('infrastructure-components').AttachDataLayer;
+
+    
     console.log("connectWithDataLayer: ", dataLayerId);
     // load the IsomorphicComponent
     // we must load it directly from the module here, to enable the aliad of the config_file_path
@@ -120,7 +125,8 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
     );
 
 
-    //console.log("schema: ", schema);
+
+    console.log("dataLayer: ", dataLayer);
     
     return new Promise<any>(async (resolve, reject) => {
         const awsGraphqlFetch = (uri, options) => {
@@ -176,7 +182,7 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
         const connectedApp = <ApolloProvider client={client}>
             <ApolloConsumer>
-                {client => <AttachDataLayer apolloClient={client}>{app}</AttachDataLayer>}
+                {client => <AttachDataLayer apolloClient={client} dataLayer={dataLayer}>{app}</AttachDataLayer>}
             </ApolloConsumer>
         </ApolloProvider>
 

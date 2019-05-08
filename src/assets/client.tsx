@@ -49,19 +49,20 @@ const createClientWebApp = () => {
         __ISOMORPHIC_ID__
     );
 
-    // try to get the dataLayer
-    /*const dataLayer = extractObject(
-        isoConfig,
-        Types.INFRASTRUCTURE_TYPE_COMPONENT,
-        __DATALAYER_ID__
-    );*/
+
 
     // when we have a datalayer, we can hydrate the state!
-    const fHydrate = webApp.dataLayerId !== undefined ? hydrateFromDataLayer :
-        (node) => {
-            console.log("this is the dummy data layer hydration");
-            return node;
-        };
+    const fHydrate = webApp.dataLayerId !== undefined ? (node) => hydrateFromDataLayer(
+        node,
+        extractObject(
+            isoConfig,
+            Types.INFRASTRUCTURE_TYPE_COMPONENT,
+            webApp.dataLayerId
+        )
+    ) : (node) => {
+        console.log("this is the dummy data layer hydration");
+        return node;
+    };
 
     hydrate(
         fHydrate(
