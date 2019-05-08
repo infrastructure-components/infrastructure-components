@@ -21,7 +21,7 @@ import ApolloClient from 'apollo-client';
 require('es6-promise').polyfill();
 import 'isomorphic-fetch';
 
-//import AttachDataLayer from './attach-data-layer';
+import AttachDataLayer from './attach-data-layer';
 
 import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
@@ -68,8 +68,6 @@ window.__GRAPHQL__ = "${url}"`;
  */
 export const hydrateFromDataLayer = (app, dataLayer) => {
 
-    const AttachDataLayer = require('infrastructure-components').AttachDataLayer;
-
     console.log("hydration, dataLayer: ", dataLayer);
 
     var preloadedState = {};
@@ -109,9 +107,6 @@ export const hydrateFromDataLayer = (app, dataLayer) => {
  */
 export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
-    const AttachDataLayer = require('infrastructure-components').AttachDataLayer;
-
-    
     console.log("connectWithDataLayer: ", dataLayerId);
     // load the IsomorphicComponent
     // we must load it directly from the module here, to enable the aliad of the config_file_path

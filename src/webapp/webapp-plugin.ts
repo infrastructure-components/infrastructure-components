@@ -62,6 +62,11 @@ export const WebAppPlugin = (props: IWebAppPlugin): IPlugin => {
                             args["stagePath"], // stagePath
                             {
                                 __CONFIG_FILE_PATH__: require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").pathToConfigFile(props.configFilePath), // replace the IsoConfig-Placeholder with the real path to the main-config-bundle
+
+                                // required of data-layer, makes the context match!
+                                "infrastructure-components": path.join(
+                                    require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                                    "node_modules", "infrastructure-components", "dist" , "index.js"),
                             }, {
                                 __ISOMORPHIC_ID__: `"${component.instanceId}"`,
 

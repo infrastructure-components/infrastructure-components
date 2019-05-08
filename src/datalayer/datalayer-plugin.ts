@@ -67,7 +67,6 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                     // aliasesDict
                     {
                         __CONFIG_FILE_PATH__: require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").pathToConfigFile(props.configFilePath), // replace the IsoConfig-Placeholder with the real path to the main-config-bundle
-
                     },
 
                     // replacementsDict
