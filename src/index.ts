@@ -15,7 +15,8 @@ export const DataLayer = require('./datalayer/datalayer-component').default;
 export const Entry = require('./datalayer/entry-component').default;
 
 
-export const Link = require('../node_modules/react-router-dom/Link');
+//export const Link = require('../node_modules/react-router-dom/Link');
+//export const withRouter = require('../node_modules/react-router-dom/withRouter');
 
 export const INFRASTRUCTURE_MODES = require('./libs/loader').INFRASTRUCTURE_MODES;
 export const loadInfrastructureComponent = require('./libs/loader').loadInfrastructureComponent;
@@ -49,5 +50,9 @@ export const getEntry = require('./datalayer/datalayer-libs').getEntry;
 export const mutate = require('./datalayer/datalayer-libs').mutate;
 export const select = require('./datalayer/datalayer-libs').select;
 export const withDataLayer = require('./assets/attach-data-layer').withDataLayer;
-export const AttachDataLayer = require('./assets/attach-data-layer').AttachDataLayer;
+export const AttachDataLayer = require('./assets/attach-data-layer').default;
+
+export const withRoutes = require('./assets/attach-routes').withRoutes;
+export const AttachRoutes = require('./assets/attach-routes').default;
+export const IRoute = require('./assets/routed-app').IRoute;
 

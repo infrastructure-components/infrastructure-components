@@ -21,7 +21,12 @@ import ApolloClient from 'apollo-client';
 require('es6-promise').polyfill();
 import 'isomorphic-fetch';
 
-import AttachDataLayer from './attach-data-layer';
+/**
+ * we MUST NOT IMPORT CONTEXTs directly, but require them at time of use generally from Infrastructure-Components
+ * because this then resolves to node_modules
+ */
+
+//import AttachDataLayer from './attach-data-layer';
 
 import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
@@ -68,6 +73,7 @@ window.__GRAPHQL__ = "${url}"`;
  */
 export const hydrateFromDataLayer = (app, dataLayer) => {
 
+    const AttachDataLayer = require("infrastructure-components").AttachDataLayer;
     console.log("hydration, dataLayer: ", dataLayer);
 
     var preloadedState = {};
@@ -106,6 +112,14 @@ export const hydrateFromDataLayer = (app, dataLayer) => {
  * @schema specifies the schema to connect the store with, if undefined: use the uri (via network). see [[UseSchemaLinkSpec]]
  */
 export const connectWithDataLayer = (dataLayerId) => async (app) => {
+
+    /**
+     * we MUST NOT IMPORT CONTEXTs directly, but require them at time of use generally from Infrastructure-Components
+     * because this then resolves to node_modules
+     */
+    const AttachDataLayer = require("infrastructure-components").AttachDataLayer;
+    
+    console.log("AttachDataLayer: ", AttachDataLayer)
 
     console.log("connectWithDataLayer: ", dataLayerId);
     // load the IsomorphicComponent
@@ -181,7 +195,7 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
             </ApolloConsumer>
         </ApolloProvider>
 
-            console.log("collect data");
+        console.log("connectedApp: ", connectedApp);
         try {
             //.catch((err) => console.log("err: ", err))
             await getDataFromTree(connectedApp).then(() => resolve({connectedApp: connectedApp, getState: () => {

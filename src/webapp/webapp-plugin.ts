@@ -4,11 +4,17 @@
 import { IConfigParseResult } from '../libs/config-parse-result';
 import { IPlugin } from '../libs/plugin';
 import { isWebApp } from './webapp-component'
+import { PARSER_MODES } from '../libs/parser';
 
 /**
  * Parameters that apply to the whole Plugin, passed by other plugins
  */
 export interface IWebAppPlugin {
+
+    /**
+     * one of the [[PARSER_MODES]]
+     */
+    parserMode: string,
 
     /**
      * path to a directory where we put the final bundles
@@ -66,14 +72,25 @@ export const WebAppPlugin = (props: IWebAppPlugin): IPlugin => {
                                 // required of data-layer, makes the context match!
                                 "infrastructure-components": path.join(
                                     require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
-                                    "node_modules", "infrastructure-components", "dist" , "index.js"),
+                                    "node_modules", "infrastructure-components", "dist", "index.js"),
+
+                                // required of the routed-app
+                                "react-router-dom": path.join(
+                                    require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                                    "node_modules", "react-router-dom"),
+
+                                // required of the data-layer / apollo
+                                "react-apollo": path.join(
+                                    require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                                    "node_modules", "react-apollo"),
                             }, {
                                 __ISOMORPHIC_ID__: `"${component.instanceId}"`,
 
                                 // when there is a DataLayer, we provide it, otherwise an empty string
                                 __DATALAYER_ID__: `"${args["datalayerid"] !== undefined ? args["datalayerid"] : ""}"`
                             }
-                        )
+                        ),
+                        props.parserMode === PARSER_MODES.MODE_DEPLOY //isProd
                     )
                 ],
 

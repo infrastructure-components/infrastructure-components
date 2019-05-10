@@ -94,6 +94,7 @@ export default (props: IIsomorphicArgs | any) => {
 
             // isomorphic apps can have webapps (i.e. clients!)
             WebAppPlugin({
+                parserMode: parserMode,
                 buildPath: props.buildPath,
                 configFilePath: configPath,
                 assetsPath: props.assetsPath

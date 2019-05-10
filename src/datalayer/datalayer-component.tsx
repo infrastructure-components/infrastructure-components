@@ -162,7 +162,7 @@ export default (props: IDataLayerArgs | any) => {
 
         queries: entries.reduce((result, entry) => {
 
-            const listType = createEntryType("list_"+entry.id, entry);
+            const listType = createEntryType("list_", entry);
             console.log("listType: ", listType);
 
 

@@ -73,7 +73,17 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                         // required of data-layer, makes the context match!
                         "infrastructure-components": path.join(
                             require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
-                            "node_modules", "infrastructure-components", "dist" , "index.js"),
+                            "node_modules", "infrastructure-components", "dist", "index.js"),
+
+                        // required of the routed-app
+                        "react-router-dom": path.join(
+                            require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                            "node_modules", "react-router-dom"),
+
+                        // required of the data-layer / apollo
+                        "react-apollo": path.join(
+                            require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                            "node_modules", "react-apollo"),
                     }, {
                         __ISOMORPHIC_ID__: `"${component.instanceId}"`,
                         __ASSETS_PATH__: `"${component.assetsPath}"`,
@@ -85,7 +95,8 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
                         // TODO add replacements of datalayers here!
                     }
-                )
+                ),
+                props.parserMode === PARSER_MODES.MODE_DEPLOY //isProd
             );
             
             const domain = childConfigs.map(config => config.domain).reduce((result, domain) => result !== undefined ? result : domain, undefined);
@@ -107,7 +118,8 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
             const copyAssetsPostBuild = () => {
                 //console.log("check for >>copyAssetsPostBuild<<");
-                if (props.parserMode === PARSER_MODES.MODE_BUILD) {
+                if (props.parserMode !== PARSER_MODES.MODE_DOMAIN) {
+                    // always copy the assets, unless we setup the domain
                     console.log("copyAssetsPostBuild: now copy the assets!");
 
                     webpackConfigs.map(config => require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").copyAssets( config.output.path, path.join(serverBuildPath, serverName, component.assetsPath)));

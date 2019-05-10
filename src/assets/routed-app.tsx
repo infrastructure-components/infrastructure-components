@@ -7,7 +7,10 @@ import { Switch, Route, BrowserRouter, HashRouter, Link } from 'react-router-dom
 //import {__RouterContext} from "react-router"
 
 import RedirectWithStatus from './redirect-w-status';
-import AttachRequest from '../components/attach-request';
+
+//import AttachRequest from '../components/attach-request';
+//import AttachRoutes from './attach-routes';
+
 
 /**
  * Implementation of the RoutingAbstractionLayer
@@ -114,9 +117,14 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
  * @returns {any}
  */
 export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirect>, basename: string) => {
+    const AttachRequest = require("infrastructure-components").AttachRequest;
+    const AttachRoutes = require("infrastructure-components").AttachRoutes;
+
     return <BrowserRouter basename={basename}>
         <AttachRequest>
-            <RoutedApp routes={routes} redirects={redirects}/>
+            <AttachRoutes routes={routes}>
+                <RoutedApp routes={routes} redirects={redirects}/>
+            </AttachRoutes>
         </AttachRequest>
     </BrowserRouter>;
 };
@@ -129,15 +137,25 @@ export const createServerApp = (
     context: any,
     request: any) => {
 
+    const AttachRequest = require("infrastructure-components").AttachRequest;
+    const AttachRoutes = require("infrastructure-components").AttachRoutes;
+
     return <StaticRouter context={context} location={url} basename={basename}>
         <AttachRequest request={request}>
-            <RoutedApp routes={routes} redirects={redirects}/>
+            <AttachRoutes routes={routes}>
+                <RoutedApp routes={routes} redirects={redirects}/>
+            </AttachRoutes>
         </AttachRequest>
     </StaticRouter>;
 };
 
 export const createSinglePageApp = (routes: Array<IRoute>, redirects: Array<IRedirect>) => {
+
+    const AttachRoutes = require("infrastructure-components").AttachRoutes;
+
     return <HashRouter>
-        <RoutedApp routes={routes} redirects={redirects}/>
+        <AttachRoutes routes={routes}>
+            <RoutedApp routes={routes} redirects={redirects}/>
+        </AttachRoutes>
     </HashRouter>;
 };
