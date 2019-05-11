@@ -64,7 +64,7 @@ The IsomorphicApp-component supports the following infrastructure-components as 
 
 
 * a :doc:`../components/webapp` lets you specify a client-app with a custom html and Javascript code. The ``<WebApp/>`` supports ``<Route/>`` components that let you specify custom paths (at the domain of your app) that get served by their render-functions.
-* a :doc:`../components/middleware` lets  you specify a server-side function that runs whenever a user requests a page from the server. When you specify it as a direct child of your ``<IsomorphicApp/>`` then it applies to all requests made to the server. If you want ``<Middleware/>``s to apply to a subset, you can put them as children to ``<WebApp/>`` or ``<Route/>``, too!
+* a :doc:`../components/middleware` lets  you specify a server-side function that runs whenever a user requests a page from the server. When you specify it as a direct child of your ``<IsomorphicApp/>`` then it applies to all requests made to the server. If you want ``<Middleware/>`` to apply to a subset, you can put them as children to ``<WebApp/>`` or ``<Route/>``, too!
 * an :doc:`../components/environment` defines a runtime environment of your app.
 
 Example
