@@ -119,9 +119,9 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
      */
     const AttachDataLayer = require("infrastructure-components").AttachDataLayer;
     
-    console.log("AttachDataLayer: ", AttachDataLayer)
+    //console.log("AttachDataLayer: ", AttachDataLayer)
 
-    console.log("connectWithDataLayer: ", dataLayerId);
+    //console.log("connectWithDataLayer: ", dataLayerId);
     // load the IsomorphicComponent
     // we must load it directly from the module here, to enable the aliad of the config_file_path
     const isoConfig = loadConfigurationFromModule(require('__CONFIG_FILE_PATH__'), INFRASTRUCTURE_MODES.RUNTIME);
@@ -135,7 +135,7 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
 
 
-    console.log("dataLayer: ", dataLayer);
+    //console.log("dataLayer: ", dataLayer);
     
     return new Promise<any>(async (resolve, reject) => {
         const awsGraphqlFetch = (uri, options) => {
@@ -187,7 +187,7 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
         });
 
-        console.log("client: ", client);
+        //console.log("client: ", client);
 
         const connectedApp = <ApolloProvider client={client}>
             <ApolloConsumer>
@@ -195,13 +195,13 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
             </ApolloConsumer>
         </ApolloProvider>
 
-        console.log("connectedApp: ", connectedApp);
+        //console.log("connectedApp: ", connectedApp);
         try {
             //.catch((err) => console.log("err: ", err))
             await getDataFromTree(connectedApp).then(() => resolve({connectedApp: connectedApp, getState: () => {
-                console.log("time to resolve");
+                //console.log("time to resolve");
                 const data = client.extract();
-                console.log("data: ", data);
+                //console.log("data: ", data);
                 return importEnvironmentVariables(data, graphqlUrl.trim())
             }}));
         } catch (error) {

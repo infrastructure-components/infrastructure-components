@@ -111,13 +111,23 @@ export default (props: IIsomorphicArgs | any) => {
 
     const isoProps: IIsomorphicProps = {
         middlewares: getChildrenArray(props.children)
-            .filter(child => isMiddleware(child)),
+            .filter(child => isMiddleware(child))
+            .concat(
+                getChildrenArray(props.children)
+                    .filter(child => isDataLayer(child))
+                    .reduce((result,dl) => result.concat(
+                        getChildrenArray(dl.children).filter(child => isMiddleware(child))
+                    ), [])
+            ),
 
+        // TODO the logic whether a child is passed through by a component should reside within the component, not its parent
         webApps: getChildrenArray(props.children)
             .filter(child => isWebApp(child)).concat(
                 getChildrenArray(props.children)
                     .filter(child => isDataLayer(child))
-                    .reduce((result,dl) => result.concat(getChildrenArray(dl.children).filter(child => isWebApp(child))), [])
+                    .reduce((result,dl) => result.concat(
+                        getChildrenArray(dl.children).filter(child => isWebApp(child))
+                    ), [])
             )
     }
     

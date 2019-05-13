@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.2.0-alpha.60",
+  "version": "0.2.0-alpha.77",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -33,6 +33,7 @@
     "graphql": "^14.2.1",
     "graphql-tag": "^2.10.1",
     "isomorphic-fetch": "^2.2.1",
+    "jsonwebtoken": "^8.5.1",
     "react": "^16.8.4",
     "react-apollo": "^2.5.5",
     "react-dom": "^16.8.4",
@@ -41,7 +42,9 @@
     "react-router-dom": "^5.0.0",
     "serverless-http": "^1.9.1",
     "styled-components": "^4.2.0",
-    "typed-graphqlify": "^2.2.2"
+    "typed-graphqlify": "^2.2.2",
+    "universal-cookie": "^4.0.0",
+    "universal-cookie-express": "^4.0.0"
   },
   "devDependencies": {
     "typescript": "^3.3.3333"

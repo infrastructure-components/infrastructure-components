@@ -4,6 +4,7 @@ import Types from '../types';
 import { IClient } from "../types/client";
 import { IInfrastructure } from "../types";
 
+import { isSecuredRoute } from '../authentication/securedroute-component';
 import { isMiddleware } from '../middleware/middleware-component';
 import { isRoute } from '../route/route-component';
 import { getChildrenArray } from '../libs';
@@ -92,7 +93,7 @@ export default (props: IWebAppArgs | any) => {
             .filter(child => isMiddleware(child)),
 
         routes: getChildrenArray(props.children)
-            .filter(child => isRoute(child)),
+            .filter(child => isRoute(child) || isSecuredRoute(child)),
 
         // TODO add redirects!!!!
         redirects: []

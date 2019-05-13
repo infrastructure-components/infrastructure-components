@@ -16,8 +16,10 @@ import { IComponent } from "../types/component";
 import { IInfrastructure } from "../types";
 import { getChildrenArray } from '../libs';
 import { isWebApp } from '../webapp/webapp-component';
+import { isAuthentication } from '../authentication/authentication-component';
 import { isEntry } from './entry-component';
 import { setEntry, ddbListEntries } from './datalayer-libs';
+
 
 export const DATALAYER_INSTANCE_TYPE = "DataLayerComponent";
 
@@ -247,19 +249,34 @@ export default (props: IDataLayerArgs | any) => {
 
     };
 
-
+    // TODO the logic whether a child is passed through by a component should reside within the component, not its parent
     return Object.assign(props, componentProps, datalayerProps, {
-        // we need to set the datalayerId in all webApp-children
-        children: getChildrenArray(props).map(child => {
-            if (isWebApp(child)) {
-                return Object.assign({}, child, {
-                    dataLayerId: props.id
-                })
-            }
 
-            return child;
+        children: getChildrenArray(props.children)
+            
+            // we need to map the authentication
+            .filter(child => isAuthentication(child))
 
-        }),
+            // ... replace auths with their children
+            .reduce((result, auth) => result.concat(getChildrenArray(auth)), [])
+            
+            // now we can add all the other children
+            .concat(
+                getChildrenArray(props.children).filter(child => !isAuthentication(child))
+            )
+
+            // we need to set the datalayerId in all webApp-children
+            .map(child => {
+
+                if (isWebApp(child)) {
+                    return Object.assign({}, child, {
+                        dataLayerId: props.id
+                    })
+                }
+
+                return child;
+
+            }),
 
     });
 

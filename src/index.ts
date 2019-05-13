@@ -14,9 +14,10 @@ export const SinglePageApp = require('./spa/spa-component').default;
 export const DataLayer = require('./datalayer/datalayer-component').default;
 export const Entry = require('./datalayer/entry-component').default;
 
+export const Authentication = require('./authentication/authentication-component').default;
+export const AuthenticationProvider = require('./authentication/authentication-component').AuthenticationProvider;
+export const SecuredRoute = require('./authentication/securedroute-component').default;
 
-//export const Link = require('../node_modules/react-router-dom/Link');
-//export const withRouter = require('../node_modules/react-router-dom/withRouter');
 
 export const INFRASTRUCTURE_MODES = require('./libs/loader').INFRASTRUCTURE_MODES;
 export const loadInfrastructureComponent = require('./libs/loader').loadInfrastructureComponent;
@@ -55,4 +56,3 @@ export const AttachDataLayer = require('./assets/attach-data-layer').default;
 export const withRoutes = require('./assets/attach-routes').withRoutes;
 export const AttachRoutes = require('./assets/attach-routes').default;
 export const IRoute = require('./assets/routed-app').IRoute;
-
