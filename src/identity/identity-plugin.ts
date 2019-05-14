@@ -1,7 +1,7 @@
 
 import { IConfigParseResult } from '../libs/config-parse-result';
-import { IPlugin } from '../libs/plugin';
-import { isIdentity } from '../identity/identity-component';
+import { IPlugin, forwardChildWebpackConfigs, forwardChildPostBuilds, flattenChildWebpackConfigs } from '../libs/plugin';
+import { isIdentity } from './identity-component';
 import * as deepmerge from 'deepmerge';
 
 /**
@@ -31,36 +31,35 @@ export const IdentityPlugin = (props: IIdentityPlugin): IPlugin => {
                   infrastructureMode:string | undefined
         ):IConfigParseResult => {
 
-
             return {
 
                 slsConfigs: deepmerge.all(childConfigs.map(config => config.slsConfigs)),
 
                 // add the server config
-                webpackConfigs: childConfigs.reduce((result, config) => result.concat(config.webpackConfigs), []),
+                webpackConfigs: flattenChildWebpackConfigs(childConfigs),
 
-                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), []),
+                postBuilds: forwardChildPostBuilds(childConfigs),
 
                 /* THESE VALUES MUST NOT BE PROVIDED BY A CHILD, THEY ARE NOT FORWARED UPWARDS
 
-                 environments: environments,
+                environments: environments,
 
-                 //stackName: component.stackName,
+                //stackName: component.stackName,
 
-                 assetsPath: component.assetsPath,
+                assetsPath: component.assetsPath,
 
-                 buildPath: component.buildPath,
+                buildPath: component.buildPath,
 
-                 region: component.region,
+                region: component.region,
 
-                 domain: domain,
+                domain: domain,
 
-                 certArn: certArn,
+                certArn: certArn,
 
-                 supportOfflineStart: true,
+                supportOfflineStart: true,
 
-                 supportCreateDomain: true
-                 */
+                supportCreateDomain: true
+                   */
             }
         }
     };

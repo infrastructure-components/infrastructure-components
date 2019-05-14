@@ -135,7 +135,7 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
 
 
-    //console.log("dataLayer: ", dataLayer);
+    console.log("dataLayer: ", dataLayer);
     
     return new Promise<any>(async (resolve, reject) => {
         const awsGraphqlFetch = (uri, options) => {

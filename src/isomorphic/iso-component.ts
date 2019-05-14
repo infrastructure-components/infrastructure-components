@@ -7,12 +7,14 @@ import { IInfrastructure } from "../types";
 
 import { isMiddleware } from '../middleware/middleware-component';
 import { isWebApp } from '../webapp/webapp-component';
-import { getChildrenArray } from '../libs';
+import { getChildrenArray, findComponentRecursively } from '../libs';
 
 import { IsoPlugin } from './iso-plugin';
 import { WebAppPlugin } from '../webapp/webapp-plugin';
 import { EnvironmentPlugin } from '../environment/environment-plugin';
 import { DataLayerPlugin } from '../datalayer/datalayer-plugin';
+import { IdentityPlugin } from '../identity/identity-plugin';
+import { AuthenticationPlugin } from '../authentication/authentication-plugin';
 import {isDataLayer} from "../datalayer/datalayer-component";
 
 export const ISOMORPHIC_INSTANCE_TYPE = "IsomorphicComponent";
@@ -104,13 +106,17 @@ export default (props: IIsomorphicArgs | any) => {
             EnvironmentPlugin({
                 stage: stage,
                 parserMode: parserMode
-            })
+            }),
+
+            IdentityPlugin({}),
+
+            AuthenticationPlugin({})
 
         ] : []
     };
 
     const isoProps: IIsomorphicProps = {
-        middlewares: getChildrenArray(props.children)
+        middlewares: findComponentRecursively(props.children, isMiddleware), /*getChildrenArray(props.children)
             .filter(child => isMiddleware(child))
             .concat(
                 getChildrenArray(props.children)
@@ -118,18 +124,19 @@ export default (props: IIsomorphicArgs | any) => {
                     .reduce((result,dl) => result.concat(
                         getChildrenArray(dl.children).filter(child => isMiddleware(child))
                     ), [])
-            ),
+            ),*/
 
-        // TODO the logic whether a child is passed through by a component should reside within the component, not its parent
-        webApps: getChildrenArray(props.children)
+        webApps: findComponentRecursively(props.children, isWebApp), /*getChildrenArray(props.children)
             .filter(child => isWebApp(child)).concat(
                 getChildrenArray(props.children)
                     .filter(child => isDataLayer(child))
                     .reduce((result,dl) => result.concat(
                         getChildrenArray(dl.children).filter(child => isWebApp(child))
                     ), [])
-            )
+            )*/
     }
+
+    console.log("webapps: ", isoProps.webApps)
     
 
     return Object.assign(props, infProps, isoProps);

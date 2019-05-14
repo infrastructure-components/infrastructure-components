@@ -20,7 +20,7 @@ interface AttachDataLayerProps {
  */
 const AttachDataLayer: React.SFC<AttachDataLayerProps> = (props) => {
 
-    console.log("AttachDataLayer: ", props.dataLayer);
+    //console.log("AttachDataLayer: ", props.dataLayer);
     return <DataLayerContext.Provider
         value={{
             apolloClient: props.apolloClient,
@@ -39,10 +39,10 @@ export function withDataLayer(Component) {
         return (
             <DataLayerContext.Consumer>
                 {(context: any) => {
-                    console.log("value of context: ", context);
+                    //console.log("value of context: ", context);
                     const entryListQuery = (entryId, dictKey) => {
                         const fields = context.dataLayer.getEntryDataFields(entryId);
-                        console.log("fields: ", fields);
+                        //console.log("fields: ", fields);
 
                         return getEntryListQuery(
                             entryId,

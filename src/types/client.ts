@@ -9,7 +9,14 @@ import Types from './index'
  * TODO extend respectively
  */
 export interface IClient {
-
+    /**
+     * A client can implement this function to insulate/hide the components of the specified from higher level
+     * components
+     *
+     * @param component the component that a higher level component wants to have
+     * @return true if the component does NOT want to provide its children to higher level components
+     */
+    insulatesChildComponent?: (component: any) => boolean
 }
 
 /**

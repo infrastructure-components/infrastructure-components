@@ -4,12 +4,11 @@ import {IComponent} from "../types/component";
 import Types, { IInfrastructure } from "../types";
 
 import createMiddleware, { isMiddleware } from '../middleware/middleware-component';
-import { isWebApp } from '../webapp/webapp-component';
+import createWebApp, { isWebApp } from '../webapp/webapp-component';
 import { isSecuredRoute } from './securedroute-component';
 import { ROUTE_INSTANCE_TYPE } from '../route/route-component';
-import { getChildrenArray } from '../libs';
-import {createAuthMiddleware } from "./auth-middleware";
-import cookiesMiddleware from 'universal-cookie-express';
+import { getChildrenArray, findComponentRecursively } from '../libs';
+import {createAuthMiddleware, createCallbackMiddleware } from "./auth-middleware";
 
 export const AUTHENTICATION_INSTANCE_TYPE = "AuthenticationComponent";
 
@@ -66,6 +65,9 @@ export interface IAuthenticationArgs {
     callbackUrl: string,
 
 
+
+
+
 }
 
 
@@ -74,15 +76,12 @@ export interface IAuthenticationArgs {
  */
 export interface IAuthenticationProps {
 
-    /**
-     * An authentication component supports middlewares, defined as direct children
-     *
-    middlewares: Array<any>,
+    setStoreIdentityData: (
+        storeIdentityData: (request: any, key: string, val: any, jsonData: any) => void
+    ) => void,
 
-    /**
-     * For an authentication component is part of an Isomorphic App, it supports webapps, defined as direct children
-     *
-    webapps: Array<any>*/
+    storeAuthData?: (request: any, key: string, val: any, jsonData: any) => void
+
 }
 
 
@@ -101,11 +100,32 @@ export default (props: IAuthenticationArgs | any) => {
         instanceId: undefined, // authentications cannot be found programmatically?!
     };
 
-    /*
+
+    // set our storeData-Property
     const authenticationProps: IAuthenticationProps = {
-        middlewares: getChildrenArray(props.children).filter(child => isMiddleware(child)),
-        webapps: getChildrenArray(props.children).filter(child => isWebApp(child)),
-    }*/
+        setStoreIdentityData: (storeIdentityData: (request: any, key: string, val: any, jsonData: any) => void) => {
+            props.storeAuthData = storeIdentityData;
+        }
+
+    };
+
+    // we need to provide some data to the secured routes
+    findComponentRecursively(props.children, isSecuredRoute).forEach( sr => {
+        console.log("found secured route: ", sr);
+
+        sr.middlewares = [
+            // this middleware checks whether the user is logged in
+            createMiddleware({ callback: createAuthMiddleware(process.env[props.provider+SUFFIX_SECRET])}),
+
+            // this middleware checks redirects the user to the login page, if she is not logged in
+            createMiddleware({ callback: createRequestLoginMiddleware(props.clientId, props.callbackUrl, props.provider)})
+
+        ].concat(sr.middlewares);
+
+        // now that we have added the authentication middlewares, the route can be handled as a normal one
+        sr.instanceType =  ROUTE_INSTANCE_TYPE;
+    });
+
 
     /**
      * The data-layer replaces the authentication component with its children
@@ -113,71 +133,32 @@ export default (props: IAuthenticationArgs | any) => {
     const mappedChildren = {
         // we provide the middlewares that we require
         children: [
-            
-            // we need to use cookies in order to verify whether a user is logged in
-            createMiddleware({ callback: cookiesMiddleware() }),
 
-            // the authentication check and redirect is done in the securedroute!
+            // we create a webapp to handle the callback
+            createWebApp({
+                id: "WEBAPP_"+props.provider,
+                path: props.callbackUrl.substring(props.callbackUrl.lastIndexOf("/")),
+                method: "GET",
+                children: [
+                    createCallbackMiddleware(
+                        props.clientId,
+                        process.env[props.provider+SUFFIX_SECRET],
+                        props.callbackUrl,
+                        props.storeAuthData
+                    ),
 
-
-        ].concat(
-            getChildrenArray(props).map(child => {
-
-                if (isWebApp(child)) {
-
-                    const wa_res = Object.assign({}, child, {
-                        
-                        routes: child.routes.map(grandchild => {
-
-                            if (isSecuredRoute(grandchild)) {
-
-                                const result = Object.assign({}, grandchild, {
-                                    middlewares: [
-                                        // this middleware checks whether the user is logged in
-                                        createMiddleware({ callback: createAuthMiddleware(process.env[props.provider+SUFFIX_SECRET])}),
-
-                                        // this middleware checks redirects the user to the login page, if she is not logged in
-                                        createMiddleware({ callback: createRequestLoginMiddleware(props.clientId, props.callbackUrl, props.provider)})
-
-                                    ].concat(grandchild.middlewares),
-
-                                    // now that we have added the authentication middlewares, the route can be handled as a normal one
-                                    instanceType: ROUTE_INSTANCE_TYPE,
-                                })
-
-
-                                console.log("found secured route! ", result);
-
-                                return result;
-
-
-                            }
-
-                            return grandchild;
-
-
-                        })
-                    });
-
-                    console.log("wa_res: ", wa_res.routes.map(c=> c.middlewares))
-
-                    return wa_res;
-
-
-                }
-
-                // other children
-                return child;
-
+                ]
             })
-        )
+
+            //,
+            //(browserId: string) => redirectMiddleware("/dashboard")
+
+        ].concat(getChildrenArray(props.children))
     };
 
-    console.log("mapped children: ", mappedChildren.children.filter(c=> isWebApp(c)).map(c=> c.routes.map(r=>r.middlewares)));
+    console.log("authentication: ", findComponentRecursively(props.children, isWebApp));
+    return Object.assign(props, componentProps, authenticationProps, mappedChildren);
     
-    return Object.assign(props, componentProps, mappedChildren);
-
-
 };
 
 export const isAuthentication = (component) => {

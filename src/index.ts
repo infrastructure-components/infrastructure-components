@@ -17,7 +17,7 @@ export const Entry = require('./datalayer/entry-component').default;
 export const Authentication = require('./authentication/authentication-component').default;
 export const AuthenticationProvider = require('./authentication/authentication-component').AuthenticationProvider;
 export const SecuredRoute = require('./authentication/securedroute-component').default;
-
+export const Identity = require('./identity/identity-component').default;
 
 export const INFRASTRUCTURE_MODES = require('./libs/loader').INFRASTRUCTURE_MODES;
 export const loadInfrastructureComponent = require('./libs/loader').loadInfrastructureComponent;

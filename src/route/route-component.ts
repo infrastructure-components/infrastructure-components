@@ -52,6 +52,11 @@ export default (props: IRouteArgs | any) => {
         infrastructureType: Types.INFRASTRUCTURE_TYPE_COMPONENT,
         instanceType: ROUTE_INSTANCE_TYPE,
         instanceId: undefined, // middlewares cannot be found programmatically!
+
+        insulatesChildComponent: (child) => {
+            // a route insulates (handles itself) middlewares and does not privide to higher levels
+            return isMiddleware(child)
+        }
     };
 
     const routeProps: IRouteProps = {

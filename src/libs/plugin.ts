@@ -45,6 +45,10 @@ export const forwardChildWebpackConfigs = (childConfigs: Array<IConfigParseResul
     childConfigs.map(config => config.webpackConfigs)
 );
 
+export const forwardChildPostBuilds = (childConfigs: Array<IConfigParseResult>) => (
+    childConfigs.map(config => config.postBuilds)
+);
+
 
 /**
  * provide all client configs in a flat list

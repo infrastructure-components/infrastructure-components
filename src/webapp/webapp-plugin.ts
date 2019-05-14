@@ -34,6 +34,10 @@ export interface IWebAppPlugin {
 
 /**
  * A Plugin to detect WebApp-Components
+ *
+ * IMPORTANT: The WebAppPlugin provides as webPackConfigs a list of functions (to take further args!)
+ * This must be considered when being forwarded!
+ *
  * @param props
  */
 export const WebAppPlugin = (props: IWebAppPlugin): IPlugin => {
@@ -59,39 +63,42 @@ export const WebAppPlugin = (props: IWebAppPlugin): IPlugin => {
 
                 // a webapp has its own webpack configuration
                 webpackConfigs: [
-                    (args) => require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").complementWebpackConfig(
-                        require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").createClientWebpackConfig(
-                            "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "client.js"), //entryPath: string,
-                            path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath), //use the buildpath from the parent plugin
-                            component.id, // appName
-                            props.assetsPath, //assetsPath
-                            args["stagePath"], // stagePath
-                            {
-                                __CONFIG_FILE_PATH__: require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").pathToConfigFile(props.configFilePath), // replace the IsoConfig-Placeholder with the real path to the main-config-bundle
+                    (args) => {
+                        //console.log("web-app-plugin args: ", args);
+                        return require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").complementWebpackConfig(
+                            require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").createClientWebpackConfig(
+                                "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "client.js"), //entryPath: string,
+                                path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath), //use the buildpath from the parent plugin
+                                component.id, // appName
+                                props.assetsPath, //assetsPath
+                                args["stagePath"], // stagePath
+                                {
+                                    __CONFIG_FILE_PATH__: require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").pathToConfigFile(props.configFilePath), // replace the IsoConfig-Placeholder with the real path to the main-config-bundle
 
-                                // required of data-layer, makes the context match!
-                                "infrastructure-components": path.join(
-                                    require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
-                                    "node_modules", "infrastructure-components", "dist", "index.js"),
+                                    // required of data-layer, makes the context match!
+                                    "infrastructure-components": path.join(
+                                        require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                                        "node_modules", "infrastructure-components", "dist", "index.js"),
 
-                                // required of the routed-app
-                                "react-router-dom": path.join(
-                                    require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
-                                    "node_modules", "react-router-dom"),
+                                    // required of the routed-app
+                                    "react-router-dom": path.join(
+                                        require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                                        "node_modules", "react-router-dom"),
 
-                                // required of the data-layer / apollo
-                                "react-apollo": path.join(
-                                    require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
-                                    "node_modules", "react-apollo"),
-                            }, {
-                                __ISOMORPHIC_ID__: `"${component.instanceId}"`,
+                                    // required of the data-layer / apollo
+                                    "react-apollo": path.join(
+                                        require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                                        "node_modules", "react-apollo"),
+                                }, {
+                                    __ISOMORPHIC_ID__: `"${component.instanceId}"`,
 
-                                // when there is a DataLayer, we provide it, otherwise an empty string
-                                __DATALAYER_ID__: `"${args["datalayerid"] !== undefined ? args["datalayerid"] : ""}"`
-                            }
-                        ),
-                        props.parserMode === PARSER_MODES.MODE_DEPLOY //isProd
-                    )
+                                    // when there is a DataLayer, we provide it, otherwise an empty string
+                                    __DATALAYER_ID__: `"${args["datalayerid"] !== undefined ? args["datalayerid"] : ""}"`
+                                }
+                            ),
+                            props.parserMode === PARSER_MODES.MODE_DEPLOY //isProd
+                        )
+                    }
                 ],
 
                 postBuilds: [],

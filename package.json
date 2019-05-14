@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.2.0-alpha.77",
+  "version": "0.2.0-alpha.87",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -44,7 +44,8 @@
     "styled-components": "^4.2.0",
     "typed-graphqlify": "^2.2.2",
     "universal-cookie": "^4.0.0",
-    "universal-cookie-express": "^4.0.0"
+    "universal-cookie-express": "^4.0.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "typescript": "^3.3.3333"

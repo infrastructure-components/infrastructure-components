@@ -73,3 +73,105 @@ export const createAuthMiddleware = (clientSecret) => (req, res, next) => {
     
 
 };
+
+
+/**
+ * Use this middleware at the endpoint that is specified as the callback-url.
+ *
+ * @param clientId
+ * @param clientSecret
+ * @param callbackUrl
+ * @returns {any}
+ */
+export const createCallbackMiddleware = (
+    clientId, clientSecret, callbackUrl, storeAuthData: (request: any, key: string, val: any, jsonData: any) => void
+) => async function (req, res, next) {
+
+    console.log("THIS IS THE CALLBACK")
+    //console.log(req.universalCookies)
+
+    const { state, code, error } = req.query;
+    if (error !== undefined) {
+        // TODO handle an error, e.g. user does not authorize the app
+
+        console.log(error);
+
+
+    } else if (code !== undefined) {
+
+        console.log("code: ", code);
+
+        await fetch('https://api.medium.com/v1/tokens',{
+            method: 'POST',
+            body: `code=${code}&client_id=${clientId}&client_secret=${clientSecret}&grant_type=authorization_code&redirect_uri=${callbackUrl}`,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Accept": "application/json",
+                "Accept-Charset": "utf-8"
+            }
+        }).then(function(response) {
+            return response.json();
+        }).then(async function(resJson) {
+
+            const { token_type, access_token, refresh_token, scope, expires_at } = resJson;
+
+            // try the freshly acquired token and get the user's Medium.com id
+            await fetch('https://api.medium.com/v1/me',{
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Accept-Charset": "utf-8",
+                    "Authorization": token_type+" "+access_token
+                }
+            }).then(function(response) {
+                return response.json();
+            }).then(function(dataJson) {
+                console.log(JSON.stringify(dataJson));
+
+                const {id, name, username, url, imageUrl } = dataJson.data;
+
+                console.log("id: ", id);
+                console.log("name: ", name);
+
+                const today = new Date();
+                const expirationDate = new Date(today);
+                expirationDate.setDate(today.getDate() + 60);
+
+                // we use the clientSecret to sign the webtoken
+                const webtoken = jwt.sign({
+                    id: id,
+                    exp: expirationDate.getTime() / 1000,
+                }, clientSecret);
+
+                // now let's use the webtoken to encrypt the access token
+                const encryptedAccessToken = jwt.sign({
+                    id: id,
+                    accessToken: access_token,
+                    exp: expirationDate.getTime() / 1000,
+                }, webtoken);
+
+                // put the encrypted web token into the database, this is user (browser)-specific data!
+                storeAuthData(
+                    req, // request: any
+                    IC_USER_ID, // key: string
+                    id, //val: any,
+                    {
+                        encryptedAccessToken: encryptedAccessToken
+                    } //jsonData: any
+                );
+
+                // give the webtoken to back to the user
+                req.universalCookies.set(IC_WEB_TOKEN, webtoken);
+                req.universalCookies.set(IC_USER_ID, id);
+
+                //res.redirect('http://' + req.headers.host + getBasename()+"/");
+                return;
+            });
+
+        });
+
+    }
+    return next();
+
+}

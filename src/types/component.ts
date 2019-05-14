@@ -2,11 +2,19 @@
 import Types from './index'
 
 /**
- * A Component has no special function beyond the ones defined in IInfrastructure
+ * A Component has no required function beyond the ones defined in IInfrastructure
  *
  */
 export interface IComponent {
 
+    /**
+     * A component can implement this function to insulate/hide the components of the specified from higher level
+     * components
+     *
+     * @param component the component that a higher level component wants to have
+     * @return true if the component does NOT want to provide its children to higher level components
+     */
+    insulatesChildComponent?: (component: any) => boolean
 }
 
 /**

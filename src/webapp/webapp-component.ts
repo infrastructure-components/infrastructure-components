@@ -57,6 +57,11 @@ export interface IWebAppProps {
     redirects: Array<any>,
 
     /**
+     * A function that the DataLayer provides, it lets the WebApp get the DataLayer Id
+     */
+    setDataLayerId: (dataLayerId: string) => void
+
+    /**
      * The id of the datalayer - if the webapp applies to one.
      * filled by the DataLayer
      */
@@ -85,7 +90,15 @@ export default (props: IWebAppArgs | any) => {
     const clientProps: IInfrastructure & IClient = {
         infrastructureType: Types.INFRASTRUCTURE_TYPE_CLIENT,
         instanceType: WEBAPP_INSTANCE_TYPE,
-        instanceId: props.id
+        instanceId: props.id,
+
+        insulatesChildComponent: (child) => {
+            // a webapp insulates (handles itself) middlewares and routes and does not privide to higher levels
+            return isMiddleware(child) || isRoute(child);
+                /* && !isSecuredRoute(child) -- the WebApp does not hide secured-routes,
+                 *  we must allow the authentication component to find, process, and change (add middlewares) them to a normal route
+                 */
+        }
     };
 
     const webappProps: IWebAppProps = {
@@ -96,7 +109,11 @@ export default (props: IWebAppArgs | any) => {
             .filter(child => isRoute(child) || isSecuredRoute(child)),
 
         // TODO add redirects!!!!
-        redirects: []
+        redirects: [],
+
+        setDataLayerId: (dataLayerId: string) => {
+            props.dataLayerId = dataLayerId;
+        }
     }
 
     return Object.assign(props, clientProps, webappProps);

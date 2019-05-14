@@ -14,9 +14,10 @@ import {
 import Types from '../types';
 import { IComponent } from "../types/component";
 import { IInfrastructure } from "../types";
-import { getChildrenArray } from '../libs';
+import { getChildrenArray, findComponentRecursively } from '../libs';
 import { isWebApp } from '../webapp/webapp-component';
 import { isAuthentication } from '../authentication/authentication-component';
+import { isIdentity } from '../identity/identity-component'
 import { isEntry } from './entry-component';
 import { setEntry, ddbListEntries } from './datalayer-libs';
 
@@ -249,35 +250,26 @@ export default (props: IDataLayerArgs | any) => {
 
     };
 
-    // TODO the logic whether a child is passed through by a component should reside within the component, not its parent
-    return Object.assign(props, componentProps, datalayerProps, {
-
-        children: getChildrenArray(props.children)
-            
-            // we need to map the authentication
-            .filter(child => isAuthentication(child))
-
-            // ... replace auths with their children
-            .reduce((result, auth) => result.concat(getChildrenArray(auth)), [])
-            
-            // now we can add all the other children
-            .concat(
-                getChildrenArray(props.children).filter(child => !isAuthentication(child))
-            )
-
-            // we need to set the datalayerId in all webApp-children
-            .map(child => {
-
-                if (isWebApp(child)) {
-                    return Object.assign({}, child, {
-                        dataLayerId: props.id
-                    })
-                }
-
-                return child;
-
-            }),
-
+    // we need to provide the DataLayerId to webApps, these may be anywhere in the tree, not
+    // only direct children. So rather than mapping the children, we need to change them
+    findComponentRecursively(props.children, (child) => child.setDataLayerId !== undefined).forEach( child => {
+        child.setDataLayerId(props.id)
     });
+
+    findComponentRecursively(props.children, (child) => child.setStoreData !== undefined).forEach( child => {
+        child.setStoreData(
+            (pkEntity, pkVal, skEntity, skVal, jsonData) => setEntry(
+                process.env.TABLE_NAME, //"code-architect-dev-data-layer",
+                pkEntity, // schema.Entry.ENTITY, //pkEntity
+                pkVal, // pkId
+                skEntity, //schema.Data.ENTITY, // skEntity
+                skVal, // skId
+                jsonData // jsonData
+            )
+        )
+    });
+    
+
+    return Object.assign(props, componentProps, datalayerProps);
 
 };
