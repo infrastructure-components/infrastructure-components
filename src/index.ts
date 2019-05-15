@@ -14,6 +14,7 @@ export const SinglePageApp = require('./spa/spa-component').default;
 export const DataLayer = require('./datalayer/datalayer-component').default;
 export const Entry = require('./datalayer/entry-component').default;
 
+export const SecuredEntry = require('./authentication/securedentry-component').default;
 export const Authentication = require('./authentication/authentication-component').default;
 export const AuthenticationProvider = require('./authentication/authentication-component').AuthenticationProvider;
 export const SecuredRoute = require('./authentication/securedroute-component').default;

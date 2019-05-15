@@ -7,7 +7,7 @@ import { Switch, Route, BrowserRouter, HashRouter, Link } from 'react-router-dom
 //import {__RouterContext} from "react-router"
 
 import RedirectWithStatus from './redirect-w-status';
-
+import ForceLogin from './force-login';
 //import AttachRequest from '../components/attach-request';
 //import AttachRoutes from './attach-routes';
 
@@ -57,7 +57,15 @@ export interface IRoute {
     /**
      * a custom type to be used to distinguish different types of Routes
      */
-    customType?: any
+    customType?: any,
+
+    /**
+     * If true, the route is secured and requires the user to login. I.e. wraps the route into <ForceLogin />
+     *
+     * default: false
+     */
+    isSecured?: boolean
+
 
 }
 
@@ -80,7 +88,10 @@ export interface IRedirect {
 
 interface RoutedAppProps {
     routes: Array<IRoute>,
-    redirects: Array<IRedirect>
+    redirects: Array<IRedirect>,
+
+    // when the app is part of an <Identity />-Component, it should have an identityKey
+    identityKey?: string
 };
 
 
@@ -89,11 +100,29 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
     // (p) => render(Object.assign({},p, props))
     //console.log("RoutedApp: " , useContext(__RouterContext))
 
-    const routes = props.routes.map(({ path, exact, component, render }, i) => {
+    const routes = props.routes.map(({ path, exact, component, render, isSecured }, i) => {
         //console.log("routepath: ", path)
         // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
-        return render !== undefined ? <Route key={'ROUTE_'+i} exact={exact} path={path} render={render} />:
-            <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />
+
+        if (render !== undefined) {
+            const wrappedRender = (p) => isSecured ? <ForceLogin identityKey={props.identityKey}>{render(p)}</ForceLogin> : render(p);
+            return <Route key={'ROUTE_'+i} exact={exact} path={path} render={wrappedRender} />
+
+        } else if (isSecured) {
+
+            const C: any = component;
+            return <Route
+                key={'ROUTE_'+i}
+                exact={exact}
+                path={path}
+                render={(p) => <ForceLogin identityKey={props.identityKey}><C {...p}/></ForceLogin>}
+            />
+
+        } else {
+
+            return <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />
+        }
+
     });
 
     const redirects = props.redirects.map(({ from, to, status }, i) =>
@@ -116,14 +145,14 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
  * @param basename
  * @returns {any}
  */
-export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirect>, basename: string) => {
+export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirect>, identityKey: string | undefined, basename: string) => {
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
 
     return <BrowserRouter basename={basename}>
         <AttachRequest>
             <AttachRoutes routes={routes}>
-                <RoutedApp routes={routes} redirects={redirects}/>
+                <RoutedApp routes={routes} redirects={redirects} identityKey={identityKey}/>
             </AttachRoutes>
         </AttachRequest>
     </BrowserRouter>;
@@ -132,6 +161,7 @@ export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirec
 export const createServerApp = (
     routes: Array<IRoute>,
     redirects: Array<IRedirect>,
+    identityKey: string | undefined,
     basename: string,
     url: string,
     context: any,
@@ -143,13 +173,15 @@ export const createServerApp = (
     return <StaticRouter context={context} location={url} basename={basename}>
         <AttachRequest request={request}>
             <AttachRoutes routes={routes}>
-                <RoutedApp routes={routes} redirects={redirects}/>
+                <RoutedApp routes={routes} redirects={redirects} identityKey={identityKey}/>
             </AttachRoutes>
         </AttachRequest>
     </StaticRouter>;
 };
 
 export const createSinglePageApp = (routes: Array<IRoute>, redirects: Array<IRedirect>) => {
+
+    // a single page app does not support Identities (so far). There is no identityKey={identityKey}
 
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
 

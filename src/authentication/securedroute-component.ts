@@ -16,6 +16,7 @@ export default (props: IRouteArgs | any) => {
         // we overwrite the type
         instanceType: SECUREDROUTE_INSTANCE_TYPE,
 
+        isSecured: true
     });
 
 

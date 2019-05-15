@@ -37,7 +37,7 @@ export interface IIdentityArgs {
     /**
      * The key specifies the pk that the Identity uses in the DataLayer to store its identifier at
      */
-    key: string,
+    primaryKey: string,
 
 
 }
@@ -69,7 +69,7 @@ export interface IIdentityProps {
  */
 export default (props: IIdentityArgs | any) => {
 
-    //console.log ("route: ",props );
+    console.log ("Identity: ",props );
 
     const componentProps: IInfrastructure & IComponent = {
         infrastructureType: Types.INFRASTRUCTURE_TYPE_COMPONENT,
@@ -80,10 +80,35 @@ export default (props: IIdentityArgs | any) => {
 
     const identityProps: IIdentityProps = {
         setStoreData: (storeData: (pkEntity: string, pkVal: any, skEntity: string, skVal: any, jsonData: any) => void) => {
+            //console.log("setStoreData: ",storeData)
             props.storeData = storeData;
         }
     }
 
+    // if the child needs to store data that belongs to the user, provide a function to do so!
+    findComponentRecursively(props.children, (child) => child.setStoreIdentityData !== undefined).forEach( child => {
+
+        child.setStoreIdentityData(
+
+            async function (request: any, secondaryKey: string, val: any, jsonData: any) {
+                console.log("identity: storeData: ", props);
+                return await props.storeData(
+                    props.primaryKey, //pkEntity: string,
+                    getBrowserId(request, props.primaryKey), //pkVal: any,
+                    secondaryKey, //skEntity: string,
+                    val, //skVal: any,
+                    jsonData //: any
+                )
+            }
+        );
+
+    });
+
+    // if the child needs to have the identityKey, provide it! e.g. forwarding to webapp so that it can use <ForceLogin/>
+    findComponentRecursively(props.children, (child) => child.setIdentityKey !== undefined).forEach( child => {
+        child.setIdentityKey(props.primaryKey);
+    });
+    
     /**
      * The Identity requires cookies to store an uuid
      */
@@ -94,27 +119,7 @@ export default (props: IIdentityArgs | any) => {
             // we need to use cookies in order to verify whether a user is logged in
             createMiddleware({ callback: cookiesMiddleware() }),
 
-        ].concat(props.children).map(child => {
-
-            // if the child needs to store data that belongs to the user, provide a function to do so!
-            if (child.setStoreIdentityData !== undefined) {
-                child.setStoreIdentityData(
-
-                    (request: any, key: string, val: any, jsonData: any) => {
-                        props.storeData(
-                            props.key, //pkEntity: string,
-                            getBrowserId(request, props.key), //pkVal: any,
-                            key, //skEntity: string,
-                            val, //skVal: any,
-                            jsonData //: any
-                        )
-                    }
-                )
-
-            }
-
-            return child;
-        })
+        ].concat(props.children)
     };
 
     //console.log("mapped children: ", mappedChildren.children.filter(c=> isWebApp(c)).map(c=> c.routes.map(r=>r.middlewares)));

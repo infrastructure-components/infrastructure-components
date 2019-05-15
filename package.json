@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.2.0-alpha.87",
+  "version": "0.2.0-alpha.110",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -26,8 +26,10 @@
     "apollo-link-http": "^1.5.14",
     "aws-lambda": "^0.1.2",
     "aws-sdk": "^2.447.0",
+    "body-parser": "^1.19.0",
     "deepmerge": "^3.2.0",
     "es6-promise": "^4.2.6",
+    "exenv": "^1.2.2",
     "express": "^4.16.4",
     "extract-domain": "^2.0.6",
     "graphql": "^14.2.1",
@@ -40,6 +42,7 @@
     "react-helmet": "^5.2.0",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
+    "rimraf": "^2.6.3",
     "serverless-http": "^1.9.1",
     "styled-components": "^4.2.0",
     "typed-graphqlify": "^2.2.2",

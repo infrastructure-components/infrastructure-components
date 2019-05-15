@@ -2,7 +2,7 @@
  * This module must not import anything globally not workin in web-mode! if needed, require it within the functions
  */
 import { isIsomorphicApp } from './iso-component';
-import { resolveAssetsPath } from '../libs/iso-libs';
+import { resolveAssetsPath, getStaticBucketName } from '../libs/iso-libs';
 import * as deepmerge from 'deepmerge';
 import { IConfigParseResult } from '../libs/config-parse-result';
 import { IPlugin } from '../libs/plugin';
@@ -118,14 +118,43 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
             const copyAssetsPostBuild = () => {
                 //console.log("check for >>copyAssetsPostBuild<<");
-                if (props.parserMode !== PARSER_MODES.MODE_DOMAIN) {
+                if (props.parserMode !== PARSER_MODES.MODE_DOMAIN && props.parserMode !== PARSER_MODES.MODE_DEPLOY) {
                     // always copy the assets, unless we setup the domain
                     console.log("copyAssetsPostBuild: now copy the assets!");
 
                     webpackConfigs.map(config => require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").copyAssets( config.output.path, path.join(serverBuildPath, serverName, component.assetsPath)));
 
+                } else {
+                    // delete the assets folder for we don't want to include all these bundled files in the deployment-package
+                    const rimraf = require("rimraf");
+                    rimraf.sync(path.join(serverBuildPath, serverName, component.assetsPath));
+
                 }
             };
+
+            /*
+            async function uploadAssetsPostBuild () {
+                //console.log("check for >>copyAssetsPostBuild<<");
+                if (props.parserMode === PARSER_MODES.MODE_DEPLOY) {
+                    // always copy the assets, unless we setup the domain
+                    console.log("uploadAssetsPostBuild: now copy the assets!");
+
+                    const staticBucketName = getStaticBucketName(component.stackName, component.assetsPath, stage);
+
+                    // copy the client apps to the assets-folder
+                    console.log("start S3 Sync");
+
+                    await Promise.all(
+                        // only copy webapps
+                        webpackConfigs.filter(wpConfig => wpConfig.target === "web").map(async wpConfig => {
+                            await s3sync(component.region, staticBucketName, path.join(component.buildPath, wpConfig.name))
+                        })
+                    );
+
+                    //webpackConfigs.map(config => require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").copyAssets( config.output.path, path.join(serverBuildPath, serverName, component.assetsPath)));
+
+                }
+            };*/
 
             async function initDomain () {
                 //console.log("check for >>initDomain<<");
@@ -184,7 +213,8 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                 // add the server config 
                 webpackConfigs: webpackConfigs.concat([serverWebPack]),
 
-                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild, initDomain]),
+                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds),
+                    [copyAssetsPostBuild, initDomain]),
 
                 environments: environments,
 

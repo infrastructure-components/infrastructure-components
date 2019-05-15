@@ -20,7 +20,7 @@ const promisify = foo => new Promise((resolve, reject) => {
 
 export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData) => {
 
-    console.log("setEntry: ", pkEntity, "/", pkId);
+    console.log("setEntry: ", pkEntity, "|", pkId, "|", skEntity, "|", skId );
 
     return promisify(callback =>
         new AWS.DynamoDB.DocumentClient().update({
@@ -38,6 +38,8 @@ export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData) =>
             }
         }, callback))
         .then(() => {
+            console.log("data stored!")
+
             var result = {};
             result[pkEntity] = pkId;
             result[skEntity] = skId;

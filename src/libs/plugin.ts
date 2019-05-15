@@ -26,33 +26,15 @@ export interface IPlugin {
         stage: string | undefined) => IConfigParseResult,
 }
 
-/**
- * Reduces the Webpack-Configurations of the component's children into a single one webpack-configuration
- *
- * @param childConfigs array of IConfigParseResult provided by the children of the Plugin-Components
- */
-export const reduceChildWebpackConfigs = (childConfigs: Array<IConfigParseResult>) => (
-    childConfigs.reduce((result, config) => result.concat(config.webpackConfigs), [])
-);
-
-/**
- * Forwards the Webpack-Configurations of the component's children, i.e. when there are multiple
- * children with Webpack-configuration, these are forwarded as-is
- *
- * @param childConfigs array of IConfigParseResult provided by the children of the Plugin-Components
- */
-export const forwardChildWebpackConfigs = (childConfigs: Array<IConfigParseResult>) => (
-    childConfigs.map(config => config.webpackConfigs)
-);
 
 export const forwardChildPostBuilds = (childConfigs: Array<IConfigParseResult>) => (
-    childConfigs.map(config => config.postBuilds)
+    childConfigs.reduce((result, config) => result.concat(config.postBuilds), [])
 );
 
 
 /**
  * provide all client configs in a flat list
  */
-export const flattenChildWebpackConfigs = (childConfigs: Array<IConfigParseResult>) => {
+export const forwardChildWebpackConfigs = (childConfigs: Array<IConfigParseResult>) => {
     return childConfigs.reduce((result, config) => result.concat(...config.webpackConfigs), []);
 }

@@ -116,27 +116,12 @@ export default (props: IIsomorphicArgs | any) => {
     };
 
     const isoProps: IIsomorphicProps = {
-        middlewares: findComponentRecursively(props.children, isMiddleware), /*getChildrenArray(props.children)
-            .filter(child => isMiddleware(child))
-            .concat(
-                getChildrenArray(props.children)
-                    .filter(child => isDataLayer(child))
-                    .reduce((result,dl) => result.concat(
-                        getChildrenArray(dl.children).filter(child => isMiddleware(child))
-                    ), [])
-            ),*/
+        middlewares: findComponentRecursively(props.children, isMiddleware),
 
-        webApps: findComponentRecursively(props.children, isWebApp), /*getChildrenArray(props.children)
-            .filter(child => isWebApp(child)).concat(
-                getChildrenArray(props.children)
-                    .filter(child => isDataLayer(child))
-                    .reduce((result,dl) => result.concat(
-                        getChildrenArray(dl.children).filter(child => isWebApp(child))
-                    ), [])
-            )*/
+        webApps: findComponentRecursively(props.children, isWebApp),
     }
 
-    console.log("webapps: ", isoProps.webApps)
+    //console.log("webapps: ", isoProps.webApps)
     
 
     return Object.assign(props, infProps, isoProps);

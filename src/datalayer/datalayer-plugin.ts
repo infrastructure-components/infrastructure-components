@@ -12,7 +12,7 @@
 
 
 import { IConfigParseResult } from '../libs/config-parse-result';
-import { IPlugin, flattenChildWebpackConfigs } from '../libs/plugin';
+import {IPlugin, forwardChildWebpackConfigs, forwardChildPostBuilds} from '../libs/plugin';
 import { isDataLayer } from './datalayer-component'
 import * as deepmerge from 'deepmerge';
 import {PARSER_MODES} from "../libs/parser";
@@ -90,6 +90,11 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
              */
             const dataLayerConfig = {
                 functions: {
+                    // TODO we should not set the role here, maybe the server requires a different role?
+                    server: {
+                        role: "DataLayerLambdaRole",
+                    },
+
                     query: {
                         // index.default refers to the default export of the file, points to the output of the queryWebpack-bundle
                         handler: path.join(props.buildPath, component.id, `${component.id}.default`),
@@ -225,16 +230,15 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
             return {
                 slsConfigs: deepmerge.all([
                     dataLayerConfig
-                ]),
+                ].concat(childConfigs.map(config => config.slsConfigs))),
 
                 // forward the webpacks (of the WebApps) as-is, add the queryApp-Webpack-bundle
-                webpackConfigs: [queryWebPack].concat(flattenChildWebpackConfigs(childConfigs).map(
+                webpackConfigs: [queryWebPack].concat(forwardChildWebpackConfigs(childConfigs).map(
                     // complement the args with the datalayer-id
                     fWp => (args) => fWp(Object.assign({ datalayerid : component.id}, args))
                 )),
 
-
-                postBuilds: [],
+                postBuilds: forwardChildPostBuilds(childConfigs),
 
             }
         }

@@ -35,7 +35,9 @@ export interface IRouteProps {
      */
     middlewares: Array<any>,
 
-    exact: boolean
+    exact: boolean,
+
+    isSecured?: boolean
 }
 
 

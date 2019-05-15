@@ -1,6 +1,6 @@
 
 import { IConfigParseResult } from '../libs/config-parse-result';
-import { IPlugin, forwardChildWebpackConfigs, forwardChildPostBuilds, flattenChildWebpackConfigs } from '../libs/plugin';
+import { IPlugin, forwardChildWebpackConfigs, forwardChildPostBuilds } from '../libs/plugin';
 import { isIdentity } from './identity-component';
 import * as deepmerge from 'deepmerge';
 
@@ -31,12 +31,13 @@ export const IdentityPlugin = (props: IIdentityPlugin): IPlugin => {
                   infrastructureMode:string | undefined
         ):IConfigParseResult => {
 
+
             return {
 
                 slsConfigs: deepmerge.all(childConfigs.map(config => config.slsConfigs)),
 
                 // add the server config
-                webpackConfigs: flattenChildWebpackConfigs(childConfigs),
+                webpackConfigs: forwardChildWebpackConfigs(childConfigs),
 
                 postBuilds: forwardChildPostBuilds(childConfigs),
 

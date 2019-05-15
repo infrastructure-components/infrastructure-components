@@ -16,6 +16,7 @@ import { ServerStyleSheet } from 'styled-components'; // <-- importing ServerSty
 import { matchPath } from 'react-router';
 import helmet from 'react-helmet';
 import {createServerApp} from "./routed-app";
+import {getBasename} from '../libs/iso-libs';
 
 import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
@@ -164,6 +165,7 @@ async function serve (req, res, next, clientApp, assetsDir) {
         createServerApp(
             clientApp.routes,
             clientApp.redirects,
+            clientApp.identityKey,
             basename,
             req.url,
             context, req)
@@ -285,10 +287,6 @@ function renderHtmlPage(html, styles, preloadedState, helmet, basename, routePat
     </html>`
 }
 
-const getBasename = () => {
-    return process.env.STAGE_PATH !== undefined && process.env.STAGE_PATH !== "undefined" ?
-    "/"+process.env.STAGE_PATH : "/";
-};
 
 // we're exporting the handler-function as default, must match the sls-config!
 //export default (assetsDir, resolvedAssetsPath) => serverless(createServer(assetsDir, resolvedAssetsPath));

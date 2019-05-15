@@ -59,13 +59,23 @@ export interface IWebAppProps {
     /**
      * A function that the DataLayer provides, it lets the WebApp get the DataLayer Id
      */
-    setDataLayerId: (dataLayerId: string) => void
+    setDataLayerId: (dataLayerId: string) => void,
 
     /**
      * The id of the datalayer - if the webapp applies to one.
      * filled by the DataLayer
      */
-    dataLayerId?: any
+    dataLayerId?: any,
+
+
+    /**
+     * A function that makes the <Identity />-Component provide the the value
+     */
+    setIdentityKey: (identityKey: string) => void,
+    /**
+     * When the webapp is part of an <Identity />-Component, it gets the respective identityKey
+     */
+    identityKey?: string
 }
 
 /**
@@ -113,6 +123,10 @@ export default (props: IWebAppArgs | any) => {
 
         setDataLayerId: (dataLayerId: string) => {
             props.dataLayerId = dataLayerId;
+        },
+
+        setIdentityKey: (identityKey: string) => {
+            props.identityKey = identityKey;
         }
     }
 

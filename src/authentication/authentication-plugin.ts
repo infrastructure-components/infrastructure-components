@@ -1,7 +1,7 @@
 
 import { IConfigParseResult } from '../libs/config-parse-result';
-import { IPlugin, forwardChildWebpackConfigs, forwardChildPostBuilds, flattenChildWebpackConfigs } from '../libs/plugin';
-import { isAuthentication } from './authentication-component';
+import { IPlugin, forwardChildWebpackConfigs, forwardChildPostBuilds } from '../libs/plugin';
+import { isAuthentication, getProviderKey, getClientSecret } from './authentication-component';
 import * as deepmerge from 'deepmerge';
 
 /**
@@ -31,12 +31,24 @@ export const AuthenticationPlugin = (props: IIdentityPlugin): IPlugin => {
                   infrastructureMode:string | undefined
         ):IConfigParseResult => {
 
+            // we need to environment variable
+            const slsEnv = {
+                provider: {
+                    environment: {
+                    }
+
+                }
+            };
+            slsEnv.provider.environment[getProviderKey(component.provider)] = getClientSecret(component.provider);
+
+            console.log("slsEnv: ", slsEnv)
+
             return {
 
-                slsConfigs: deepmerge.all(childConfigs.map(config => config.slsConfigs)),
+                slsConfigs: deepmerge.all([slsEnv].concat(childConfigs.map(config => config.slsConfigs)) ),
 
                 // add the server config
-                webpackConfigs: flattenChildWebpackConfigs(childConfigs),
+                webpackConfigs: forwardChildWebpackConfigs(childConfigs),
 
                 postBuilds: forwardChildPostBuilds(childConfigs),
 

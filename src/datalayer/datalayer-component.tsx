@@ -19,8 +19,7 @@ import { isWebApp } from '../webapp/webapp-component';
 import { isAuthentication } from '../authentication/authentication-component';
 import { isIdentity } from '../identity/identity-component'
 import { isEntry } from './entry-component';
-import { setEntry, ddbListEntries } from './datalayer-libs';
-
+import { setEntry, ddbListEntries, getEntryListQuery } from './datalayer-libs';
 
 export const DATALAYER_INSTANCE_TYPE = "DataLayerComponent";
 
@@ -54,7 +53,14 @@ export interface IDataLayerProps {
      * get the entry-data-fields of the specified entry
      * @param entryId id of the entry to get the fields from
      */
-    getEntryDataFields: (entryId: string) => any
+    getEntryDataFields: (entryId: string) => any,
+
+    /**
+     * wrapper function for getEntryListQuery, this allows us to complement some data
+     * @param entryId
+     * @param dictKey
+     */
+    getEntryListQuery: (entryId: string, dictKey: any ) => any
 };
 
 
@@ -67,53 +73,6 @@ export function isDataLayer(component) {
     return component !== undefined && component.instanceType === DATALAYER_INSTANCE_TYPE
 };
 
-const createEntryFields = (entry) => {
-    const fields = Object.keys(entry.data).reduce((result, key)=> {
-        result[key] = {type: entry.data[key]};
-        return result;
-    }, {});
-
-    fields[entry.primaryKey] = {type: GraphQLString};
-    fields[entry.rangeKey] = {type: GraphQLString};
-
-    return fields;
-}
-
-const createEntryType = (prefix, entry) => {
-    return new GraphQLObjectType({
-        name: prefix+entry.id,
-        fields: () => createEntryFields(entry)
-    })
-};
-
-
-const createKeyArgs = (entry) => {
-
-    const args = {};
-
-    args[entry.primaryKey] = {name: entry.primaryKey, type: GraphQLString};
-    args[entry.rangeKey] = {name: entry.rangeKey, type: GraphQLString};
-
-    return args;
-};
-
-/**
- * creates an argument list of all the data of the entry, keys+jsonData
- * @param entry
- * @returns {{}}
- */
-const createEntryArgs = (entry) => {
-
-    const args = Object.keys(entry.data).reduce((result, key)=> {
-        result[key] = {name: key, type: GraphQLString};
-        return result;
-    }, {});
-
-    args[entry.primaryKey] = {name: entry.primaryKey, type: GraphQLString};
-    args[entry.rangeKey] = {name: entry.rangeKey, type: GraphQLString};
-    
-    return args;
-};
 
 
 export default (props: IDataLayerArgs | any) => {
@@ -125,7 +84,9 @@ export default (props: IDataLayerArgs | any) => {
     };
 
     //const listEntities = getChildrenArray(props).filter(child => isEntity(child));
-    const entries = getChildrenArray(props).filter(child => isEntry(child));
+    //const entries = getChildrenArray(props).filter(child => isEntry(child));
+    const entries = findComponentRecursively(props.children, isEntry);
+
 
     /**
      * create the
@@ -136,8 +97,8 @@ export default (props: IDataLayerArgs | any) => {
         mutations: entries.reduce((result, entry) => {
 
             result["set_"+entry.id] = {
-                args: createEntryArgs(entry),
-                type: createEntryType("set_", entry),
+                args: entry.createEntryArgs(),
+                type: entry.createEntryType("set_"),
                 resolve: (source, args, context, info) => {
 
                     console.log("resolve: ", source, args);
@@ -165,7 +126,7 @@ export default (props: IDataLayerArgs | any) => {
 
         queries: entries.reduce((result, entry) => {
 
-            const listType = createEntryType("list_", entry);
+            const listType = entry.createEntryType("list_");
             console.log("listType: ", listType);
 
 
@@ -241,12 +202,30 @@ export default (props: IDataLayerArgs | any) => {
         getEntryDataFields: (entryId) => {
             const entry = entries.find(entry => entry.id === entryId);
             if (entry !== undefined) {
-                return createEntryFields(entry)
+                return entry.createEntryFields()
             };
 
             console.warn("could not find entry: ",entryId);
             return {};
+        },
+
+
+        // TODO forward this request to the Entry and let the entry handle the whole request!
+        getEntryListQuery: (
+            entryId,
+            dictKey
+        ) => {
+
+             const fields = datalayerProps.getEntryDataFields(entryId);
+             //console.log("fields: ", fields);
+
+             return getEntryListQuery(
+                 entryId,
+                 dictKey,
+                 fields
+             );
         }
+
 
     };
 
@@ -257,16 +236,19 @@ export default (props: IDataLayerArgs | any) => {
     });
 
     findComponentRecursively(props.children, (child) => child.setStoreData !== undefined).forEach( child => {
+
         child.setStoreData(
-            (pkEntity, pkVal, skEntity, skVal, jsonData) => setEntry(
-                process.env.TABLE_NAME, //"code-architect-dev-data-layer",
-                pkEntity, // schema.Entry.ENTITY, //pkEntity
-                pkVal, // pkId
-                skEntity, //schema.Data.ENTITY, // skEntity
-                skVal, // skId
-                jsonData // jsonData
-            )
-        )
+            async function (pkEntity, pkVal, skEntity, skVal, jsonData) {
+                return await setEntry(
+                    process.env.TABLE_NAME, //"code-architect-dev-data-layer",
+                    pkEntity, // schema.Entry.ENTITY, //pkEntity
+                    pkVal, // pkId
+                    skEntity, //schema.Data.ENTITY, // skEntity
+                    skVal, // skId
+                    jsonData // jsonData
+                )
+            }
+        );
     });
     
 

@@ -41,6 +41,13 @@ export function withDataLayer(Component) {
                 {(context: any) => {
                     //console.log("value of context: ", context);
                     const entryListQuery = (entryId, dictKey) => {
+
+                        return context.dataLayer.getEntryListQuery(
+                            entryId,
+                            dictKey
+                        );
+
+                        /*
                         const fields = context.dataLayer.getEntryDataFields(entryId);
                         //console.log("fields: ", fields);
 
@@ -48,7 +55,7 @@ export function withDataLayer(Component) {
                             entryId,
                             dictKey,
                             fields
-                        );
+                        );*/
                     };
 
                     //console.log("entryListQuery: ", entryListQuery);
