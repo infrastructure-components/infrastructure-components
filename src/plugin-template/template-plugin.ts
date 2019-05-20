@@ -1,6 +1,6 @@
 
 import { IConfigParseResult } from '../libs/config-parse-result';
-import { IPlugin } from '../libs/plugin';
+import {IPlugin, forwardChildIamRoleStatements} from '../libs/plugin';
 import { isIdentity } from '../identity/identity-component';
 import * as deepmerge from 'deepmerge';
 
@@ -40,6 +40,8 @@ export const IdentityPlugin = (props: IIdentityPlugin): IPlugin => {
                 webpackConfigs: childConfigs.reduce((result, config) => result.concat(config.webpackConfigs), []),
 
                 postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), []),
+
+                iamRoleStatements: forwardChildIamRoleStatements(childConfigs)
 
                 /* THESE VALUES MUST NOT BE PROVIDED BY A CHILD, THEY ARE NOT FORWARED UPWARDS
 

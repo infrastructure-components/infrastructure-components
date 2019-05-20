@@ -1,5 +1,6 @@
 import * as deepmerge from 'deepmerge';
 import {IEnvironmentArgs} from "../environment/environment-component";
+import {forwardChildIamRoleStatements} from "./plugin";
 
 export interface IConfigParseResult {
 
@@ -20,7 +21,12 @@ export interface IConfigParseResult {
      */
     postBuilds: Array<any>,
 
+
+    iamRoleStatements: Array<any>,
+
+
     environments?: Array<IEnvironmentArgs>,
+
 
     // the following fields are taken directly from the TopLevelConfiguration
     stackName?: string,
@@ -74,6 +80,8 @@ export function mergeParseResults(results: Array<IConfigParseResult>) {
             environments: (merged.environments !== undefined ? merged.environments : []).concat(
                 item.environments !== undefined ? item.environments : []),
 
+            iamRoleStatements: merged.iamRoleStatements.concat(item.iamRoleStatements !== undefined ? item.iamRoleStatements : []),
+
             // usually, these fields should not be defined here, but only from the top-level configuration
             stackName: item.stackName !== undefined ? item.stackName : merged.stackName,
             assetsPath: item.assetsPath !== undefined ? item.assetsPath : merged.assetsPath,
@@ -87,6 +95,7 @@ export function mergeParseResults(results: Array<IConfigParseResult>) {
     }, {
         slsConfigs: {},
         webpackConfigs: [],
-        postBuilds: []
+        postBuilds: [],
+        iamRoleStatements: []
     })
 }

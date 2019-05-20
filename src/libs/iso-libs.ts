@@ -19,6 +19,15 @@ export const getStaticBucketName = (stackName: string, assetsPath: string | unde
 
 
 export const getBasename = () => {
+
+    // first check whether we are a client
+    if (typeof window != 'undefined' && window.__BASENAME__) {
+        return window.__BASENAME__;
+
+        // we do not delete the basename here, because we may need it at different places
+        //delete window.__BASENAME__;
+    }
+
     return process.env.STAGE_PATH !== undefined && process.env.STAGE_PATH !== "undefined" ?
     "/"+process.env.STAGE_PATH : "/";
 };

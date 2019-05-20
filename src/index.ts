@@ -59,3 +59,5 @@ export const AttachDataLayer = require('./assets/attach-data-layer').default;
 export const withRoutes = require('./assets/attach-routes').withRoutes;
 export const AttachRoutes = require('./assets/attach-routes').default;
 export const IRoute = require('./assets/routed-app').IRoute;
+
+export const callService = require('./assets/service-libs').callService;

@@ -1,7 +1,7 @@
 import React, {ReactNode} from 'react';
 
 import Types from '../types';
-import { IClient } from "../types/client";
+import { IComponent } from "../types/component";
 import { IInfrastructure } from "../types";
 
 import { isMiddleware } from '../middleware/middleware-component';
@@ -76,8 +76,8 @@ export default (props: IServiceArgs | any) => {
     //console.log ("webapp: ", props);
 
     // the ServiceComponent must have all the properties of IClient
-    const clientProps: IInfrastructure & IClient = {
-        infrastructureType: Types.INFRASTRUCTURE_TYPE_CLIENT,
+    const componentProps: IInfrastructure & IComponent = {
+        infrastructureType: Types.INFRASTRUCTURE_TYPE_COMPONENT,
         instanceType: SERVICE_INSTANCE_TYPE,
         instanceId: props.id,
 
@@ -96,6 +96,6 @@ export default (props: IServiceArgs | any) => {
         }
     }
 
-    return Object.assign(props, clientProps, serviceProps);
+    return Object.assign(props, componentProps, serviceProps);
 
 };

@@ -5,7 +5,7 @@ import { isIsomorphicApp } from './iso-component';
 import { resolveAssetsPath, getStaticBucketName } from '../libs/iso-libs';
 import * as deepmerge from 'deepmerge';
 import { IConfigParseResult } from '../libs/config-parse-result';
-import { IPlugin } from '../libs/plugin';
+import {IPlugin, forwardChildIamRoleStatements} from '../libs/plugin';
 import { PARSER_MODES } from '../libs/parser';
 
 
@@ -182,6 +182,76 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
                 } : {};
 
+
+
+            const additionalStatements: Array<any> = forwardChildIamRoleStatements(childConfigs).concat(
+                component.iamRoleStatements ? component.iamRoleStatements : []
+            );
+
+            //console.log("additionalStatements: ", additionalStatements);
+
+            const iamRoleAssignment = {
+                functions: {}
+            };
+
+            iamRoleAssignment.functions[serverName] = {
+                role: "IsomorphicAppLambdaRole"
+            }
+
+
+            const iamPermissions = {
+
+                resources: {
+                    Resources: {
+                        IsomorphicAppLambdaRole: {
+                            Type: "AWS::IAM::Role",
+
+                            Properties: {
+                                RoleName: "${self:service}-${self:provider.stage, env:STAGE, 'dev'}-IsomorphicAppLambdaRole",
+                                AssumeRolePolicyDocument: {
+                                    Version: '"2012-10-17"',
+                                    Statement: [
+                                        {
+                                            Effect: "Allow",
+                                            Principal: {
+                                                Service: ["lambda.amazonaws.com"]
+                                            },
+                                            Action: "sts:AssumeRole"
+                                        }
+                                    ]
+                                },
+                                Policies: [
+                                    {
+                                        PolicyName: "${self:service}-${self:provider.stage, env:STAGE, 'dev'}-IsomorphicAppLambdaPolicy",
+                                        PolicyDocument: {
+                                            Version: '"2012-10-17"',
+                                            Statement: [
+                                                {
+                                                    Effect: "Allow",
+                                                    Action: [
+                                                        '"logs:*"',
+                                                        '"cloudwatch:*"'
+                                                    ],
+                                                    Resource: '"*"'
+                                                }, {
+                                                    Effect: "Allow",
+                                                    Action: [
+                                                        "s3:Get*",
+                                                        "s3:List*",
+                                                    ],
+                                                    Resource: '"*"'
+                                                },
+
+                                            ].concat(additionalStatements)
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                    },
+                }
+            }
+
             return {
                 slsConfigs: deepmerge.all([
                     require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").toSlsConfig(
@@ -207,15 +277,23 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                     // add the domain config
                     domainConfig,
 
-                    ...childConfigs.map(config => config.slsConfigs)
-                    ]
-                ),
+                    ...childConfigs.map(config => config.slsConfigs),
+
+                    // add the IAM-Role-Statements
+                    iamPermissions,
+
+                    // assign the role
+                    iamRoleAssignment
+
+                ]),
                 
                 // add the server config 
                 webpackConfigs: webpackConfigs.concat([serverWebPack]),
 
                 postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds),
                     [copyAssetsPostBuild, initDomain]),
+
+                iamRoleStatements: [],
 
                 environments: environments,
 

@@ -54,7 +54,8 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                     slsConfigs: [],
                     webpackConfigs: [],
                     postBuilds: [],
-                    environments: [component]
+                    environments: [component],
+                    iamRoleStatements: [],
                 }
                 
             } else if (props.stage !== component.name) {
@@ -63,7 +64,8 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                 return {
                     slsConfigs: [],
                     webpackConfigs: [],
-                    postBuilds: []
+                    postBuilds: [],
+                    iamRoleStatements: [],
                 }
             }
 
@@ -99,6 +101,9 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                 webpackConfigs: [],
 
                 postBuilds: [],
+
+                iamRoleStatements: [],
+                
                 environments: [component],
 
                 // here, we provide the name of the domain to the upper-level components

@@ -12,7 +12,9 @@
 
 
 import { IConfigParseResult } from '../libs/config-parse-result';
-import {IPlugin, forwardChildWebpackConfigs, forwardChildPostBuilds} from '../libs/plugin';
+import {
+    IPlugin, forwardChildWebpackConfigs, forwardChildPostBuilds, forwardChildIamRoleStatements
+} from '../libs/plugin';
 import { isDataLayer } from './datalayer-component'
 import * as deepmerge from 'deepmerge';
 import {PARSER_MODES} from "../libs/parser";
@@ -89,11 +91,8 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
              * setup a database and a handler
              */
             const dataLayerConfig = {
-                functions: {
-                    // TODO we should not set the role here, maybe the server requires a different role?
-                    server: {
-                        role: "DataLayerLambdaRole",
-                    },
+                /*functions: {
+
                     /*
                     query: {
                         // index.default refers to the default export of the file, points to the output of the queryWebpack-bundle
@@ -112,9 +111,9 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                                 }
                             },
                         ]
-                    }*/
+                    }
 
-                },
+                },*/
 
                 provider: {
                     environment: {
@@ -128,58 +127,6 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
 
                 resources: {
                     Resources: {
-                        DataLayerLambdaRole: {
-                            Type: "AWS::IAM::Role",
-
-                            Properties: {
-                                RoleName: "${self:service}-${self:provider.stage, env:STAGE, 'dev'}-DataLayerLambdaRole",
-                                AssumeRolePolicyDocument: {
-                                    Version: '"2012-10-17"',
-                                    Statement: [
-                                        {
-                                            Effect: "Allow",
-                                            Principal: {
-                                                Service: ["lambda.amazonaws.com"]
-                                            },
-                                            Action: "sts:AssumeRole"
-                                        }
-                                    ]
-                                },
-                                Policies: [
-                                    {
-                                        PolicyName: "${self:service}-${self:provider.stage, env:STAGE, 'dev'}-DataLayerLambdaPolicy",
-                                        PolicyDocument: {
-                                            Version: '"2012-10-17"',
-                                            Statement: [
-                                                {
-                                                    Effect: "Allow",
-                                                    Action: [
-                                                        '"logs:*"',
-                                                        '"cloudwatch:*"'
-                                                    ],
-                                                    Resource: '"*"'
-                                                }, {
-                                                    Effect: "Allow",
-                                                    Action: [
-                                                        "dynamodb:GetItem",
-                                                        "dynamodb:UpdateItem",
-                                                        "dynamodb:DeleteItem",
-                                                        "dynamodb:PutItem",
-                                                        "dynamodb:Scan",
-                                                        "dynamodb:Query"
-                                                    ],
-                                                    Resource: [
-                                                        '"arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-${self:provider.stage, env:STAGE, \'dev\'}-data-layer"',
-                                                        '"arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-${self:provider.stage, env:STAGE, \'dev\'}-data-layer/*"'
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    }
-                                ]
-                            }
-                        },
-
                         ApplicationDynamoDBTable: {
                             Type: "AWS::DynamoDB::Table",
                             Properties: {
@@ -227,6 +174,29 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                 }
             };
 
+
+            const iamRoleStatements = [
+                    {
+                        Effect: "Allow",
+                        Action: [
+                            "dynamodb:GetItem",
+                            "dynamodb:UpdateItem",
+                            "dynamodb:DeleteItem",
+                            "dynamodb:PutItem",
+                            "dynamodb:Scan",
+                            "dynamodb:Query"
+                        ],
+                        Resource: [
+                            '"arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-${self:provider.stage, env:STAGE, \'dev\'}-data-layer"',
+                            '"arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-${self:provider.stage, env:STAGE, \'dev\'}-data-layer/*"'
+                        ]
+                    }
+                ].concat(forwardChildIamRoleStatements(childConfigs));
+
+
+            //console.log("datalayer iamStatements: ", iamRoleStatements);
+
+
             return {
                 slsConfigs: deepmerge.all([
                     dataLayerConfig
@@ -239,6 +209,9 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                 )/*)*/,
 
                 postBuilds: forwardChildPostBuilds(childConfigs),
+
+                iamRoleStatements: iamRoleStatements
+
 
             }
         }

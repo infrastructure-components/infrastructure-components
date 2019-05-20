@@ -1,4 +1,5 @@
 import { IConfigParseResult } from './config-parse-result';
+import * as deepmerge from 'deepmerge';
 
 
 export interface IPlugin {
@@ -38,3 +39,25 @@ export const forwardChildPostBuilds = (childConfigs: Array<IConfigParseResult>) 
 export const forwardChildWebpackConfigs = (childConfigs: Array<IConfigParseResult>) => {
     return childConfigs.reduce((result, config) => result.concat(...config.webpackConfigs), []);
 }
+
+
+/**
+ * provide all client configs in a flat list
+ */
+export const forwardChildIamRoleStatements = (childConfigs: Array<IConfigParseResult>) => {
+
+    return childConfigs.reduce((result, config) => {
+
+        //console.log("reduce iam: ", config.iamRoleStatements);
+        const statements = (config.iamRoleStatements !== undefined && Array.isArray(config.iamRoleStatements)) ?
+            config.iamRoleStatements : [];
+
+        //console.log("iam result: ", statements)
+
+        return result.concat(statements);
+    }, [])
+};
+/*
+export const mergeIamRoleStatements = (statements: Array<any>) => {
+    return deepmerge.all(statements);
+};*/

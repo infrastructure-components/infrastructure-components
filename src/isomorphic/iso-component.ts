@@ -70,7 +70,19 @@ export interface IIsomorphicProps {
     /**
      * Filled when the Isomorphic App has a DataLayer
      */
-    dataLayerId?: string
+    dataLayerId?: string,
+
+    /**
+     * Additional iam-permissions
+     * e.g. [
+     * {
+     *   Effect: "Allow",
+     *   Action: ["dynamodb:Query"],
+     *   Resource:  "arn:aws:dynamodb:us-west-2:111110002222:table/my-new-table"
+     * }
+     * ]
+     */
+    iamRoleStatements?: Array<any>
 }
 
 /**

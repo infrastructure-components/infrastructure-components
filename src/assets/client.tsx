@@ -1,3 +1,4 @@
+import {getBasename} from "../libs/iso-libs";
 declare var __ISOMORPHIC_ID__: any;
 declare var __DATALAYER_ID__: any;
 
@@ -32,11 +33,13 @@ import { hydrateFromDataLayer } from './datalayer-integration';
  */
 const createClientWebApp = () => {
 
-    var basename: string = "";
+    var basename: string = getBasename(); /*
     if (typeof window != 'undefined' && window.__BASENAME__) {
         basename = window.__BASENAME__;
-        delete window.__BASENAME__;
-    }
+
+        // we do not delete the basename here, because we may need it at different places
+        //delete window.__BASENAME__;
+    }*/
 
     // load the IsomorphicComponent
     // we must load it directly from the module here, to enable the aliad of the config_file_path

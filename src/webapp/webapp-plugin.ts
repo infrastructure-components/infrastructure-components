@@ -2,7 +2,7 @@
  * This module must not import anything globally not workin in web-mode! if needed, require it within the functions
  */
 import { IConfigParseResult } from '../libs/config-parse-result';
-import { IPlugin } from '../libs/plugin';
+import {IPlugin, forwardChildIamRoleStatements} from '../libs/plugin';
 import { isWebApp } from './webapp-component'
 import { PARSER_MODES } from '../libs/parser';
 
@@ -102,6 +102,8 @@ export const WebAppPlugin = (props: IWebAppPlugin): IPlugin => {
                 ],
 
                 postBuilds: [],
+
+                iamRoleStatements: forwardChildIamRoleStatements(childConfigs)
             }
         }
     }

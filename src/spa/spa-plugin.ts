@@ -270,6 +270,8 @@ export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
 
                 postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild, writeDomainEnv, showStaticPageName, deployWithDomain, invalidateCloudFrontCache]),
 
+                iamRoleStatements: [],
+                
                 environments: childConfigs.reduce((result, config) => (result !== undefined ? result : []).concat(config.environments !== undefined ? config.environments : []), []),
 
                 stackName: component.stackName,
