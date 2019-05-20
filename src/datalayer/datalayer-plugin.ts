@@ -94,7 +94,7 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                     server: {
                         role: "DataLayerLambdaRole",
                     },
-
+                    /*
                     query: {
                         // index.default refers to the default export of the file, points to the output of the queryWebpack-bundle
                         handler: path.join(props.buildPath, component.id, `${component.id}.default`),
@@ -112,7 +112,7 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                                 }
                             },
                         ]
-                    }
+                    }*/
 
                 },
 
@@ -233,10 +233,10 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                 ].concat(childConfigs.map(config => config.slsConfigs))),
 
                 // forward the webpacks (of the WebApps) as-is, add the queryApp-Webpack-bundle
-                webpackConfigs: [queryWebPack].concat(forwardChildWebpackConfigs(childConfigs).map(
+                webpackConfigs: /*[queryWebPack].concat(*/forwardChildWebpackConfigs(childConfigs).map(
                     // complement the args with the datalayer-id
                     fWp => (args) => fWp(Object.assign({ datalayerid : component.id}, args))
-                )),
+                )/*)*/,
 
                 postBuilds: forwardChildPostBuilds(childConfigs),
 

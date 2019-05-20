@@ -4,6 +4,7 @@
 
 import AWS from 'aws-sdk';
 import gql from 'graphql-tag';
+import Cookies from 'universal-cookie';
 
 /**
  * transforms a function into a Promise
@@ -123,20 +124,17 @@ export const getEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
 };
 
 import { mutation, params, types, query } from 'typed-graphqlify'
+import {IC_USER_ID} from "../authentication/auth-middleware";
 
- 
+
+
 /**
- * uses this: https://github.com/acro5piano/typed-graphqlify
- *
- * TODO generalize to other data-types than string
- * 
- * @param client
- * @param entryId
- * @param data
- * @returns {any|Promise<T>|Promise<U>}
+ * this function provides a executable graphql-query
+ * TODO the fields must be taken from the data-layer, not requiring the user to provide them
  */
-export const mutate = (client, entryId, data) => {
-    console.log("mutate: ", entryId, data);
+export const setEntryMutation = ( entryId, data, fields, context={}) => {
+    console.log("setEntryMutation: ", entryId, data, fields);
+
 
     const mutationObj = {};
     mutationObj[`set_${entryId}`] = params(
@@ -144,43 +142,26 @@ export const mutate = (client, entryId, data) => {
             result[key] = `"${data[key]}"`;
             return result;
         },{}),
-        Object.keys(data).reduce((result, key) => {
+        Object.keys(fields).reduce((result, key) => {
             result[key] = types.string;
             return result;
         },{})
     );
 
-    console.log("mutation string: ", mutation(mutationObj));
+    return {
+        mutation: gql`${mutation(mutationObj)}`,
+        context: context
+    }
 
-    return client.mutate({
-        mutation: gql`${mutation(mutationObj)}`
-    }).then(result => { console.log(result)}).catch(error => { console.log(error) });
-
-}
-
-export const select = (client, gqlQuery) => {
-    console.log("select: ", gqlQuery);
-
-    return client.query({
-        query: gqlQuery
-    }).then(result => {
-        console.log("select result: ", result)
-
-        return result.data;
-
-    }).catch(error => {
-        console.log(error);
-    });
-
-}
+};
 
 
 /**
  * this function provides a executable graphql-query
  * TODO the fields must be taken from the data-layer, not requiring the user to provide them
  */
-export const getEntryListQuery = ( entryId, data, fields) => {
-    console.log("getEntryListQuery: ", entryId, data, fields);
+export const getEntryListQuery = ( entryId, data, fields, context={}) => {
+    console.log("getEntryListQuery: ", entryId, data, fields, context);
     
     if (Object.keys(data).length !== 1) {
         console.error("getEntryListQuery requires exact 1 field provided in the data argument");
@@ -203,6 +184,65 @@ export const getEntryListQuery = ( entryId, data, fields) => {
 
     console.log("listQuery string: ", query(queryObj));
 
-    return gql`${query(queryObj)}`;
+    return {
+        query:gql`${query(queryObj)}`,
+        context: context
+    }
     
 };
+
+
+export const select = (client, {query, context={}}) => {
+
+
+    if (!context["userId"]) {
+        context["userId"] = new Cookies().get(IC_USER_ID);
+    }
+
+    console.log("select: ", query, context);
+
+    
+    return client.query({
+        query: query,
+        context: context
+    }).then(result => {
+        console.log("select result: ", result)
+
+        return result.data;
+
+    }).catch(error => {
+        console.log(error);
+    });
+
+};
+
+
+
+/**
+ * uses this: https://github.com/acro5piano/typed-graphqlify
+ *
+ * TODO generalize to other data-types than string
+ *
+ * @param client
+ * @param entryId
+ * @param data
+ * @returns {any|Promise<T>|Promise<U>}
+ */
+export const mutate = (client, { mutation, context={}}) => {
+
+    if (!context["userId"]) {
+        context["userId"] = new Cookies().get(IC_USER_ID);
+    }
+
+
+    console.log("mutate: ", mutation, context);
+
+    //console.log("mutation string: ", mutation(mutationObj));
+
+    return client.mutate({
+        mutation: mutation,
+        context: context
+    }).then(result => { console.log(result)}).catch(error => { console.log(error) });
+
+};
+

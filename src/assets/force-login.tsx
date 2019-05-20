@@ -1,6 +1,8 @@
 declare var require: any;
 import * as React from 'react';
 import Cookies from 'universal-cookie';
+import {IC_USER_ID} from "../authentication/auth-middleware";
+
 
 import ExecutionEnvironment from 'exenv';
 //import {withRequest} from "../components/attach-request";
@@ -18,7 +20,7 @@ const LoggedInContext = React.createContext(undefined);
 
 interface ForceLoginProps {
     request? : any // passed by `withRequest`
-    identityKey: string // the primaryKey-property of the applicable <Identity />-Component
+    //identityKey: string // the primaryKey-property of the applicable <Identity />-Component
 }
 /**
  * implements [[RequireServerRenderingSpec]]
@@ -41,9 +43,9 @@ class ForceLogin extends React.Component<ForceLoginProps, {}> {
      * make the login-middlewares apply
      */
     componentDidMount() {
-        console.log("ForceLogin-Component: ", this.props.identityKey)
+        //console.log("ForceLogin-Component: ", this.props.identityKey)
 
-        if (!isLoggedIn(this.props.identityKey)) {
+        if (!isLoggedIn(IC_USER_ID)) {
             window.location.reload();
         }
         
@@ -57,9 +59,9 @@ class ForceLogin extends React.Component<ForceLoginProps, {}> {
         // we provide the information which user is logged in
         return <LoggedInContext.Provider value={
             ExecutionEnvironment.canUseDOM ?
-                new Cookies().get(this.props.identityKey) :
-                new Cookies(this.props.request.headers.cookie).get(this.props.identityKey)
-                
+                new Cookies().get(IC_USER_ID) :
+                new Cookies(this.props.request.headers.cookie).get(IC_USER_ID)
+
         }>{this.props.children}</LoggedInContext.Provider>
 
     }
@@ -78,6 +80,19 @@ export function withUserId(Component) {
             </LoggedInContext.Consumer>
         );
     };
+}
+
+
+
+export function getUserId(request) {
+    if (request) {
+        return new Cookies(request.headers.cookie).get(IC_USER_ID)
+    } else if (ExecutionEnvironment.canUseDOM) {
+        return new Cookies().get(IC_USER_ID)
+    }
+
+    return undefined;
+
 }
 
 /**

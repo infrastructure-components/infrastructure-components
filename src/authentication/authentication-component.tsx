@@ -12,6 +12,8 @@ import { getChildrenArray, findComponentRecursively } from '../libs';
 import {createAuthMiddleware, createCallbackMiddleware, IUserData} from "./auth-middleware";
 
 import bodyParser from 'body-parser';
+import {isSecuredService} from "./securedservice-component";
+import {SERVICE_INSTANCE_TYPE} from "../service/service-component";
 
 export const AUTHENTICATION_INSTANCE_TYPE = "AuthenticationComponent";
 
@@ -309,13 +311,33 @@ export default (props: IAuthenticationArgs | any) => {
 
     };
 
+    /**
+     * For this function is a callback on a middleware, it only sets the userId on the backend side!
+     * @param userid
+     */
+    const onAuthenticated = (userid:string): void => {
+        console.log("just authenticated, tell the securedEntries about it")
+        // we need to provide some data to the secured entries
+        findComponentRecursively(props.children, (c) => c.setUserId !== undefined).forEach( se => {
+            //console.log("found secured entry: ", se);
+            se.setUserId(userid)
+            
+        });
+    };
+
+    findComponentRecursively(props.children, (c) => c.setMiddleware !== undefined).forEach( se => {
+        //console.log("found secured entry: ", se);
+        se.setMiddleware(createMiddleware({ callback:createAuthMiddleware(getClientSecret(props.provider), onAuthenticated)}))
+
+    });
+    
     // we need to provide some data to the secured routes
     findComponentRecursively(props.children, isSecuredRoute).forEach( sr => {
         //console.log("found secured route: ", sr);
 
         sr.middlewares = [
             // this middleware checks whether the user is logged in
-            createMiddleware({ callback: createAuthMiddleware(getClientSecret(props.provider))}),
+            createMiddleware({ callback: createAuthMiddleware(getClientSecret(props.provider), onAuthenticated)}),
 
             // this middleware checks redirects the user to the login page, if she is not logged in
             createMiddleware({ callback: createRequestLoginMiddleware(props.clientId, props.callbackUrl, props.provider)})
@@ -327,12 +349,24 @@ export default (props: IAuthenticationArgs | any) => {
 
     });
 
-    // we need to provide some data to the secured entries
-    /*findComponentRecursively(props.children, isSecuredEntry).forEach( se => {
-        //console.log("found secured entry: ", se);
+    // we need to provide some data to the secured routes
+    findComponentRecursively(props.children, isSecuredService).forEach( service => {
+        //console.log("found secured route: ", sr);
 
+        service.middlewares = [
+            // this middleware checks whether the user is logged in
+            createMiddleware({ callback: createAuthMiddleware(getClientSecret(props.provider), onAuthenticated)}),
 
-    });*/
+            // this middleware checks redirects the user to the login page, if she is not logged in
+            createMiddleware({ callback: createRequestLoginMiddleware(props.clientId, props.callbackUrl, props.provider)})
+
+        ].concat(service.middlewares);
+
+        // now that we have added the authentication middlewares, the route can be handled as a normal one
+        service.instanceType = SERVICE_INSTANCE_TYPE;
+
+    });
+
 
 
     /**

@@ -1,3 +1,4 @@
+import {getUserId} from "./force-login";
 declare global {
     interface Window {
         __APOLLO_STATE__: any;
@@ -15,7 +16,7 @@ import {ApolloProvider, ApolloConsumer, getDataFromTree} from "react-apollo";
 import ApolloClient from 'apollo-client';
 //import { ApolloLink } from 'apollo-link';
 
-//import { SchemaLink } from 'apollo-link-schema';
+import { SchemaLink } from 'apollo-link-schema';
 
 //import fetch from 'node-fetch';
 require('es6-promise').polyfill();
@@ -88,6 +89,7 @@ export const hydrateFromDataLayer = (app, dataLayer) => {
         cache: new InMemoryCache().restore(preloadedState),
         link: createHttpLink({
             uri: window.__GRAPHQL__,
+            credentials: 'include',
         })
     });
 
@@ -111,7 +113,7 @@ export const hydrateFromDataLayer = (app, dataLayer) => {
  * @param app the ReactApp to connect with the DataLayer
  * @schema specifies the schema to connect the store with, if undefined: use the uri (via network). see [[UseSchemaLinkSpec]]
  */
-export const connectWithDataLayer = (dataLayerId) => async (app) => {
+export const connectWithDataLayer = (dataLayerId, request) => async (app) => {
 
     /**
      * we MUST NOT IMPORT CONTEXTs directly, but require them at time of use generally from Infrastructure-Components
@@ -135,7 +137,7 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
 
 
-    console.log("dataLayer: ", dataLayer);
+    //console.log("dataLayer: ", dataLayer);
     
     return new Promise<any>(async (resolve, reject) => {
         const awsGraphqlFetch = (uri, options) => {
@@ -171,23 +173,29 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
 
         const client = new ApolloClient({
             ssrMode: true,
+
             //ssrForceFetchDelay: 100,
             cache: new InMemoryCache(),
             /* instead of the createHttpLink, we use SchemaLink({ schema }) to void network traffic, for both endpoints
              * implements [[UseSchemaLinkSpec]]
              *
-             * TODO when using schema directly: { Error: GraphQL error: 2 validation errors detected: Value '' at 'tableName' failed to satisfy constraint: Member must have length greater than or equal to 3; Value '' at 'tableName' failed to satisfy constraint: Member must satisfy regular expression pattern: [a-zA-Z0-9_.-]+ at new ApolloError (/var/task/node_modules/apollo-client/bundle.umd.js:99:32)
              */
-            /*schema !== undefined && process.env.STAGE !== "offline" ? new SchemaLink({ schema }) : */
-            link: createHttpLink({
+            link: new SchemaLink({
+                schema: dataLayer.getSchema(true),
+                context: {
+                    // when we have a userId, put it into the context so thatwe have it through ssr, too.
+                    userId: getUserId(request)
+                }
+            })
+            /*link: createHttpLink({
                 uri: graphqlUrl,
                 fetch: awsGraphqlFetch,
-
-            }),
+                credentials: 'include',
+            }),*/
 
         });
 
-        //console.log("client: ", client);
+        console.log("client: ", client);
 
         const connectedApp = <ApolloProvider client={client}>
             <ApolloConsumer>
@@ -195,13 +203,13 @@ export const connectWithDataLayer = (dataLayerId) => async (app) => {
             </ApolloConsumer>
         </ApolloProvider>
 
-        //console.log("connectedApp: ", connectedApp);
+        console.log("connectedApp: ", connectedApp);
         try {
             //.catch((err) => console.log("err: ", err))
             await getDataFromTree(connectedApp).then(() => resolve({connectedApp: connectedApp, getState: () => {
-                //console.log("time to resolve");
+                console.log("time to resolve");
                 const data = client.extract();
-                //console.log("data: ", data);
+                console.log("data: ", data);
                 return importEnvironmentVariables(data, graphqlUrl.trim())
             }}));
         } catch (error) {

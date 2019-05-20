@@ -16,6 +16,8 @@ import { DataLayerPlugin } from '../datalayer/datalayer-plugin';
 import { IdentityPlugin } from '../identity/identity-plugin';
 import { AuthenticationPlugin } from '../authentication/authentication-plugin';
 import {isDataLayer} from "../datalayer/datalayer-component";
+import {ServicePlugin} from "../service/service-plugin";
+import {isService} from "../service/service-component";
 
 export const ISOMORPHIC_INSTANCE_TYPE = "IsomorphicComponent";
 
@@ -58,7 +60,17 @@ export interface IIsomorphicProps {
     /**
      * WebApps reply to the request
      */
-    webApps: Array<any>
+    webApps: Array<any>,
+
+    /**
+     * Services of the app
+     */
+    services: Array<any>,
+
+    /**
+     * Filled when the Isomorphic App has a DataLayer
+     */
+    dataLayerId?: string
 }
 
 /**
@@ -101,6 +113,8 @@ export default (props: IIsomorphicArgs | any) => {
                 configFilePath: configPath,
                 assetsPath: props.assetsPath
             }),
+            
+            ServicePlugin({}),
 
             // isomorphic apps can have different environments
             EnvironmentPlugin({
@@ -119,6 +133,10 @@ export default (props: IIsomorphicArgs | any) => {
         middlewares: findComponentRecursively(props.children, isMiddleware),
 
         webApps: findComponentRecursively(props.children, isWebApp),
+
+        services: findComponentRecursively(props.children, isService),
+
+        dataLayerId: findComponentRecursively(props.children, isDataLayer).reduce((res, dl) => res ? res : dl.id, undefined)
     }
 
     //console.log("webapps: ", isoProps.webApps)

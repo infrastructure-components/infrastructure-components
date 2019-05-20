@@ -27,17 +27,12 @@ const getBrowserId = (req, key) => {
     }
 }
 
-
+export const IDENTITY_KEY ="IC_IDENTITY_KEY";
 
 /**
  * Specifies all the properties that a Authentication-Component must have
  */
 export interface IIdentityArgs {
-
-    /**
-     * The key specifies the pk that the Identity uses in the DataLayer to store its identifier at
-     */
-    primaryKey: string,
 
 
 }
@@ -93,8 +88,8 @@ export default (props: IIdentityArgs | any) => {
             async function (request: any, secondaryKey: string, val: any, jsonData: any) {
                 console.log("identity: storeData: ", props);
                 return await props.storeData(
-                    props.primaryKey, //pkEntity: string,
-                    getBrowserId(request, props.primaryKey), //pkVal: any,
+                    IDENTITY_KEY, //pkEntity: string,
+                    getBrowserId(request, IDENTITY_KEY), //pkVal: any,
                     secondaryKey, //skEntity: string,
                     val, //skVal: any,
                     jsonData //: any
@@ -104,10 +99,6 @@ export default (props: IIdentityArgs | any) => {
 
     });
 
-    // if the child needs to have the identityKey, provide it! e.g. forwarding to webapp so that it can use <ForceLogin/>
-    findComponentRecursively(props.children, (child) => child.setIdentityKey !== undefined).forEach( child => {
-        child.setIdentityKey(props.primaryKey);
-    });
     
     /**
      * The Identity requires cookies to store an uuid
@@ -118,6 +109,19 @@ export default (props: IIdentityArgs | any) => {
             
             // we need to use cookies in order to verify whether a user is logged in
             createMiddleware({ callback: cookiesMiddleware() }),
+
+
+            // here we provide all interested children with the identity - on server side only!
+            // but for the browser, we provide the cookie
+            createMiddleware({ callback: (req, res, next) => {
+
+                console.log("this it the identity-mw")
+                findComponentRecursively(props.children, (child) => child.setIdentity !== undefined).forEach( child => {
+                    child.setIdentity(getBrowserId(req, IDENTITY_KEY));
+                });
+
+                return next();
+            }})
 
         ].concat(props.children)
     };

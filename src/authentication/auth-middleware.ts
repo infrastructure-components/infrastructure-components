@@ -31,7 +31,7 @@ export const IC_USER_ID = 'IC_USER_ID';
  * @returns if successful, it calls the next middleware, if not, it throws an exception that causes the
  * next error handler to be called
  */
-export const createAuthMiddleware = (clientSecret) => (req, res, next) => {
+export const createAuthMiddleware = (clientSecret, onAuthenticated: (userid:string) => void) => (req, res, next) => {
 
     console.log("createAuthMiddleware", req.universalCookies);
 
@@ -55,6 +55,7 @@ export const createAuthMiddleware = (clientSecret) => (req, res, next) => {
                 if (id.toString() === userId.toString()) {
                     // the token contains the correct id
                     console.log("token matches :-)")
+                    onAuthenticated(id.toString());
                     return next();
                 }
 

@@ -89,9 +89,7 @@ export interface IRedirect {
 interface RoutedAppProps {
     routes: Array<IRoute>,
     redirects: Array<IRedirect>,
-
-    // when the app is part of an <Identity />-Component, it should have an identityKey
-    identityKey?: string
+    
 };
 
 
@@ -105,7 +103,7 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
         // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
 
         if (render !== undefined) {
-            const wrappedRender = (p) => isSecured ? <ForceLogin identityKey={props.identityKey}>{render(p)}</ForceLogin> : render(p);
+            const wrappedRender = (p) => isSecured ? <ForceLogin >{render(p)}</ForceLogin> : render(p);
             return <Route key={'ROUTE_'+i} exact={exact} path={path} render={wrappedRender} />
 
         } else if (isSecured) {
@@ -115,7 +113,7 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
                 key={'ROUTE_'+i}
                 exact={exact}
                 path={path}
-                render={(p) => <ForceLogin identityKey={props.identityKey}><C {...p}/></ForceLogin>}
+                render={(p) => <ForceLogin ><C {...p}/></ForceLogin>}
             />
 
         } else {
@@ -145,14 +143,14 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
  * @param basename
  * @returns {any}
  */
-export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirect>, identityKey: string | undefined, basename: string) => {
+export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirect>, basename: string) => {
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
 
     return <BrowserRouter basename={basename}>
         <AttachRequest>
             <AttachRoutes routes={routes}>
-                <RoutedApp routes={routes} redirects={redirects} identityKey={identityKey}/>
+                <RoutedApp routes={routes} redirects={redirects} />
             </AttachRoutes>
         </AttachRequest>
     </BrowserRouter>;
@@ -161,7 +159,6 @@ export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirec
 export const createServerApp = (
     routes: Array<IRoute>,
     redirects: Array<IRedirect>,
-    identityKey: string | undefined,
     basename: string,
     url: string,
     context: any,
@@ -173,7 +170,7 @@ export const createServerApp = (
     return <StaticRouter context={context} location={url} basename={basename}>
         <AttachRequest request={request}>
             <AttachRoutes routes={routes}>
-                <RoutedApp routes={routes} redirects={redirects} identityKey={identityKey}/>
+                <RoutedApp routes={routes} redirects={redirects} />
             </AttachRoutes>
         </AttachRequest>
     </StaticRouter>;

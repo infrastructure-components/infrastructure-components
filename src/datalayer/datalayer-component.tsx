@@ -3,6 +3,7 @@ import * as React from 'react';
 
 import {
     graphql,
+    GraphQLSchema,
     GraphQLObjectType,
     GraphQLString,
     GraphQLNonNull,
@@ -52,15 +53,21 @@ export interface IDataLayerProps {
     /**
      * get the entry-data-fields of the specified entry
      * @param entryId id of the entry to get the fields from
-     */
-    getEntryDataFields: (entryId: string) => any,
+     *
+    getEntryDataFields: (entryId: string) => any,*/
 
     /**
      * wrapper function for getEntryListQuery, this allows us to complement some data
      * @param entryId
      * @param dictKey
      */
-    getEntryListQuery: (entryId: string, dictKey: any ) => any
+    getEntryListQuery: (entryId: string, dictKey: any ) => any,
+
+    setEntryMutation: (entryId: string, values: any ) => any,
+
+    getSchema?: any // optional only because it is implemented in a separate object below. but it is required!
+
+    entries: any
 };
 
 
@@ -92,40 +99,44 @@ export default (props: IDataLayerArgs | any) => {
      * create the
      * @type {{queries: {}, mutations: {}}}
      */
-    const datalayerProps: IDataLayerProps = {
+    const datalayerProps = {
 
-        mutations: entries.reduce((result, entry) => {
+        entries: entries,
 
-            result["set_"+entry.id] = {
+        mutations: (resolveWithData: boolean) => entries.reduce((result, entry) => {
+
+
+
+            result[entry.getSetMutationName()] = {
                 args: entry.createEntryArgs(),
                 type: entry.createEntryType("set_"),
                 resolve: (source, args, context, info) => {
 
-                    console.log("resolve: ", source, args);
 
-                    const result = setEntry(
-                        process.env.TABLE_NAME, //"code-architect-dev-data-layer", 
-                        entry.primaryKey, // schema.Entry.ENTITY, //pkEntity
-                        args[entry.primaryKey], // pkId
-                        entry.rangeKey, //schema.Data.ENTITY, // skEntity
-                        args[entry.rangeKey], // skId
-                        Object.keys(args).reduce((result, key) => {
-                            if (Object.keys(entry.data).find(datakey => datakey === key) !== undefined) {
-                                result[key] = args[key];
-                            }
-                            return result;
-                        },{}) // jsonData
-                    );
+                    if (!resolveWithData) {
+                        return entry.id;
+                    }
+
+                    console.log("resolve: ", resolveWithData, source, context, info, args);
+
+                    // This context gets the data from the context put into the <Query/> or Mutation...
+                    console.log("context: ", context);
+
+                    const result = entry.setEntry(args, context, process.env.TABLE_NAME);
+
 
                     console.log("result: ", result);
                     return result;
                 }
             };
+
+            console.log("mutation definition: ", result["set_"+entry.id]);
+
             return result;
         }, {}),
 
-        queries: entries.reduce((result, entry) => {
-
+        queries: (resolveWithData: boolean) => entries.reduce((result, entry) => {
+            
             const listType = entry.createEntryType("list_");
             console.log("listType: ", listType);
 
@@ -134,13 +145,21 @@ export default (props: IDataLayerArgs | any) => {
             const inputArgs = {};
             inputArgs[entry.primaryKey] = {name: entry.primaryKey, type: new GraphQLNonNull(GraphQLString)};
 
-            result["list_"+entry.id+"_"+entry.primaryKey] = {
+            result[entry.getPrimaryListQueryName()] = {
                 args: inputArgs,
-                type: new GraphQLList(listType),
+                type: resolveWithData ? new GraphQLList(listType) : listType,
                 resolve: (source, args, context, info) => {
 
-                    console.log("resolve: ", source, args);
 
+                    console.log("resolve: ", resolveWithData, source, args, context);
+
+                    if (!resolveWithData) {
+                        return entry.id;
+                    }
+
+                    return entry.listEntries(args, context, process.env.TABLE_NAME, "pk");
+
+                    /*
                     return ddbListEntries(
                         process.env.TABLE_NAME, //tablename
                         "pk", // key
@@ -157,7 +176,7 @@ export default (props: IDataLayerArgs | any) => {
                             return data;
                         });
 
-                    });
+                    });*/
 
                 }
             };
@@ -168,13 +187,20 @@ export default (props: IDataLayerArgs | any) => {
             const inputRangeArgs = {};
             inputRangeArgs[entry.rangeKey] = {name: entry.rangeKey, type: new GraphQLNonNull(GraphQLString)};
 
-            result["list_"+entry.id+"_"+entry.rangeKey] = {
+            result[entry.getRangeListQueryName()] = {
                 args: inputRangeArgs,
-                type: new GraphQLList(listType),
+                type: resolveWithData ? new GraphQLList(listType): listType,
                 resolve: (source, args, context, info) => {
 
-                    console.log("resolve: ", source, args);
+                    console.log("resolve: ", resolveWithData, source, args, context);
 
+                    if (!resolveWithData) {
+                        return entry.id;
+                    }
+
+                    return entry.listEntries(args, context, process.env.TABLE_NAME, "sk");
+
+                    /*
                     return ddbListEntries(
                         process.env.TABLE_NAME, //tablename
                         "sk", // key
@@ -191,7 +217,7 @@ export default (props: IDataLayerArgs | any) => {
                             return data;
                         });
 
-                    });
+                    });*/
                 }
             };
 
@@ -199,6 +225,7 @@ export default (props: IDataLayerArgs | any) => {
             return result;
         }, {}),
 
+        /*
         getEntryDataFields: (entryId) => {
             const entry = entries.find(entry => entry.id === entryId);
             if (entry !== undefined) {
@@ -207,15 +234,20 @@ export default (props: IDataLayerArgs | any) => {
 
             console.warn("could not find entry: ",entryId);
             return {};
-        },
+        },*/
 
 
         // TODO forward this request to the Entry and let the entry handle the whole request!
-        getEntryListQuery: (
-            entryId,
-            dictKey
-        ) => {
+        getEntryListQuery: (entryId, dictKey) => {
+            const entry = entries.find(entry => entry.id === entryId);
+            if (entry !== undefined) {
+                return entry.getEntryListQuery(dictKey)
+            };
 
+            console.warn("could not find entry: ",entryId);
+            return {};
+
+            /*
              const fields = datalayerProps.getEntryDataFields(entryId);
              //console.log("fields: ", fields);
 
@@ -223,11 +255,36 @@ export default (props: IDataLayerArgs | any) => {
                  entryId,
                  dictKey,
                  fields
-             );
-        }
+             );*/
+        },
+
+        setEntryMutation: (entryId, values) => {
+            const entry = entries.find(entry => entry.id === entryId);
+            if (entry !== undefined) {
+                return entry.setEntryMutation(values)
+            };
+
+            console.warn("could not find entry: ", entryId);
+            return {};
+        },
+
+
+
 
 
     };
+
+    const schemaProps = {
+        getSchema: (resolveWithData: boolean) => new GraphQLSchema({
+            query: new GraphQLObjectType({
+                name: 'RootQueryType', // an arbitrary name
+                fields: datalayerProps.queries(resolveWithData)
+            }), mutation: new GraphQLObjectType({
+                name: 'RootMutationType', // an arbitrary name
+                fields: datalayerProps.mutations(resolveWithData)
+            })
+        })
+    }
 
     // we need to provide the DataLayerId to webApps, these may be anywhere in the tree, not
     // only direct children. So rather than mapping the children, we need to change them
@@ -252,6 +309,6 @@ export default (props: IDataLayerArgs | any) => {
     });
     
 
-    return Object.assign(props, componentProps, datalayerProps);
+    return Object.assign({}, props, componentProps, datalayerProps, schemaProps);
 
 };

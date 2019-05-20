@@ -58,12 +58,21 @@ export function withDataLayer(Component) {
                         );*/
                     };
 
+                    const setEntryMutation = (entryId, values) => {
+
+                        return context.dataLayer.setEntryMutation(
+                            entryId,
+                            values
+                        );
+                    }
+
                     //console.log("entryListQuery: ", entryListQuery);
                     
                     return <Component
                         {...props}
                         apolloClient={context.apolloClient}
                         getEntryListQuery={entryListQuery}
+                        setEntryMutation={setEntryMutation}
                     />
                 }}
             </DataLayerContext.Consumer>

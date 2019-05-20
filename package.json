@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.2.0-alpha.110",
+  "version": "0.2.0-alpha.162",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -24,9 +24,11 @@
     "apollo-cache-inmemory": "^1.5.1",
     "apollo-client": "^2.5.1",
     "apollo-link-http": "^1.5.14",
+    "apollo-link-schema": "^1.2.2",
     "aws-lambda": "^0.1.2",
     "aws-sdk": "^2.447.0",
     "body-parser": "^1.19.0",
+    "connect-sequence": "^2.1.1",
     "deepmerge": "^3.2.0",
     "es6-promise": "^4.2.6",
     "exenv": "^1.2.2",

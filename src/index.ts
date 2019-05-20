@@ -13,11 +13,13 @@ export const Environment = require('./environment/environment-component').defaul
 export const SinglePageApp = require('./spa/spa-component').default;
 export const DataLayer = require('./datalayer/datalayer-component').default;
 export const Entry = require('./datalayer/entry-component').default;
+export const Service = require('./service/service-component').default;
 
 export const SecuredEntry = require('./authentication/securedentry-component').default;
 export const Authentication = require('./authentication/authentication-component').default;
 export const AuthenticationProvider = require('./authentication/authentication-component').AuthenticationProvider;
 export const SecuredRoute = require('./authentication/securedroute-component').default;
+export const SecuredService = require('./authentication/securedservice-component').default;
 export const Identity = require('./identity/identity-component').default;
 
 export const INFRASTRUCTURE_MODES = require('./libs/loader').INFRASTRUCTURE_MODES;

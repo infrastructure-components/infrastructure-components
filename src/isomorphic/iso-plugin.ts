@@ -87,6 +87,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                     }, {
                         __ISOMORPHIC_ID__: `"${component.instanceId}"`,
                         __ASSETS_PATH__: `"${component.assetsPath}"`,
+                        __DATALAYER_ID__: `"${component.dataLayerId}"`,
                         __RESOLVED_ASSETS_PATH__: `"${resolveAssetsPath(
                             component.buildPath,
                             serverName, 

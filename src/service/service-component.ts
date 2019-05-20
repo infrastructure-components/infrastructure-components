@@ -4,22 +4,20 @@ import Types from '../types';
 import { IClient } from "../types/client";
 import { IInfrastructure } from "../types";
 
-import { isSecuredRoute } from '../authentication/securedroute-component';
 import { isMiddleware } from '../middleware/middleware-component';
-import { isRoute } from '../route/route-component';
 import { getChildrenArray } from '../libs';
 
 
-export const WEBAPP_INSTANCE_TYPE = "WebAppComponent";
+export const SERVICE_INSTANCE_TYPE = "ServiceComponent";
 
 
 /**
  * Specifies all the properties that a Client-Component must have
  */
-export interface IWebAppArgs {
+export interface IServiceArgs {
 
     /**
-     * a unique id or name of the webapp
+     * a unique id or name of the service
      */
     id: string,
 
@@ -39,22 +37,13 @@ export interface IWebAppArgs {
 /**
  * specifies the properties that an WebApp-Component has during runtime
  */
-export interface IWebAppProps {
+export interface IServiceProps {
 
     /**
      * A Webapp component supports middlewares, defines as direct children
      */
     middlewares: Array<any>,
 
-    /**
-     * Routes of the webapp
-     */
-    routes: Array<any>,
-
-    /**
-     * redirects of the webapp
-     */
-    redirects: Array<any>,
 
     /**
      * A function that the DataLayer provides, it lets the WebApp get the DataLayer Id
@@ -73,8 +62,8 @@ export interface IWebAppProps {
  *
  * @param component to be tested
  */
-export function isWebApp(component) {
-    return component !== undefined && component.instanceType === WEBAPP_INSTANCE_TYPE
+export function isService(component) {
+    return component !== undefined && component.instanceType === SERVICE_INSTANCE_TYPE
 }
 
 /**
@@ -82,40 +71,31 @@ export function isWebApp(component) {
  *
  * @param props
  */
-export default (props: IWebAppArgs | any) => {
+export default (props: IServiceArgs | any) => {
 
     //console.log ("webapp: ", props);
 
-    // the WebAppComponent must have all the properties of IClient
+    // the ServiceComponent must have all the properties of IClient
     const clientProps: IInfrastructure & IClient = {
         infrastructureType: Types.INFRASTRUCTURE_TYPE_CLIENT,
-        instanceType: WEBAPP_INSTANCE_TYPE,
+        instanceType: SERVICE_INSTANCE_TYPE,
         instanceId: props.id,
 
         insulatesChildComponent: (child) => {
             // a webapp insulates (handles itself) middlewares and routes and does not privide to higher levels
-            return isMiddleware(child) || isRoute(child);
-                /* && !isSecuredRoute(child) -- the WebApp does not hide secured-routes,
-                 *  we must allow the authentication component to find, process, and change (add middlewares) them to a normal route
-                 */
+            return isMiddleware(child)
         }
     };
 
-    const webappProps: IWebAppProps = {
+    const serviceProps: IServiceProps = {
         middlewares: getChildrenArray(props.children)
             .filter(child => isMiddleware(child)),
-
-        routes: getChildrenArray(props.children)
-            .filter(child => isRoute(child) || isSecuredRoute(child)),
-
-        // TODO add redirects!!!!
-        redirects: [],
 
         setDataLayerId: (dataLayerId: string) => {
             props.dataLayerId = dataLayerId;
         }
     }
 
-    return Object.assign(props, clientProps, webappProps);
+    return Object.assign(props, clientProps, serviceProps);
 
 };

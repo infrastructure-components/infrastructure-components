@@ -69,7 +69,6 @@ const createClientWebApp = () => {
             createClientApp(
                 webApp.routes,
                 webApp.redirects,
-                webApp.identityKey,
                 basename)
         ),
         document.getElementById('root')
