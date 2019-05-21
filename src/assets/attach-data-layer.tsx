@@ -1,3 +1,4 @@
+import {createApolloClient, getGraphqlUrl} from "./datalayer-integration";
 declare var require: any;
 import * as React from 'react';
 
@@ -77,6 +78,31 @@ export function withDataLayer(Component) {
                 }}
             </DataLayerContext.Consumer>
         );
+    };
+}
+
+
+export const serviceWithDataLayer = (complementedCallback: (cbdataLayer, cbreq, cbres, cbnext) => any) => {
+    
+    // we return an array of valid middleware-callbacks
+    return [
+        async function (req, res, next) {
+            return complementedCallback(req.dataLayer, req, res, next)
+        }
+    ]
+};
+
+export const serviceAttachDataLayer = (dataLayer) => {
+    return (req, res, next) => {
+
+        const client = createApolloClient(dataLayer, getGraphqlUrl(), req);
+        dataLayer.setClient(client);
+
+        console.log("attaching the dataLayer, client: ", client);
+
+        req.dataLayer = dataLayer;
+        req.dataLayer.client = client;
+        next();
     };
 }
 

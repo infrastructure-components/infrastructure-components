@@ -103,6 +103,66 @@ export const hydrateFromDataLayer = (app, dataLayer) => {
     </ApolloProvider>
 };
 
+export const createApolloClient = (dataLayer, graphqlUrl, request) => {
+    //console.log("STAGE_PATH: ", process.env.STAGE_PATH);
+    //console.log("DOMAIN_ENABLED: ", process.env.DOMAIN_ENABLED);
+
+    // TODO take these variables, esp. GraphQl-Path from the component rather than from the env-variables,
+    // because, there might be more than one DataLayers!
+    // when we have a valid stage_path or a domain, e.g. https://xxxxxxxxxxx.execute-api.eu-west-1.amazonaws.com/dev/query',
+    /*const graphqlUrl = (
+     process.env.STAGE_PATH !== undefined && process.env.STAGE_PATH !== "undefined" && process.env.STAGE_PATH.length > 0
+     ) || process.env.DOMAIN_ENABLED === "true" ?
+     // then use the path
+     (process.env.DOMAIN_ENABLED !== undefined && process.env.DOMAIN_ENABLED === "true" &&
+     process.env.DOMAIN_NAME !== undefined && process.env.DOMAIN_NAME !== undefined ?
+     "https://"+process.env.DOMAIN_NAME : process.env.DOMAIN_URL) + "/"+process.env.GRAPHQL_PATH :
+     // else mock the endpoint - use the dev-endpoint
+     "https://yfse1b9v0m.execute-api.eu-west-1.amazonaws.com/dev/query"; // undefined; //
+     //
+     // TODO set undefined or a Mock or the Dev-Address here
+
+     */
+
+
+    console.log("graphqlUrl: ", graphqlUrl);
+    //console.log("schema: ", schema);
+
+    const client = new ApolloClient({
+        ssrMode: true,
+
+        //ssrForceFetchDelay: 100,
+        cache: new InMemoryCache(),
+        /* instead of the createHttpLink, we use SchemaLink({ schema }) to void network traffic, for both endpoints
+         * implements [[UseSchemaLinkSpec]]
+         *
+         */
+        link: new SchemaLink({
+            schema: dataLayer.getSchema(true),
+            context: {
+                // when we have a userId, put it into the context so thatwe have it through ssr, too.
+                userId: getUserId(request)
+            }
+        })
+        /*link: createHttpLink({
+         uri: graphqlUrl,
+         fetch: awsGraphqlFetch,
+         credentials: 'include',
+         }),*/
+
+    });
+
+    console.log("client: ", client);
+    return client;
+
+
+}
+
+export const getGraphqlUrl = () => {
+    return "https://yfse1b9v0m.execute-api.eu-west-1.amazonaws.com/dev/query";// process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
+}
+
+
 /**
  * Function to be used on server side that connects a ReactApp (jsx) with a GraphQL-Layer hosted on AWS Lambda/DynamoDb
  * Creates the server side store
@@ -146,56 +206,10 @@ export const connectWithDataLayer = (dataLayerId, request) => async (app) => {
             return fetch(uri, options);
         };
 
-        //console.log("STAGE_PATH: ", process.env.STAGE_PATH);
-        //console.log("DOMAIN_ENABLED: ", process.env.DOMAIN_ENABLED);
+        const graphqlUrl = getGraphqlUrl(); // "https://yfse1b9v0m.execute-api.eu-west-1.amazonaws.com/dev/query";// process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
 
-        // TODO take these variables, esp. GraphQl-Path from the component rather than from the env-variables,
-        // because, there might be more than one DataLayers!
-        // when we have a valid stage_path or a domain, e.g. https://xxxxxxxxxxx.execute-api.eu-west-1.amazonaws.com/dev/query',
-        /*const graphqlUrl = (
-            process.env.STAGE_PATH !== undefined && process.env.STAGE_PATH !== "undefined" && process.env.STAGE_PATH.length > 0
-        ) || process.env.DOMAIN_ENABLED === "true" ?
-            // then use the path
-        (process.env.DOMAIN_ENABLED !== undefined && process.env.DOMAIN_ENABLED === "true" &&
-        process.env.DOMAIN_NAME !== undefined && process.env.DOMAIN_NAME !== undefined ?
-            "https://"+process.env.DOMAIN_NAME : process.env.DOMAIN_URL) + "/"+process.env.GRAPHQL_PATH :
-            // else mock the endpoint - use the dev-endpoint
-            "https://yfse1b9v0m.execute-api.eu-west-1.amazonaws.com/dev/query"; // undefined; //
-        //
-            // TODO set undefined or a Mock or the Dev-Address here
-
-           */
-
-        const graphqlUrl = "https://yfse1b9v0m.execute-api.eu-west-1.amazonaws.com/dev/query";// process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
-
-        console.log("graphqlUrl: ", graphqlUrl);
-        //console.log("schema: ", schema);
-
-        const client = new ApolloClient({
-            ssrMode: true,
-
-            //ssrForceFetchDelay: 100,
-            cache: new InMemoryCache(),
-            /* instead of the createHttpLink, we use SchemaLink({ schema }) to void network traffic, for both endpoints
-             * implements [[UseSchemaLinkSpec]]
-             *
-             */
-            link: new SchemaLink({
-                schema: dataLayer.getSchema(true),
-                context: {
-                    // when we have a userId, put it into the context so thatwe have it through ssr, too.
-                    userId: getUserId(request)
-                }
-            })
-            /*link: createHttpLink({
-                uri: graphqlUrl,
-                fetch: awsGraphqlFetch,
-                credentials: 'include',
-            }),*/
-
-        });
-
-        console.log("client: ", client);
+        const client = createApolloClient(dataLayer, graphqlUrl, request);
+        dataLayer.setClient(client);
 
         const connectedApp = <ApolloProvider client={client}>
             <ApolloConsumer>
@@ -203,7 +217,7 @@ export const connectWithDataLayer = (dataLayerId, request) => async (app) => {
             </ApolloConsumer>
         </ApolloProvider>
 
-        console.log("connectedApp: ", connectedApp);
+        //console.log("connectedApp: ", connectedApp);
         try {
             //.catch((err) => console.log("err: ", err))
             await getDataFromTree(connectedApp).then(() => resolve({connectedApp: connectedApp, getState: () => {

@@ -67,7 +67,13 @@ export interface IDataLayerProps {
 
     getSchema?: any // optional only because it is implemented in a separate object below. but it is required!
 
-    entries: any
+    entries: any,
+
+    /**
+     * The Apollo-Client: used at server-side only! Used to provide the Apollo-Client to middlewares
+     */
+    client?: any
+    setClient: (client: any) => void
 };
 
 
@@ -94,6 +100,9 @@ export default (props: IDataLayerArgs | any) => {
     //const entries = getChildrenArray(props).filter(child => isEntry(child));
     const entries = findComponentRecursively(props.children, isEntry);
 
+    const complementedProps = {
+
+    };
 
     /**
      * create the
@@ -270,7 +279,10 @@ export default (props: IDataLayerArgs | any) => {
 
 
 
-
+        setClient: (client) => {
+            console.log("set apollo client: ", client);
+            complementedProps["client"] = client;
+        }
 
     };
 
@@ -309,6 +321,6 @@ export default (props: IDataLayerArgs | any) => {
     });
     
 
-    return Object.assign({}, props, componentProps, datalayerProps, schemaProps);
+    return Object.assign({}, props, componentProps, datalayerProps, schemaProps, complementedProps);
 
 };

@@ -19,6 +19,8 @@ import { matchPath } from 'react-router';
 import helmet from 'react-helmet';
 import {createServerApp} from "./routed-app";
 import {getBasename} from '../libs/iso-libs';
+import {serviceAttachDataLayer} from "./attach-data-layer";
+
 
 import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
@@ -118,19 +120,29 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
     // split the clientApps here and define a function for each of the clientApps, with the right middleware
     isoApp.services.map(service => {
 
+        // flattens the callbacks
+        const unpackMiddlewares = (middlewares) => {
+            // always returns the list of callbacks
+            const cbList = (mw) => Array.isArray(mw.callback) ? mw.callback : [mw.callback];
+            return middlewares.reduce((res,mw) => res.concat(...cbList(mw)), dataLayer ? [
+                // when we have a dataLayer, let's attach it to the request
+                serviceAttachDataLayer(dataLayer)
+            ] : [])
+        }
+
         console.log("found service: ", service);
 
         if (service.method.toUpperCase() == "GET") {
-            app.get(service.path, ...service.middlewares.map(mw => mw.callback));
+            app.get(service.path, ...unpackMiddlewares(service.middlewares));
 
         } else if (service.method.toUpperCase() == "POST") {
-            app.post(service.path, ...service.middlewares.map(mw => mw.callback));
+            app.post(service.path, ...unpackMiddlewares(service.middlewares));
 
         } else if (service.method.toUpperCase() == "PUT") {
-            app.put(service.path, ...service.middlewares.map(mw => mw.callback));
+            app.put(service.path, ...unpackMiddlewares(service.middlewares));
 
         } else if (service.method.toUpperCase() == "DELETE") {
-            app.delete(service.path, ...service.middlewares.map(mw => mw.callback));
+            app.delete(service.path, ...unpackMiddlewares(service.middlewares));
 
         }
 

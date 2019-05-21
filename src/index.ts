@@ -55,6 +55,7 @@ export const mutate = require('./datalayer/datalayer-libs').mutate;
 export const select = require('./datalayer/datalayer-libs').select;
 export const withDataLayer = require('./assets/attach-data-layer').withDataLayer;
 export const AttachDataLayer = require('./assets/attach-data-layer').default;
+export const serviceWithDataLayer = require('./assets/attach-data-layer').serviceWithDataLayer;
 
 export const withRoutes = require('./assets/attach-routes').withRoutes;
 export const AttachRoutes = require('./assets/attach-routes').default;
