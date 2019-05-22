@@ -129,7 +129,7 @@ export default (props: IDataLayerArgs | any) => {
                     console.log("resolve: ", resolveWithData, source, context, info, args);
 
                     // This context gets the data from the context put into the <Query/> or Mutation...
-                    console.log("context: ", context);
+                    //console.log("context: ", context);
 
                     const result = entry.setEntry(args, context, process.env.TABLE_NAME);
 
@@ -139,7 +139,7 @@ export default (props: IDataLayerArgs | any) => {
                 }
             };
 
-            console.log("mutation definition: ", result["set_"+entry.id]);
+            //console.log("mutation definition: ", result["set_"+entry.id]);
 
             return result;
         }, {}),
@@ -147,7 +147,7 @@ export default (props: IDataLayerArgs | any) => {
         queries: (resolveWithData: boolean) => entries.reduce((result, entry) => {
             
             const listType = entry.createEntryType("list_");
-            console.log("listType: ", listType);
+            //console.log("listType: ", listType);
 
 
             // list all the items, specifying the primaryKey
@@ -160,7 +160,7 @@ export default (props: IDataLayerArgs | any) => {
                 resolve: (source, args, context, info) => {
 
 
-                    console.log("resolve: ", resolveWithData, source, args, context);
+                    //console.log("resolve: ", resolveWithData, source, args, context);
 
                     if (!resolveWithData) {
                         return entry.id;
@@ -201,7 +201,7 @@ export default (props: IDataLayerArgs | any) => {
                 type: resolveWithData ? new GraphQLList(listType): listType,
                 resolve: (source, args, context, info) => {
 
-                    console.log("resolve: ", resolveWithData, source, args, context);
+                    //console.log("resolve: ", resolveWithData, source, args, context);
 
                     if (!resolveWithData) {
                         return entry.id;
@@ -280,7 +280,6 @@ export default (props: IDataLayerArgs | any) => {
 
 
         setClient: (client) => {
-            console.log("set apollo client: ", client);
             complementedProps["client"] = client;
         }
 

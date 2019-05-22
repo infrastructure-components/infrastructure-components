@@ -101,6 +101,7 @@ const query = () => {
 
     app.use(cookiesMiddleware());
 
+    /*
     app.use((req, res, next) => {
 
         console.log("this it the datalayer-mw: ", req);
@@ -108,7 +109,7 @@ const query = () => {
         const { body} = req;
         console.log("body: ", body);
         return next();
-    });
+    });*/
 
     /**
      * The schema specifies the queries that the user can run. It also connects to implementation of the DynamoDb-connection

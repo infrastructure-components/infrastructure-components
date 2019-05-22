@@ -39,7 +39,7 @@ export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData) =>
             }
         }, callback))
         .then(() => {
-            console.log("data stored!")
+            //console.log("data stored!")
 
             var result = {};
             result[pkEntity] = pkId;
@@ -62,7 +62,7 @@ export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData) =>
  */
 export const ddbListEntries = (tableName, key, entity, value, rangeEntity) => {
 
-    console.log("ddbListEntries: ", tableName, key, entity, value, rangeEntity);
+    //console.log("ddbListEntries: ", tableName, key, entity, value, rangeEntity);
 
     const q = {
         // use the table_name as specified in the serverless.yml
@@ -82,7 +82,7 @@ export const ddbListEntries = (tableName, key, entity, value, rangeEntity) => {
         }
     };
 
-    console.log("query: ", q);
+    //console.log("query: ", q);
 
     return promisify(callback =>
         new AWS.DynamoDB.DocumentClient().query(q, callback))
@@ -103,8 +103,8 @@ export const ddbListEntries = (tableName, key, entity, value, rangeEntity) => {
 
 export const getEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
 
-    console.log("pk: ", `${pkEntity}|${pkValue}`);
-    console.log("sk: ", `${skEntity}|${skValue}`);
+    //console.log("pk: ", `${pkEntity}|${pkValue}`);
+    //console.log("sk: ", `${skEntity}|${skValue}`);
 
     return promisify(callback =>
         new AWS.DynamoDB.DocumentClient().get({
@@ -116,7 +116,7 @@ export const getEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
             }
         }, callback))
         .then(result => {
-            console.log("result: ", result);
+            //console.log("result: ", result);
 
             return result["Item"] ? result["Item"] : result;
 
@@ -133,7 +133,7 @@ import {IC_USER_ID} from "../authentication/auth-middleware";
  * TODO the fields must be taken from the data-layer, not requiring the user to provide them
  */
 export const setEntryMutation = ( entryId, data, fields, context={}) => {
-    console.log("setEntryMutation: ", entryId, data, fields);
+    //console.log("setEntryMutation: ", entryId, data, fields);
 
 
     const mutationObj = {};
@@ -161,7 +161,7 @@ export const setEntryMutation = ( entryId, data, fields, context={}) => {
  * TODO the fields must be taken from the data-layer, not requiring the user to provide them
  */
 export const getEntryListQuery = ( entryId, data, fields, context={}) => {
-    console.log("getEntryListQuery: ", entryId, data, fields, context);
+    //console.log("getEntryListQuery: ", entryId, data, fields, context);
     
     if (Object.keys(data).length !== 1) {
         console.error("getEntryListQuery requires exact 1 field provided in the data argument");
@@ -182,7 +182,7 @@ export const getEntryListQuery = ( entryId, data, fields, context={}) => {
         },{})
     );
 
-    console.log("listQuery string: ", query(queryObj));
+    //console.log("listQuery string: ", query(queryObj));
 
     return {
         query:gql`${query(queryObj)}`,
@@ -199,14 +199,14 @@ export const select = (client, {query, context={}}) => {
         context["userId"] = new Cookies().get(IC_USER_ID);
     }
 
-    console.log("select: ", query, context);
+    //console.log("select: ", query, context);
 
     
     return client.query({
         query: query,
         context: context
     }).then(result => {
-        console.log("select result: ", result)
+        //console.log("select result: ", result)
 
         return result.data;
 

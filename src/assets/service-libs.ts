@@ -18,7 +18,7 @@ export async function callService(id: string, args: any, onResult: (result: any)
     // we must load it directly from the module here, to enable the aliad of the config_file_path
     const isoConfig = loadConfigurationFromModule(require('__CONFIG_FILE_PATH__'), INFRASTRUCTURE_MODES.RUNTIME);
 
-    console.log("isoConfig: ", isoConfig)
+    //console.log("isoConfig: ", isoConfig)
 
     // let's extract it from the root configuration
     const serviceComponent = extractObject(
@@ -34,7 +34,7 @@ export async function callService(id: string, args: any, onResult: (result: any)
     }
     
     const urlPath = getBasename() !== undefined ? path.join(getBasename(), serviceComponent.path) : serviceComponent.path;
-    console.log("urlPath: ", urlPath);
+    //console.log("urlPath: ", urlPath);
 
     /*
 

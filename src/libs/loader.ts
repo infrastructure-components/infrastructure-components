@@ -3,6 +3,7 @@
  */
 
 import { getChildrenArray } from './index';
+import Types from '../types';
 
 
 /**
@@ -41,12 +42,19 @@ export const INFRASTRUCTURE_MODES = {
  * Loads an InfrastructureComponent (of any type)
  */
 export const loadInfrastructureComponent = (component, infrastructureMode: string | undefined) => {
+
+
     try {
 
-        //console.log("parseInfrastructureComponent: ", component);
 
         // first load the children!
-        const children = getChildrenArray(component.props).map(child => loadInfrastructureComponent(child, infrastructureMode));
+        const children = getChildrenArray(component.props).reduce((result, child) => {
+            return result.concat(loadInfrastructureComponent(child, infrastructureMode))
+        }, []);
+
+        //console.log("parseInfrastructureComponent: ", component, children);
+
+
 
         // overwrite the children in the props
         const props = Object.assign({}, component.props, {
@@ -63,8 +71,9 @@ export const loadInfrastructureComponent = (component, infrastructureMode: strin
         //console.log("parsed InfrastructureComponent: ", result);
 
         if (result.infrastructureType == undefined) {
-            console.warn("not an infrastructure-component: ", result);
-            return undefined;
+            //console.log("not an infrastructure-component: ", result);
+
+            return loadInfrastructureComponent(result,infrastructureMode);
         }
 
         //console.log("parsed: ", parsed);
