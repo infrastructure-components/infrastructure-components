@@ -283,6 +283,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                     iamPermissions,
 
                     // assign the role
+                    // assign the role
                     iamRoleAssignment
 
                 ]),

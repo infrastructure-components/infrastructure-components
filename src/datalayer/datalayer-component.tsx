@@ -65,6 +65,8 @@ export interface IDataLayerProps {
 
     setEntryMutation: (entryId: string, values: any ) => any,
 
+    deleteEntryMutation: (entryId: string, values: any ) => any,
+
     getSchema?: any // optional only because it is implemented in a separate object below. but it is required!
 
     entries: any,
@@ -114,8 +116,6 @@ export default (props: IDataLayerArgs | any) => {
 
         mutations: (resolveWithData: boolean) => entries.reduce((result, entry) => {
 
-
-
             result[entry.getSetMutationName()] = {
                 args: entry.createEntryArgs(),
                 type: entry.createEntryType("set_"),
@@ -132,6 +132,29 @@ export default (props: IDataLayerArgs | any) => {
                     //console.log("context: ", context);
 
                     const result = entry.setEntry(args, context, process.env.TABLE_NAME);
+
+
+                    console.log("result: ", result);
+                    return result;
+                }
+            };
+
+            result[entry.getDeleteMutationName()] = {
+                args: entry.createEntryArgs(),
+                type: entry.createEntryType("delete_"),
+                resolve: (source, args, context, info) => {
+
+
+                    if (!resolveWithData) {
+                        return entry.id;
+                    }
+
+                    console.log("resolve: ", resolveWithData, source, context, info, args);
+
+                    // This context gets the data from the context put into the <Query/> or Mutation...
+                    //console.log("context: ", context);
+
+                    const result = entry.deleteEntry(args, context, process.env.TABLE_NAME);
 
 
                     console.log("result: ", result);
@@ -271,6 +294,16 @@ export default (props: IDataLayerArgs | any) => {
             const entry = entries.find(entry => entry.id === entryId);
             if (entry !== undefined) {
                 return entry.setEntryMutation(values)
+            };
+
+            console.warn("could not find entry: ", entryId);
+            return {};
+        },
+
+        deleteEntryMutation: (entryId, values) => {
+            const entry = entries.find(entry => entry.id === entryId);
+            if (entry !== undefined) {
+                return entry.deleteEntryMutation(values)
             };
 
             console.warn("could not find entry: ", entryId);

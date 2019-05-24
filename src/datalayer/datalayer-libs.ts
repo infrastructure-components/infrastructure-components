@@ -123,6 +123,30 @@ export const getEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
         }).catch(error => { console.log(error) });
 };
 
+
+export const deleteEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
+
+    console.log("delete entry: ", pkEntity, pkValue, skEntity, skValue)
+    //console.log("pk: ", `${pkEntity}|${pkValue}`);
+    //console.log("sk: ", `${skEntity}|${skValue}`);
+
+    return promisify(callback =>
+        new AWS.DynamoDB.DocumentClient().delete({
+            // use the table_name as specified in the serverless.yml
+            TableName: tableName,
+            Key: {
+                pk: `${pkEntity}|${pkValue}`,
+                sk: `${skEntity}|${skValue}`
+            }
+        }, callback))
+        .then(result => {
+            //console.log("result: ", result);
+
+            return result["Item"] ? result["Item"] : result;
+
+        }).catch(error => { console.log(error) });
+};
+
 import { mutation, params, types, query } from 'typed-graphqlify'
 import {IC_USER_ID} from "../authentication/auth-middleware";
 
@@ -138,6 +162,29 @@ export const setEntryMutation = ( entryId, data, fields, context={}) => {
 
     const mutationObj = {};
     mutationObj[`set_${entryId}`] = params(
+        Object.keys(data).reduce((result, key) => {
+            result[key] = `"${data[key]}"`;
+            return result;
+        },{}),
+        Object.keys(fields).reduce((result, key) => {
+            result[key] = types.string;
+            return result;
+        },{})
+    );
+
+    return {
+        mutation: gql`${mutation(mutationObj)}`,
+        context: context
+    }
+
+};
+
+
+export const deleteEntryMutation = ( entryId, data, fields, context={}) => {
+    console.log("deleteEntryMutation: ", entryId, data);
+
+    const mutationObj = {};
+    mutationObj[`delete_${entryId}`] = params(
         Object.keys(data).reduce((result, key) => {
             result[key] = `"${data[key]}"`;
             return result;

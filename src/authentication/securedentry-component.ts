@@ -9,7 +9,7 @@ import createMiddleware from '../middleware/middleware-component';
 
 import ConnectSequence from 'connect-sequence';
 
-import { getEntryListQuery, setEntryMutation, setEntry, ddbListEntries } from '../datalayer/datalayer-libs';
+import {getEntryListQuery, setEntryMutation, setEntry, ddbListEntries, deleteEntry} from '../datalayer/datalayer-libs';
 
 
 import {
@@ -138,6 +138,19 @@ export default (props: IEntryArgs | any) => {
             );
         },
 
+        deleteEntry: (args, context, tableName) => {
+
+            setUserIdFromContext(context);
+            
+            return deleteEntry(
+                tableName, //"code-architect-dev-data-layer",
+                props.primaryKey, // schema.Entry.ENTITY, //pkEntity
+                args[props.primaryKey], // pkId
+                IC_USER_ID, //schema.Data.ENTITY, // skEntity
+                `${securedEntryProps.userId}|${props.rangeKey}|${args[props.rangeKey]}` // skId
+            );
+        },
+
         listEntries: (args, context, tableName, key) => {
 
             setUserIdFromContext(context);
@@ -157,8 +170,8 @@ export default (props: IEntryArgs | any) => {
                 console.log("promised: ", results);
                 return results.map(item => {
                     const data = item.jsonData !== undefined ? JSON.parse(item.jsonData) : {};
-                    data[props.primaryKey] = item.pk.substring(item.pk.indexOf("|")+1);
-                    data[props.rangeKey] = item.sk.substring(item.sk.indexOf("|")+1);
+                    data[props.primaryKey] = item.pk.substring(item.pk.lastIndexOf("|")+1);
+                    data[props.rangeKey] = item.sk.substring(item.sk.lastIndexOf("|")+1);
                     return data;
                 });
 

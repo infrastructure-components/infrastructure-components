@@ -4,7 +4,10 @@ import Types from '../types';
 import { IComponent} from "../types/component";
 import { IInfrastructure } from "../types";
 
-import { setEntry, ddbListEntries, getEntryListQuery, setEntryMutation } from './datalayer-libs';
+import {
+    setEntry, ddbListEntries, getEntryListQuery, setEntryMutation, deleteEntryMutation,
+    deleteEntry
+} from './datalayer-libs';
 import createMiddleware from '../middleware/middleware-component';
 
 
@@ -82,6 +85,15 @@ export interface IEntryProps {
 
     middleware: any,
 
+
+    /**
+     * delete an entry with the specified values
+     *
+     * @param values
+     */
+    deleteEntryMutation: (values: any) => any,
+
+    deleteEntry: (args, context, tableName) => any,
 
     /**
      * Provide the name of the list-query with primary entity
@@ -207,6 +219,32 @@ export const createEntryProps = (props): IEntryProps => {
 
         },
 
+
+        deleteEntryMutation: (values) => {
+            const fields = entryProps.createEntryFields();
+            //const fields = entryProps.createEntryFields();
+            //console.log("fields: ", fields);
+
+            return deleteEntryMutation(
+                props.id,
+                values,
+                fields
+            );
+
+        },
+
+        deleteEntry: (args, context, tableName) => {
+
+            return deleteEntry(
+                tableName, //"code-architect-dev-data-layer",
+                props.primaryKey, // schema.Entry.ENTITY, //pkEntity
+                args[props.primaryKey], // pkId
+                props.rangeKey, //schema.Data.ENTITY, // skEntity
+                args[props.rangeKey] // skId
+
+            );
+        },
+
         middleware: createMiddleware({ callback: (req, res, next) => {
             console.log("this is the mw of the entry: ", props.id)
             return next();
@@ -216,6 +254,7 @@ export const createEntryProps = (props): IEntryProps => {
         getPrimaryListQueryName: () => "list_"+props.id+"_"+props.primaryKey,
         getRangeListQueryName: () => "list_"+props.id+"_"+props.rangeKey,
         getSetMutationName: () => "set_"+props.id,
+        getDeleteMutationName: () => "delete_"+props.id,
 
         /**
          * Returns whether this entry provides the query/mutation with the specified name
@@ -226,7 +265,8 @@ export const createEntryProps = (props): IEntryProps => {
 
             const result = name === entryProps.getPrimaryListQueryName() ||
                 name === entryProps.getRangeListQueryName() ||
-                name === entryProps.getSetMutationName();
+                name === entryProps.getSetMutationName() ||
+                name === entryProps.getDeleteMutationName();
 
             //console.log("does ", props.id , " provide ", name, "? ", result)
 

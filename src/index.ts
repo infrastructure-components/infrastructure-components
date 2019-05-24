@@ -62,3 +62,4 @@ export const AttachRoutes = require('./assets/attach-routes').default;
 export const IRoute = require('./assets/routed-app').IRoute;
 
 export const callService = require('./assets/service-libs').callService;
+export const getServiceUrl = require('./assets/service-libs').getServiceUrl;
