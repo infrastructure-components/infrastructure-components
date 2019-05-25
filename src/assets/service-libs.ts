@@ -12,6 +12,8 @@ import {getBasename} from '../libs/iso-libs';
  */
 export async function callService(id: string, args: any, onResult: (result: any) => void, onError: (error: any) => void) {
 
+    console.log("callService: ", id, args);
+
     const path = require("path");
     
     // load the IsomorphicComponent

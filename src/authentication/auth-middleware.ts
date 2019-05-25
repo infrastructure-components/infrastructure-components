@@ -122,12 +122,12 @@ export const createCallbackMiddleware = (
 
         // try the freshly acquired token and get the user's Medium.com id
         await getUserData(resJson).then(async function(data) {
-            //console.log(JSON.stringify(dataJson));
+            console.log(JSON.stringify(data));
 
             const {id, name, username, imageUrl, access_token } = data;
 
-            //console.log("id: ", id);
-            //console.log("name: ", name);
+            console.log("id: ", id);
+            console.log("name: ", name);
 
             const today = new Date();
             const expirationDate = new Date(today);

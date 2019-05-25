@@ -62,7 +62,7 @@ export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData) =>
  */
 export const ddbListEntries = (tableName, key, entity, value, rangeEntity) => {
 
-    //console.log("ddbListEntries: ", tableName, key, entity, value, rangeEntity);
+    console.log("ddbListEntries: ", tableName, key, entity, value, rangeEntity);
 
     const q = {
         // use the table_name as specified in the serverless.yml
