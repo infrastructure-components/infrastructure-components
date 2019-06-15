@@ -1,4 +1,3 @@
-import {getUserId} from "./force-login";
 declare global {
     interface Window {
         __APOLLO_STATE__: any;
@@ -21,6 +20,7 @@ import { SchemaLink } from 'apollo-link-schema';
 //import fetch from 'node-fetch';
 require('es6-promise').polyfill();
 import 'isomorphic-fetch';
+
 
 /**
  * we MUST NOT IMPORT CONTEXTs directly, but require them at time of use generally from Infrastructure-Components
@@ -141,7 +141,7 @@ export const createApolloClient = (dataLayer, graphqlUrl, request) => {
             schema: dataLayer.getSchema(true),
             context: {
                 // when we have a userId, put it into the context so thatwe have it through ssr, too.
-                userId: getUserId(request)
+                userId: require("infrastructure-components").getUserId(request)
             }
         })
         /*link: createHttpLink({

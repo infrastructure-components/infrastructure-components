@@ -7,9 +7,6 @@ import { Switch, Route, BrowserRouter, HashRouter, Link } from 'react-router-dom
 //import {__RouterContext} from "react-router"
 
 import RedirectWithStatus from './redirect-w-status';
-import ForceLogin from './force-login';
-//import AttachRequest from '../components/attach-request';
-//import AttachRoutes from './attach-routes';
 
 
 /**
@@ -98,6 +95,8 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
     // (p) => render(Object.assign({},p, props))
     //console.log("RoutedApp: " , useContext(__RouterContext))
 
+    const ForceLogin = require("infrastructure-components").ForceLogin;
+
     const routes = props.routes.map(({ path, exact, component, render, isSecured }, i) => {
         //console.log("routepath: ", path)
         // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
@@ -146,12 +145,16 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
 export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirect>, basename: string) => {
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
+    const AttachUser = require("infrastructure-components").AttachUser;
 
     return <BrowserRouter basename={basename}>
+
         <AttachRequest>
-            <AttachRoutes routes={routes}>
-                <RoutedApp routes={routes} redirects={redirects} />
-            </AttachRoutes>
+            <AttachUser>
+                <AttachRoutes routes={routes}>
+                    <RoutedApp routes={routes} redirects={redirects} />
+                </AttachRoutes>
+            </AttachUser>
         </AttachRequest>
     </BrowserRouter>;
 };
@@ -166,12 +169,15 @@ export const createServerApp = (
 
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
+    const AttachUser = require("infrastructure-components").AttachUser;
 
     return <StaticRouter context={context} location={url} basename={basename}>
         <AttachRequest request={request}>
-            <AttachRoutes routes={routes}>
-                <RoutedApp routes={routes} redirects={redirects} />
-            </AttachRoutes>
+            <AttachUser>
+                <AttachRoutes routes={routes}>
+                    <RoutedApp routes={routes} redirects={redirects} />
+                </AttachRoutes>
+            </AttachUser>
         </AttachRequest>
     </StaticRouter>;
 };

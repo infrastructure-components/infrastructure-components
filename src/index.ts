@@ -61,5 +61,13 @@ export const withRoutes = require('./assets/attach-routes').withRoutes;
 export const AttachRoutes = require('./assets/attach-routes').default;
 export const IRoute = require('./assets/routed-app').IRoute;
 
+export const withUser = require('./assets/attach-user').withUser;
+export const AttachUser = require('./assets/attach-user').default;
+export const getUserId = require('./assets/attach-user').getUserId;
+
+
+export const ForceLogin = require('./assets/force-login').default;
+
+
 export const callService = require('./assets/service-libs').callService;
 export const getServiceUrl = require('./assets/service-libs').getServiceUrl;

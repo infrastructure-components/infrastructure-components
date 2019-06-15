@@ -1,25 +1,27 @@
+
 declare var require: any;
 import * as React from 'react';
-import Cookies from 'universal-cookie';
-import {IC_USER_ID} from "../authentication/auth-middleware";
+//import Cookies from 'universal-cookie';
+//import {IC_USER_ID} from "../authentication/auth-middleware";
 
 
-import ExecutionEnvironment from 'exenv';
+//import ExecutionEnvironment from 'exenv';
 //import {withRequest} from "../components/attach-request";
 
-
+/*
 export const isLoggedIn = (identityKey) => {
     const val = new Cookies().get(identityKey);
     //console.log("forceLogin: ",val);
     return val !== undefined;
-}
+}*/
 
 // create a context with the default value: empty
-const LoggedInContext = React.createContext(undefined);
+//const LoggedInContext = React.createContext(undefined);
 
 
 interface ForceLoginProps {
-    request? : any // passed by `withRequest`
+    userId: string | undefined
+    //request? : any // passed by `withRequest`
     //identityKey: string // the primaryKey-property of the applicable <Identity />-Component
 }
 /**
@@ -36,8 +38,6 @@ interface ForceLoginProps {
 class ForceLogin extends React.Component<ForceLoginProps, {}> {
 
 
-
-
     /**
      * When we run in the browser: if not logged in, then make the page reload from the server to
      * make the login-middlewares apply
@@ -45,7 +45,7 @@ class ForceLogin extends React.Component<ForceLoginProps, {}> {
     componentDidMount() {
         //console.log("ForceLogin-Component: ", this.props.identityKey)
 
-        if (!isLoggedIn(IC_USER_ID)) {
+        if (this.props.userId == undefined) {
             window.location.reload();
         }
         
@@ -54,52 +54,22 @@ class ForceLogin extends React.Component<ForceLoginProps, {}> {
 
     render () {
         
-        console.log("ForceLogin: request ->", this.props.request)
+        //console.log("ForceLogin: request ->", this.props.request)
 
         // we provide the information which user is logged in
-        return <LoggedInContext.Provider value={
-            ExecutionEnvironment.canUseDOM ?
-                new Cookies().get(IC_USER_ID) :
-                new Cookies(this.props.request.headers.cookie).get(IC_USER_ID)
-
-        }>{this.props.children}</LoggedInContext.Provider>
+        return <div>{this.props.children}</div>
 
     }
 }
 
-/**
- * Pass the information on whether the user `isLoggedIn` as prop to the component
- * @param Component
- * @returns {function(any): any}
- */
-export function withUserId(Component) {
-    return function WrapperComponent(props) {
-        return (
-            <LoggedInContext.Consumer>
-                {value => <Component {...props} userId={value} />}
-            </LoggedInContext.Consumer>
-        );
-    };
-}
+import {withUser} from "./attach-user";
 
-
-
-export function getUserId(request) {
-    if (request) {
-        return new Cookies(request.headers.cookie).get(IC_USER_ID)
-    } else if (ExecutionEnvironment.canUseDOM) {
-        return new Cookies().get(IC_USER_ID)
-    }
-
-    return undefined;
-
-}
 
 /**
  * we MUST NOT IMPORT CONTEXTs directly, but require them at time of use generally from Infrastructure-Components
  * because this then resolves to node_modules
  */
-export default require("infrastructure-components").withRequest(ForceLogin);
+export default withUser(ForceLogin);
 
 
 
