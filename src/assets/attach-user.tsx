@@ -1,10 +1,13 @@
 
 declare var require: any;
 import * as React from 'react';
-import {IC_USER_ID} from "../authentication/auth-middleware";
+import {IC_USER_ID, IC_WEB_TOKEN} from "../authentication/auth-middleware";
 
 import ExecutionEnvironment from 'exenv';
 import Cookies from 'universal-cookie';
+
+import {getBasename} from "../libs/iso-libs";
+
 
 // create empty context as default
 const UserContext = React.createContext({});
@@ -30,7 +33,7 @@ interface IAttachUserProps {
  */
 const AttachUser: React.SFC<IAttachUserProps> = (props) => {
 
-
+    console.log("attaching user: ", getUserId(undefined));
 
     return <UserContext.Provider
         value={{
@@ -61,6 +64,19 @@ export function withUser(Component) {
     };
 }
 
-import {withRequest} from "../components/attach-request";
+export function userLogout(pathUrl: string | undefined ) {
+    const path = require('path');
 
-export default withRequest(AttachUser);
+    const cookies = new Cookies();
+    cookies.remove(IC_USER_ID, { path: '/' });
+    cookies.remove(IC_WEB_TOKEN, { path: '/' });
+
+    if (pathUrl !== undefined) {
+        window.location.href = path.join(getBasename(), pathUrl);
+    } else {
+        window.location.reload()
+    }
+
+}
+
+export default require("infrastructure-components").withRequest(AttachUser);

@@ -11,7 +11,7 @@ import {getBasename} from '../libs/iso-libs';
  * token handed over to the user's browser, serves as password to encrypt/decrypt the Medium-access token
  * @type {string}
  */
-const IC_WEB_TOKEN = "IC_WEB_TOKEN";
+export const IC_WEB_TOKEN = "IC_WEB_TOKEN";
 
 /**
  * unique id of the user, comes from the provider (GitHub, Medium, etc)
@@ -166,8 +166,8 @@ export const createCallbackMiddleware = (
 
 
             // give the webtoken to back to the user
-            req.universalCookies.set(IC_WEB_TOKEN, webtoken);
-            req.universalCookies.set(IC_USER_ID, id);
+            req.universalCookies.set(IC_WEB_TOKEN, webtoken, { path: '/' });
+            req.universalCookies.set(IC_USER_ID, id, { path: '/' });
 
             console.log("done") //'http://' +path.join(req.headers.host +  +
             res.redirect(path.join(getBasename(), redirectPage));
