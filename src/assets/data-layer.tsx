@@ -111,6 +111,9 @@ const query = () => {
         return next();
     });*/
 
+    console.log("DataLayer -- queries: ", dataLayer.queries);
+    console.log("DataLayer -- mutations: ", dataLayer.mutations);
+
     /**
      * The schema specifies the queries that the user can run. It also connects to implementation of the DynamoDb-connection
      * through the resolve-functions!

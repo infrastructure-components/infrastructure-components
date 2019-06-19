@@ -63,6 +63,8 @@ export interface IDataLayerProps {
      */
     getEntryListQuery: (entryId: string, dictKey: any ) => any,
 
+    getEntryQuery: (entryId: string, dictKey: any ) => any,
+
     setEntryMutation: (entryId: string, values: any ) => any,
 
     deleteEntryMutation: (entryId: string, values: any ) => any,
@@ -170,6 +172,7 @@ export default (props: IDataLayerArgs | any) => {
         queries: (resolveWithData: boolean) => entries.reduce((result, entry) => {
             
             const listType = entry.createEntryType("list_");
+            const getType = entry.createEntryType("get_");
             //console.log("listType: ", listType);
 
 
@@ -253,6 +256,24 @@ export default (props: IDataLayerArgs | any) => {
                 }
             };
 
+            result[entry.getGetQueryName()] = {
+                args: inputArgs,
+                type: getType,
+                resolve: (source, args, context, info) => {
+
+
+                    //console.log("resolve: ", resolveWithData, source, args, context);
+
+                    if (!resolveWithData) {
+                        return entry.id;
+                    }
+
+                    return entry.getEntry(args, context, process.env.TABLE_NAME);
+
+
+                }
+            };
+
 
             return result;
         }, {}),
@@ -288,6 +309,17 @@ export default (props: IDataLayerArgs | any) => {
                  dictKey,
                  fields
              );*/
+        },
+
+        getEntryQuery: (entryId, dictKey) => {
+            const entry = entries.find(entry => entry.id === entryId);
+            if (entry !== undefined) {
+                return entry.getEntryQuery(dictKey)
+            };
+
+            console.warn("could not find entry: ",entryId);
+            return {};
+
         },
 
         setEntryMutation: (entryId, values) => {

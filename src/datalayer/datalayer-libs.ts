@@ -101,7 +101,7 @@ export const ddbListEntries = (tableName, key, entity, value, rangeEntity) => {
         }).catch(error => { console.log(error) });
 };
 
-export const getEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
+export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
 
     //console.log("pk: ", `${pkEntity}|${pkValue}`);
     //console.log("sk: ", `${skEntity}|${skValue}`);
@@ -157,7 +157,7 @@ import {IC_USER_ID} from "../authentication/auth-middleware";
  * TODO the fields must be taken from the data-layer, not requiring the user to provide them
  */
 export const setEntryMutation = ( entryId, data, fields, context={}) => {
-    //console.log("setEntryMutation: ", entryId, data, fields);
+    console.log("setEntryMutation: ", entryId, data, fields);
 
 
     const mutationObj = {};
@@ -208,8 +208,13 @@ export const deleteEntryMutation = ( entryId, data, fields, context={}) => {
  * TODO the fields must be taken from the data-layer, not requiring the user to provide them
  */
 export const getEntryListQuery = ( entryId, data, fields, context={}) => {
-    //console.log("getEntryListQuery: ", entryId, data, fields, context);
-    
+    console.log("getEntryListQuery: ", entryId, data, fields, context);
+
+    if (data == undefined) {
+        console.error("getEntryListQuery requires a data argument");
+        return undefined;
+    }
+
     if (Object.keys(data).length !== 1) {
         console.error("getEntryListQuery requires exact 1 field provided in the data argument");
         return undefined;
@@ -238,6 +243,39 @@ export const getEntryListQuery = ( entryId, data, fields, context={}) => {
     
 };
 
+export const getEntryQuery = ( entryId, data, fields, context={}) => {
+    console.log("getEntryQuery: ", entryId, data, fields, context);
+
+    if (data == undefined) {
+        console.error("getEntryQuery requires a data argument");
+        return undefined;
+    }
+
+    if (Object.keys(data).length !== 2) {
+        console.error("getEntryQuery requires exact 2 fields provided in the data argument");
+        return undefined;
+    }
+
+    const queryObj = {};
+    queryObj[`get_${entryId}`] = params(
+        Object.keys(data).reduce((result, key) => {
+            result[key] = `"${data[key]}"`;
+            return result;
+        },{}),
+        Object.keys(fields).reduce((result, key) => {
+            result[key] = types.string;
+            return result;
+        },{})
+    );
+
+    //console.log("listQuery string: ", query(queryObj));
+
+    return {
+        query:gql`${query(queryObj)}`,
+        context: context
+    }
+
+};
 
 export const select = (client, {query, context={}}) => {
 

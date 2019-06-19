@@ -74,3 +74,6 @@ export const callService = require('./assets/service-libs').callService;
 export const getServiceUrl = require('./assets/service-libs').getServiceUrl;
 
 export const getBasename = require('./libs/iso-libs').getBasename;
+
+export const fetchData = require('./libs/scripts-libs').fetchData;
+

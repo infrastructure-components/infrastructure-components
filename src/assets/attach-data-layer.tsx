@@ -48,15 +48,15 @@ export function withDataLayer(Component) {
                             dictKey
                         );
 
-                        /*
-                        const fields = context.dataLayer.getEntryDataFields(entryId);
-                        //console.log("fields: ", fields);
+                    };
+                    
+                    const getEntryQuery = (entryId, dictKey) => {
 
-                        return getEntryListQuery(
+                        return context.dataLayer.getEntryQuery(
                             entryId,
-                            dictKey,
-                            fields
-                        );*/
+                            dictKey
+                        );
+                        
                     };
 
                     const setEntryMutation = (entryId, values) => {
@@ -73,6 +73,7 @@ export function withDataLayer(Component) {
                         {...props}
                         apolloClient={context.apolloClient}
                         getEntryListQuery={entryListQuery}
+                        getEntryQuery={getEntryQuery}
                         setEntryMutation={setEntryMutation}
                     />
                 }}
@@ -83,7 +84,7 @@ export function withDataLayer(Component) {
 
 
 export const serviceWithDataLayer = (complementedCallback: (cbdataLayer, cbreq, cbres, cbnext) => any) => {
-    
+
     // we return an array of valid middleware-callbacks
     return [
         async function (req, res, next) {

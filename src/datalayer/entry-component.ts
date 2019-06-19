@@ -5,7 +5,7 @@ import { IComponent} from "../types/component";
 import { IInfrastructure } from "../types";
 
 import {
-    setEntry, ddbListEntries, getEntryListQuery, setEntryMutation, deleteEntryMutation,
+    setEntry, ddbGetEntry, ddbListEntries, getEntryListQuery, getEntryQuery, setEntryMutation, deleteEntryMutation,
     deleteEntry
 } from './datalayer-libs';
 import createMiddleware from '../middleware/middleware-component';
@@ -73,6 +73,8 @@ export interface IEntryProps {
      */
     getEntryListQuery: (dictKey: any) => any,
 
+    getEntryQuery: (dictKey: any) => any,
+
     /**
      * set an entry with the specified values
      *
@@ -82,6 +84,8 @@ export interface IEntryProps {
 
     setEntry: (args, context, tableName) => any,
     listEntries: (args, context, tableName, key) => any,
+    getEntry: (args, context, tableName) => any,
+
 
     middleware: any,
 
@@ -100,6 +104,7 @@ export interface IEntryProps {
      */
     getPrimaryListQueryName: () => string,
     getSecondaryListQueryName: () => string,
+    getGetQueryName: () => string,
     getSetMutationName: () => string,
 
     /**
@@ -166,6 +171,17 @@ export const createEntryProps = (props): IEntryProps => {
             );
         },
 
+        getEntryQuery: (dictKey) => {
+            const fields = entryProps.createEntryFields();
+            //console.log("fields: ", fields);
+
+            return getEntryQuery(
+                props.id,
+                dictKey,
+                fields
+            );
+        },
+
         setEntryMutation: (values) => {
             const fields = entryProps.createEntryFields();
             //console.log("fields: ", fields);
@@ -179,6 +195,8 @@ export const createEntryProps = (props): IEntryProps => {
         },
 
         setEntry: (args, context, tableName) => {
+
+            console.log("setEntry: ", args);
 
             return setEntry(
                 tableName, //"code-architect-dev-data-layer",
@@ -219,8 +237,33 @@ export const createEntryProps = (props): IEntryProps => {
 
         },
 
+        getEntry: (args, context, tableName) => {
 
-        deleteEntryMutation: (values) => {
+            return ddbGetEntry(
+                    tableName, //tablename
+                    props.primaryKey, // pkEntity,
+                    args[props.primaryKey],    // pkValue,
+                    props.rangeKey, // skEntity,
+                    args[props.rangeKey]// skValue
+            ).then(result => {
+
+                console.log("promised: ", result);
+
+                const data = result.jsonData !== undefined ? JSON.parse(result.jsonData) : {};
+
+                if (result && result.pk && result.sk) {
+                    data[props.primaryKey] = result.pk.substring(result.pk.indexOf("|") + 1);
+                    data[props.rangeKey] = result.sk.substring(result.sk.indexOf("|") + 1);
+                }
+                return data;
+
+            });
+
+        },
+
+
+
+    deleteEntryMutation: (values) => {
             const fields = entryProps.createEntryFields();
             //const fields = entryProps.createEntryFields();
             //console.log("fields: ", fields);
@@ -253,6 +296,7 @@ export const createEntryProps = (props): IEntryProps => {
 
         getPrimaryListQueryName: () => "list_"+props.id+"_"+props.primaryKey,
         getRangeListQueryName: () => "list_"+props.id+"_"+props.rangeKey,
+        getGetQueryName: () => "get_"+props.id,
         getSetMutationName: () => "set_"+props.id,
         getDeleteMutationName: () => "delete_"+props.id,
 
