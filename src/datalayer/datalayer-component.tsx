@@ -256,13 +256,17 @@ export default (props: IDataLayerArgs | any) => {
                 }
             };
 
+            const inputArgsGet = {};
+            inputArgsGet[entry.primaryKey] = {name: entry.primaryKey, type: new GraphQLNonNull(GraphQLString)};
+            inputArgsGet[entry.rangeKey] = {name: entry.rangeKey, type: new GraphQLNonNull(GraphQLString)};
+
             result[entry.getGetQueryName()] = {
-                args: inputArgs,
+                args: inputArgsGet,
                 type: getType,
                 resolve: (source, args, context, info) => {
 
 
-                    //console.log("resolve: ", resolveWithData, source, args, context);
+                    console.log("resolve: ", resolveWithData, source, args, context);
 
                     if (!resolveWithData) {
                         return entry.id;

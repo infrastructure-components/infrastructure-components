@@ -134,6 +134,60 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
             };
 
             /*
+            const postDeploy = async () => {
+                console.log("check for >>postDeploy<<");
+                
+                if (props.parserMode === PARSER_MODES.MODE_DEPLOY) {
+                    var endpointUrl = undefined;
+
+
+                    var eps: any = {};
+
+                    await require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").runSlsCmd("echo $(sls info)", data => {
+                        //console.log("data: " , data);
+
+                        eps = data.split(" ").reduce(({inSection, endpoints}, val, idx) => {
+                            //console.log("eval: " , val);
+
+                            if (inSection && val.indexOf("https://") > -1) {
+                                return { inSection: true, endpoints: endpoints.concat(
+                                    val.indexOf("{proxy+}") == -1 ? [val] : []
+                                )}
+                            }
+
+                            if (val.startsWith("endpoints:")) {
+                                return { inSection: true, endpoints: endpoints }
+                            }
+
+                            if (val.startsWith("functions:")) {
+                                return { inSection: false, endpoints: endpoints }
+                            }
+
+                            return { inSection: inSection, endpoints: endpoints }
+
+                        }, {inSection: false, endpoints: []});
+
+                        //console.log("endpoints" , eps)
+
+                    }, false);
+
+
+                    const data = Object.assign({
+                        proj: component.stackName,
+                        envi: component.name,
+                        domain: domain
+                    }, eps.endpoints.length > 0 ? { endp: eps.endpoints[0]} : {});
+
+                    await require('../libs/scripts-libs').fetchData("deploy", data);
+
+                    if (eps.endpoints.length > 0) {
+                        console.log("Your React-App is now available at: ", eps.endpoints[0])
+                    }
+                }
+
+            }*/
+
+            /*
             async function uploadAssetsPostBuild () {
                 //console.log("check for >>copyAssetsPostBuild<<");
                 if (props.parserMode === PARSER_MODES.MODE_DEPLOY) {
@@ -169,7 +223,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
             
 
             const domainConfig = domain !== undefined ? {
-                    plugins: ["serverless-domain-manager"],
+                    plugins: ["serverless-domain-manager",   "serverless-pseudo-parameters"],
 
                     custom: {
                         customDomain: {
@@ -253,6 +307,8 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
             }
 
             return {
+                stackType: "ISO",
+
                 slsConfigs: deepmerge.all([
                     require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").toSlsConfig(
                         component.stackName,
@@ -292,7 +348,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                 webpackConfigs: webpackConfigs.concat([serverWebPack]),
 
                 postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds),
-                    [copyAssetsPostBuild, initDomain]),
+                    [copyAssetsPostBuild, initDomain /*, postDeploy*/]),
 
                 iamRoleStatements: [],
 

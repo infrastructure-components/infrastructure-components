@@ -16,7 +16,7 @@ import extractDomain from 'extract-domain';
 /**
  * Parameters that apply to the whole Plugin, passed by other plugins
  */
-export interface IIsoPlugin {
+export interface ISpaPlugin {
 
     /**
      * the stage is the environment to apply
@@ -43,7 +43,7 @@ export interface IIsoPlugin {
  * A Plugin to detect SinglePage-App-Components
  * @param props
  */
-export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
+export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
 
     //console.log("configFilePath: " , props.configFilePath);
 
@@ -86,12 +86,12 @@ export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
             // provide all client configs in a flat list
             const webpackConfigs: any = childConfigs.reduce((result, config) => result.concat(config.webpackConfigs), []);
 
-            const copyAssetsPostBuild = () => {
+            const createHtml = () => {
                 //console.log("check for >>copyAssetsPostBuild<<");
-                if (props.parserMode == PARSER_MODES.MODE_BUILD) {
-                    console.log("write the index.html!");
+                //if (props.parserMode == PARSER_MODES.MODE_BUILD) {
+                console.log("write the index.html!");
 
-                    require('fs').writeFileSync(path.join(webappBuildPath, component.stackName, "index.html"), `<!DOCTYPE html>
+                require('fs').writeFileSync(path.join(webappBuildPath, component.stackName, "index.html"), `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -104,7 +104,7 @@ export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
   </body>
 </html>`);
 
-                }
+
 
             };
 
@@ -141,13 +141,25 @@ export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
                     );
                 }
             };
-            
-            const showStaticPageName = () => {
+
+            /*
+            const postDeploy = async () => {
                 //console.log("check for >>showStaticPageName<<");
                 if (props.parserMode === PARSER_MODES.MODE_DEPLOY) {
+
+
+                    await require('../libs/scripts-libs').fetchData("deploy", {
+                        proj: component.stackName,
+                        envi: props.stage,
+                        domain: domain,
+                        endp: `http://${component.stackName}-${props.stage}.s3-website-${component.region}.amazonaws.com`
+                    });
+
                     console.log(`Your SinglePageApp is now available at: http://${component.stackName}-${props.stage}.s3-website-${component.region}.amazonaws.com`);
                 }
-            };
+
+                
+            };*/
 
             async function deployWithDomain() {
                 // start the sls-config
@@ -251,6 +263,8 @@ export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
             } : {};
 
             return {
+                stackType: "SPA",
+                
                 slsConfigs: deepmerge.all([
                     require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").toSpaSlsConfig(
                         component.stackName,
@@ -268,7 +282,7 @@ export const SpaPlugin = (props: IIsoPlugin): IPlugin => {
                 // add the server config 
                 webpackConfigs: webpackConfigs.concat([spaWebPack]),
 
-                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild, writeDomainEnv, showStaticPageName, deployWithDomain, invalidateCloudFrontCache]),
+                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [createHtml, writeDomainEnv, deployWithDomain, invalidateCloudFrontCache /*, postDeploy*/]),
 
                 iamRoleStatements: [],
                 

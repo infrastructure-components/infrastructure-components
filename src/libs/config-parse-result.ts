@@ -5,6 +5,11 @@ import {forwardChildIamRoleStatements} from "./plugin";
 export interface IConfigParseResult {
 
     /**
+     * Either SPA or ISO
+     */
+    stackType?: string,
+
+    /**
      * Listof js-objects or single js-object to be merged into serverless.yml
      */
     slsConfigs: any | Array<any>,
@@ -72,6 +77,7 @@ export function mergeParseResults(results: Array<IConfigParseResult>) {
 
 
         return {
+            stackType: item.stackType !== undefined ? item.stackType : merged.stackType,
             slsConfigs: deepmerge.all([
                 ...(Array.isArray(item.slsConfigs) ? item.slsConfigs : [item.slsConfigs])
             ], merged.slsConfigs),

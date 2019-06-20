@@ -245,9 +245,9 @@ export const createEntryProps = (props): IEntryProps => {
                     args[props.primaryKey],    // pkValue,
                     props.rangeKey, // skEntity,
                     args[props.rangeKey]// skValue
-            ).then(result => {
+            ).then((result: any)=> {
 
-                console.log("promised: ", result);
+                console.log("entry-component getEntry result: ", result);
 
                 const data = result.jsonData !== undefined ? JSON.parse(result.jsonData) : {};
 

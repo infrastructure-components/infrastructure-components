@@ -103,20 +103,22 @@ export const ddbListEntries = (tableName, key, entity, value, rangeEntity) => {
 
 export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
 
-    //console.log("pk: ", `${pkEntity}|${pkValue}`);
-    //console.log("sk: ", `${skEntity}|${skValue}`);
+    console.log("ddbGetEntry: ", `${pkEntity}|${pkValue}`, ` -- ${skEntity}|${skValue}`, " -- ", tableName);
+
+    const q = {
+        TableName: tableName,
+        Key: {
+            pk: `${pkEntity}|${pkValue}`,
+            sk: `${skEntity}|${skValue}`
+        }
+    };
+
+    console.log("ddbGetEntry-query: ", q);
 
     return promisify(callback =>
-        new AWS.DynamoDB.DocumentClient().get({
-            // use the table_name as specified in the serverless.yml
-            TableName: tableName,
-            Key: {
-                pk: `${pkEntity}|${pkValue}`,
-                sk: `${skEntity}|${skValue}`
-            }
-        }, callback))
+        new AWS.DynamoDB.DocumentClient().get(q, callback))
         .then(result => {
-            //console.log("result: ", result);
+            console.log("ddbGetEntry result: ", result);
 
             return result["Item"] ? result["Item"] : result;
 
@@ -210,16 +212,20 @@ export const deleteEntryMutation = ( entryId, data, fields, context={}) => {
 export const getEntryListQuery = ( entryId, data, fields, context={}) => {
     console.log("getEntryListQuery: ", entryId, data, fields, context);
 
+    
+
     if (data == undefined) {
         console.error("getEntryListQuery requires a data argument");
         return undefined;
     }
 
+
+
     if (Object.keys(data).length !== 1) {
         console.error("getEntryListQuery requires exact 1 field provided in the data argument");
         return undefined;
     }
-    
+
     const queryKey = Object.keys(data)[0];
 
     const queryObj = {};
