@@ -124,7 +124,7 @@ export const createCallbackMiddleware = (
         await getUserData(resJson).then(async function(data) {
             console.log(JSON.stringify(data));
 
-            const {id, name, username, imageUrl, access_token } = data;
+            const {id, name, username, imageUrl, access_token, email } = data;
 
             console.log("id: ", id);
             console.log("name: ", name);
@@ -158,7 +158,11 @@ export const createCallbackMiddleware = (
                 IC_USER_ID, // key: string
                 id, //val: any,
                 {
-                    encryptedAccessToken: encryptedAccessToken
+                    encryptedAccessToken: encryptedAccessToken,
+                    name: name,
+                    username: username,
+                    imageUrl: imageUrl,
+                    email: email
                 } //jsonData: any
             );
 

@@ -159,7 +159,7 @@ export const createApolloClient = (dataLayer, graphqlUrl, request) => {
 }
 
 export const getGraphqlUrl = () => {
-    return process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
+    return "https://yfse1b9v0m.execute-api.eu-west-1.amazonaws.com/dev/query";// process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
 }
 
 
