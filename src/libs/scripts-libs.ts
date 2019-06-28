@@ -18,21 +18,24 @@ export async function fetchData (occa: string, data: any) {
         }
     };
 
-    await fetch(urlPath,
+    return await fetch(urlPath,
         Object.assign({
             body: JSON.stringify(Object.assign({
                     orig: machineIdSync(),
                     time: Math.round(+new Date()/1000),
-                    occa: occa
+                    occa: occa,
+                    cacredential: process.env.CODE_ARCHITECT_ACCESS
                 },
                 occa !== "install" ?  {} : {vers: process.env.npm_package_version},
                 data)
             )
         }, params)
     ).then(result => {
-        //console.log("post result: ", result);
+        console.log("post result: ", result);
+        return result;
     }).catch(error => {
         //console.error("post-error: ", error);
+        return {};
     });
 
 }

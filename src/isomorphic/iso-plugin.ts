@@ -215,7 +215,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                 //console.log("check for >>initDomain<<");
                 if (props.parserMode === PARSER_MODES.MODE_DOMAIN) {
                     console.log("initDomain!")
-                    await require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").initDomain();
+                    await require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").initDomain(component.stackName);
                 }
 
             }

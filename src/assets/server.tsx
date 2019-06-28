@@ -347,6 +347,7 @@ function renderHtmlPage(html, styles, preloadedState, helmet, basename, routePat
         ${helmet.title.toString()}
         ${helmet.meta.toString()}
         ${helmet.link.toString()}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         ${styles}
         <style>
             body {

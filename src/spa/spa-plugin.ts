@@ -96,6 +96,12 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
   <head>
     <meta charset="utf-8" />
     <title>${component.stackName}</title>
+    <style>
+            body {
+                display: block;
+                margin: 0px;
+            }
+         </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -164,7 +170,7 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
             async function deployWithDomain() {
                 // start the sls-config
                 if (props.parserMode === PARSER_MODES.MODE_DOMAIN) {
-                    await require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").deploySls();
+                    await require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").deploySls(component.stackName);
                 }
             }
 
