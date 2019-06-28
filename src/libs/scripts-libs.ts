@@ -23,8 +23,7 @@ export async function fetchData (occa: string, data: any) {
             body: JSON.stringify(Object.assign({
                     orig: machineIdSync(),
                     time: Math.round(+new Date()/1000),
-                    occa: occa,
-                    cacredential: process.env.CODE_ARCHITECT_ACCESS
+                    occa: occa
                 },
                 occa !== "install" ?  {} : {vers: process.env.npm_package_version},
                 data)
