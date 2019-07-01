@@ -29,9 +29,9 @@ export async function fetchData (occa: string, data: any) {
                 data)
             )
         }, params)
-    ).then(result => {
-        console.log("post result: ", result);
-        return result;
+    ).then(response => {
+        //console.log("post result: ", response);
+        return response.text();
     }).catch(error => {
         //console.error("post-error: ", error);
         return {};
