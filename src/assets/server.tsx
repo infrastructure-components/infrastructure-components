@@ -35,10 +35,8 @@ import {
     GraphQLNonNull
 }  from 'graphql';
 
-//import { getClientFilename } from '../types/app-config';
-export const getClientFilename = (name: string): string => {
-    return name+".bundle.js";
-}
+import { getClientFilename } from '../libs/server-libs';
+
 
 //import {loadIsoConfigFromComponent, applyCustomComponents} from "../isolib";
 //import { applyAppClientModules } from '../types/client-app-config';
@@ -115,20 +113,21 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
 
     };
 
+    // flattens the callbacks
+    const unpackMiddlewares = (middlewares) => {
+        // always returns the list of callbacks
+        const cbList = (mw) => Array.isArray(mw.callback) ? mw.callback : [mw.callback];
+        return middlewares.reduce((res,mw) => res.concat(...cbList(mw)), dataLayer ? [
+            // when we have a dataLayer, let's attach it to the request
+            serviceAttachDataLayer(dataLayer)
+        ] : [])
+    };
 
 
     // split the clientApps here and define a function for each of the clientApps, with the right middleware
     isoApp.services.map(service => {
 
-        // flattens the callbacks
-        const unpackMiddlewares = (middlewares) => {
-            // always returns the list of callbacks
-            const cbList = (mw) => Array.isArray(mw.callback) ? mw.callback : [mw.callback];
-            return middlewares.reduce((res,mw) => res.concat(...cbList(mw)), dataLayer ? [
-                // when we have a dataLayer, let's attach it to the request
-                serviceAttachDataLayer(dataLayer)
-            ] : [])
-        }
+
 
         console.log("found service: ", service);
 
@@ -161,26 +160,26 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
 
             if (clientApp.method.toUpperCase() == "GET") {
 
-                app.get(clientApp.path, ...clientApp.middlewares.map(mw => mw.callback));
-                routes.forEach(route => app.get(route.path, ...route.middlewares.map(mw => mw.callback)));
+                app.get(clientApp.path, ...unpackMiddlewares(clientApp.middlewares));
+                routes.forEach(route => app.get(route.path, ...unpackMiddlewares(route.middlewares)));
                 app.get(clientApp.path, serveMiddleware);
 
             } else if (clientApp.method.toUpperCase() == "POST") {
 
-                app.post(clientApp.path, ...clientApp.middlewares.map(mw => mw.callback));
-                routes.forEach(route => app.post(route.path, ...route.middlewares.map(mw => mw.callback)));
+                app.post(clientApp.path, ...unpackMiddlewares(clientApp.middlewares));
+                routes.forEach(route => app.post(route.path,  ...unpackMiddlewares(route.middlewares)));
                 app.post(clientApp.path, serveMiddleware);
 
             } else if (clientApp.method.toUpperCase() == "PUT") {
 
-                app.put(clientApp.path, ...clientApp.middlewares.map(mw => mw.callback));
-                routes.forEach(route => app.put(route.path, ...route.middlewares.map(mw => mw.callback)));
+                app.put(clientApp.path, ...unpackMiddlewares(clientApp.middlewares));
+                routes.forEach(route => app.put(route.path,  ...unpackMiddlewares(route.middlewares)));
                 app.put(clientApp.path, serveMiddleware);
 
             } else if (clientApp.method.toUpperCase() == "DELETE") {
 
-                app.delete(clientApp.path, ...clientApp.middlewares.map(mw => mw.callback));
-                routes.forEach(route => app.delete(route.path, ...route.middlewares.map(mw => mw.callback)));
+                app.delete(clientApp.path, ...unpackMiddlewares(clientApp.middlewares));
+                routes.forEach(route => app.delete(route.path,  ...unpackMiddlewares(route.middlewares)));
                 app.delete(clientApp.path, serveMiddleware);
 
             }
@@ -275,9 +274,11 @@ async function serve (req, res, next, clientApp, assetsDir) {
         //render helmet data aka meta data in <head></head>
         const helmetData = helmet.renderStatic();
 
-        // render a page with the state and return it in the response
+        const fRender = clientApp.renderHtmlPage ? clientApp.renderHtmlPage : renderHtmlPage;
+
+            // render a page with the state and return it in the response
         res.status(200).send(
-            renderHtmlPage(htmlData, styles, getState(), helmetData, basename, routePath, clientApp, assetsDir)
+            fRender(htmlData, styles, getState(), helmetData, basename, routePath, clientApp, assetsDir)
         ).end();
     });
 

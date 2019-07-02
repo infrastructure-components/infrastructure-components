@@ -4,7 +4,7 @@ import {IComponent} from "../types/component";
 import Types, { IInfrastructure } from "../types";
 
 import { isMiddleware } from '../middleware/middleware-component';
-import { getChildrenArray } from '../libs';
+import {getChildrenArray, findComponentRecursively} from '../libs';
 
 
 export const ROUTE_INSTANCE_TYPE = "RouteComponent";
@@ -62,8 +62,7 @@ export default (props: IRouteArgs | any) => {
     };
 
     const routeProps: IRouteProps = {
-        middlewares: getChildrenArray(props.children)
-            .filter(child => isMiddleware(child)),
+        middlewares:findComponentRecursively(props.children, isMiddleware),
         exact: true
     }
 

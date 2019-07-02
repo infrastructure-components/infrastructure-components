@@ -33,6 +33,8 @@ export interface IWebAppArgs {
      * The http method of the route, e.g. get, post, ...
      */
     method: string,
+
+    renderHtmlPage?: (html, styles, preloadedState, helmet, basename, routePath, clientApp, assetsDir) => string
 }
 
 
