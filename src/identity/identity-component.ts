@@ -14,7 +14,7 @@ import cookiesMiddleware from 'universal-cookie-express';
 
 export const IDENTITY_INSTANCE_TYPE = "IdentityComponent";
 
-const getBrowserId = (req, key) => {
+export const getBrowserId = (req, key=IDENTITY_KEY) => {
     const browserId = req.universalCookies.get(key);
 
     if (browserId !== undefined) {

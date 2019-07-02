@@ -34,7 +34,16 @@ export interface IWebAppArgs {
      */
     method: string,
 
-    renderHtmlPage?: (html, styles, preloadedState, helmet, basename, routePath, clientApp, assetsDir) => string
+    renderHtmlPage?: (html, styles, preloadedState, helmet, basename, routePath, clientApp, assetsDir) => string,
+
+    /**
+     * When specified, we get a function that listens to local route-changes
+     * ONLY FOR ISOMORPHIC APPS! needs to be implemented for SPA if required
+     *
+     * @param location
+     * @param action
+     */
+    listenOnBrowserHistory?: (location, action) => any
 }
 
 

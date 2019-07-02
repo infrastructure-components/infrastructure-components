@@ -53,7 +53,6 @@ const createClientWebApp = () => {
     );
 
 
-
     // when we have a datalayer, we can hydrate the state!
     const fHydrate = webApp.dataLayerId !== undefined ? (node) => hydrateFromDataLayer(
         node,
@@ -72,7 +71,8 @@ const createClientWebApp = () => {
             createClientApp(
                 webApp.routes,
                 webApp.redirects,
-                basename)
+                basename,
+                webApp.listenOnBrowserHistory)
         ),
         document.getElementById('root')
     );

@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 
 import { StaticRouter, matchPath } from 'react-router';
-import { Switch, Route, BrowserRouter, HashRouter, Link } from 'react-router-dom';
+import { Switch, Route, BrowserRouter, HashRouter, Link, withRouter } from 'react-router-dom';
 
 //import {useContext} from "react"
 //import {__RouterContext} from "react-router"
@@ -86,53 +86,83 @@ export interface IRedirect {
 interface RoutedAppProps {
     routes: Array<IRoute>,
     redirects: Array<IRedirect>,
+    listen?: (location, action) => any
+    history: any // attached trough with Router
     
 };
 
+interface RoutedAppState {
+}
 
-const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
-    //.filter(({ customType }) => customType !== Types.IFRAME)
-    // (p) => render(Object.assign({},p, props))
-    //console.log("RoutedApp: " , useContext(__RouterContext))
 
-    const ForceLogin = require("infrastructure-components").ForceLogin;
+class RawRoutedApp extends React.Component<RoutedAppProps, RoutedAppState> {
 
-    const routes = props.routes.map(({ path, exact, component, render, isSecured }, i) => {
-        //console.log("routepath: ", path)
-        // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
+    private unlisten: any;
 
-        if (render !== undefined) {
-            const wrappedRender = (p) => isSecured ? <ForceLogin >{render(p)}</ForceLogin> : render(p);
-            return <Route key={'ROUTE_'+i} exact={exact} path={path} render={wrappedRender} />
-
-        } else if (isSecured) {
-
-            const C: any = component;
-            return <Route
-                key={'ROUTE_'+i}
-                exact={exact}
-                path={path}
-                render={(p) => <ForceLogin ><C {...p}/></ForceLogin>}
-            />
-
-        } else {
-
-            return <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />
+    componentWillMount() {
+        if (this.props.listen) {
+            this.unlisten = this.props.history.listen(this.props.listen);
         }
 
-    });
 
-    const redirects = props.redirects.map(({ from, to, status }, i) =>
-        <RedirectWithStatus key={'REDIRECT_'+i} from={from} to={to} status={status} />
-    );
+    }
 
 
-    return <Switch>
-        {routes}
-        {redirects}
-    </Switch>;
+    componentWillUnmount() {
+        if (this.unlisten) {
+            this.unlisten();
+        }
+
+    }
+
+
+    render () {
+        //.filter(({ customType }) => customType !== Types.IFRAME)
+        // (p) => render(Object.assign({},p, props))
+        //console.log("RoutedApp: " , useContext(__RouterContext))
+
+        const ForceLogin = require("infrastructure-components").ForceLogin;
+
+        const routes = this.props.routes.map(({ path, exact, component, render, isSecured }, i) => {
+            //console.log("routepath: ", path)
+            // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
+
+            if (render !== undefined) {
+                const wrappedRender = (p) => isSecured ? <ForceLogin >{render(p)}</ForceLogin> : render(p);
+                return <Route key={'ROUTE_'+i} exact={exact} path={path} render={wrappedRender} />
+
+            } else if (isSecured) {
+
+                const C: any = component;
+                return <Route
+                    key={'ROUTE_'+i}
+                    exact={exact}
+                    path={path}
+                    render={(p) => <ForceLogin ><C {...p}/></ForceLogin>}
+                />
+
+            } else {
+
+                return <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />
+            }
+
+        });
+
+        const redirects = this.props.redirects.map(({ from, to, status }, i) =>
+            <RedirectWithStatus key={'REDIRECT_'+i} from={from} to={to} status={status} />
+        );
+
+
+        return <Switch>
+            {routes}
+            {redirects}
+        </Switch>;
+    }
+
 
 };
+
+const RoutedApp = withRouter(RawRoutedApp);
 
 /**
  * TODO when we use an internal link that attaches a path-parameter, do we get this here? maybe we need to force a reload from the server
@@ -142,17 +172,16 @@ const RoutedApp: React.SFC<RoutedAppProps> = (props) => {
  * @param basename
  * @returns {any}
  */
-export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirect>, basename: string) => {
+export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirect>, basename: string, listen?: (location, action) => any) => {
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
     const AttachUser = require("infrastructure-components").AttachUser;
 
     return <BrowserRouter basename={basename}>
-
         <AttachRequest>
             <AttachUser>
                 <AttachRoutes routes={routes}>
-                    <RoutedApp routes={routes} redirects={redirects} />
+                    <RoutedApp routes={routes} redirects={redirects} listen={listen}/>
                 </AttachRoutes>
             </AttachUser>
         </AttachRequest>
