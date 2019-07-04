@@ -283,7 +283,7 @@ export const getEntryQuery = ( entryId, data, fields, context={}) => {
 
 };
 
-export const select = (client, {query, context={}}) => {
+export async function select (client, {query, context={}})  {
 
 
     if (!context["userId"]) {
@@ -293,7 +293,7 @@ export const select = (client, {query, context={}}) => {
     //console.log("select: ", query, context);
 
     
-    return client.query({
+    return await client.query({
         query: query,
         context: context
     }).then(result => {
@@ -319,7 +319,7 @@ export const select = (client, {query, context={}}) => {
  * @param data
  * @returns {any|Promise<T>|Promise<U>}
  */
-export const mutate = (client, { mutation, context={}}) => {
+export async function mutate (client, { mutation, context={}}) {
 
     if (!context["userId"]) {
         context["userId"] = new Cookies().get(IC_USER_ID);
@@ -330,7 +330,7 @@ export const mutate = (client, { mutation, context={}}) => {
 
     //console.log("mutation string: ", mutation(mutationObj));
 
-    return client.mutate({
+    return await client.mutate({
         mutation: mutation,
         context: context
     }).then(result => { console.log(result)}).catch(error => { console.log(error) });

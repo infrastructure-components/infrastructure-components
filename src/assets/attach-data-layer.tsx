@@ -88,7 +88,7 @@ export const serviceWithDataLayer = (complementedCallback: (cbdataLayer, cbreq, 
     // we return an array of valid middleware-callbacks
     return [
         async function (req, res, next) {
-            return complementedCallback(req.dataLayer, req, res, next)
+            return await complementedCallback(req.dataLayer, req, res, next)
         }
     ]
 };

@@ -201,7 +201,7 @@ export const connectWithDataLayer = (dataLayerId, request) => async (app) => {
     
     return new Promise<any>(async (resolve, reject) => {
         const awsGraphqlFetch = (uri, options) => {
-            console.log("fetch: ",uri, options);
+            //console.log("fetch: ",uri, options);
             //options.headers["Authorization"] = token;
             return fetch(uri, options);
         };
@@ -221,9 +221,9 @@ export const connectWithDataLayer = (dataLayerId, request) => async (app) => {
         try {
             //.catch((err) => console.log("err: ", err))
             await getDataFromTree(connectedApp).then(() => resolve({connectedApp: connectedApp, getState: () => {
-                console.log("time to resolve");
+                //console.log("time to resolve");
                 const data = client.extract();
-                console.log("data: ", data);
+                //console.log("data: ", data);
                 return importEnvironmentVariables(data, graphqlUrl.trim())
             }}));
         } catch (error) {

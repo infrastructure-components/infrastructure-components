@@ -52,6 +52,32 @@ const createClientWebApp = () => {
         __ISOMORPHIC_ID__
     );
 
+    /*
+    const parsedUrl = req.url.indexOf("?") >= 0 ? req.url.substring(0, req.url.indexOf("?")) : req.url;
+    console.log("parsedUrl: ", parsedUrl);
+
+
+    ////////// TODO refactor
+    var foundPath = undefined;
+
+
+    // match request url to our React Router paths and grab the path-params
+    let matchResult = clientApp.routes.find(
+            ({ path, exact }) => {
+                foundPath = matchPath(parsedUrl,
+                    {
+                        path,
+                        exact,
+                        strict: false
+                    }
+                )
+                return foundPath
+            }) || {};
+    let { path } = matchResult;
+
+    //console.log("found: ", foundPath);
+    console.log("server: path params: ", foundPath ? foundPath.params : "---");*/
+
 
     // when we have a datalayer, we can hydrate the state!
     const fHydrate = webApp.dataLayerId !== undefined ? (node) => hydrateFromDataLayer(

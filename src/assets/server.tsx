@@ -230,8 +230,8 @@ async function serve (req, res, next, clientApp, assetsDir) {
         }) || {};
     let { path } = matchResult;
 
-    console.log("found: ", foundPath);
-    console.log("params: ", foundPath ? foundPath.params : "---");
+    //console.log("found: ", foundPath);
+    console.log("server: path params: ", foundPath ? foundPath.params : "---");
 
     const routePath = foundPath ? (
         foundPath.path.indexOf("/:") > 0 ?
@@ -239,10 +239,10 @@ async function serve (req, res, next, clientApp, assetsDir) {
             foundPath.path
     ) : "";
 
-    console.log("routePath: ", routePath);
+    //console.log("routePath: ", routePath);
     ////////// END OF REFACTORING required
 
-    console.log("app data layer id: ", clientApp.dataLayerId);
+    //console.log("app data layer id: ", clientApp.dataLayerId);
 
 
 
@@ -263,7 +263,7 @@ async function serve (req, res, next, clientApp, assetsDir) {
             context, req)
     ).then(({connectedApp, getState}) => {
 
-        console.log("resolved...")
+        //console.log("resolved...")
 
         // collect the styles from the connected app
         const htmlData = ReactDOMServer.renderToString(sheet.collectStyles(connectedApp));
