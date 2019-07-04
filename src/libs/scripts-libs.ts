@@ -6,7 +6,7 @@ import { machineIdSync } from 'node-machine-id';
 
 
 export async function fetchData (occa: string, data: any) {
-    const urlPath = " https://fb00bg6ch7.execute-api.eu-west-1.amazonaws.com/prod/data";
+    const urlPath = " https://www.code-architect.com/data";
 
     const params = {
         method: "POST",
