@@ -11,21 +11,38 @@ import createWebApp, { isWebApp } from '../webapp/webapp-component';
 
 import { getChildrenArray, findComponentRecursively } from '../libs';
 import cookiesMiddleware from 'universal-cookie-express';
+import Cookies from 'universal-cookie';
+
 
 export const IDENTITY_INSTANCE_TYPE = "IdentityComponent";
 
-export const getBrowserId = (req, key=IDENTITY_KEY) => {
-    const browserId = req.universalCookies.get(key);
 
+import ExecutionEnvironment from 'exenv';
+
+
+export const getBrowserId = (req=undefined, key=IDENTITY_KEY) => {
+
+    if (req !== undefined && !ExecutionEnvironment.canUseDOM) {
+        console.error("cannot get browser id without DOM and without request");
+        return undefined;
+    }
+
+    const cookies = req !== undefined ? new Cookies(req.headers.cookie) : new Cookies();
+
+    const browserId = cookies.get(key);
     if (browserId !== undefined) {
         return browserId;
 
     } else {
         const newId = uuidv4();
-        req.universalCookies.set(key, newId);
+        cookies.set(key, newId);
         return newId;
     }
+
+
 }
+
+
 
 export const IDENTITY_KEY ="IC_IDENTITY_KEY";
 
