@@ -88,7 +88,17 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                     // the stage path is valid only
                     component.domain == undefined && props.parserMode === PARSER_MODES.MODE_DEPLOY ? {
                         provider: {
-                            stage_path: component.name
+                            stage_path: component.name,
+
+                        }
+                    } : {},
+                    component.domain !== undefined ? {
+                        provider: {
+                            stage_path: "",
+
+                            environment: {
+                                DOMAIN_URL: `"https://${component.domain}"`
+                            }
                         }
                     } : {},
 

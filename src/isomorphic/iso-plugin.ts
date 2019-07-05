@@ -227,9 +227,9 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
                     custom: {
                         customDomain: {
-                            domainName: component.domain,
-                            basePath: '',
-                            stage: component.name,
+                            domainName: domain,
+                            basePath: "''",
+                            stage: "${self:provider.stage, env:STAGE, 'dev'}",
                             createRoute53Record: true
                         }
                     }
