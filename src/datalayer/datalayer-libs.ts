@@ -125,6 +125,49 @@ export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => 
         }).catch(error => { console.log(error) });
 };
 
+export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEntity) => {
+
+    console.log("scan: ", tableName, key, entity, start_value, end_value, rangeEntity);
+
+    const q = {
+        // use the table_name as specified in the serverless.yml
+        TableName: tableName,
+        FilterExpression: `${
+            key
+            } between :sv and :ev and begins_with(${
+            key === "pk" ? "sk" : "pk"
+            }, :entity)`,
+        ExpressionAttributeValues: {
+            ":sv": `${entity}|${start_value}`,
+            ":ev": `${entity}|${end_value}`,
+            ":entity": rangeEntity
+        }
+    };
+
+    //console.log("query: ", q);
+
+    return promisify(callback =>
+        new AWS.DynamoDB.DocumentClient().query(q, callback))
+        .then(result => {
+            console.log("ddb-result: ", result);
+            return result["Items"];
+
+            /**
+             * TODO
+
+            // continue scanning if we have more movies, because
+            // scan can retrieve a maximum of 1MB of data
+            if (typeof data.LastEvaluatedKey != "undefined") {
+                console.log("Scanning for more...");
+                params.ExclusiveStartKey = data.LastEvaluatedKey;
+                docClient.scan(params, onScan);
+            }
+
+             return [];*/
+            //return result.Items.map(item => JSON.stringify(item));
+        }).catch(error => { console.log(error) });
+};
+
 
 export const deleteEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
 
@@ -207,12 +250,9 @@ export const deleteEntryMutation = ( entryId, data, fields, context={}) => {
 
 /**
  * this function provides a executable graphql-query
- * TODO the fields must be taken from the data-layer, not requiring the user to provide them
  */
 export const getEntryListQuery = ( entryId, data, fields, context={}) => {
-    console.log("getEntryListQuery: ", entryId, data, fields, context);
-
-    
+    //console.log("getEntryListQuery: ", entryId, data, fields, context);
 
     if (data == undefined) {
         console.error("getEntryListQuery requires a data argument");
@@ -250,7 +290,7 @@ export const getEntryListQuery = ( entryId, data, fields, context={}) => {
 };
 
 export const getEntryQuery = ( entryId, data, fields, context={}) => {
-    console.log("getEntryQuery: ", entryId, data, fields, context);
+    //console.log("getEntryQuery: ", entryId, data, fields, context);
 
     if (data == undefined) {
         console.error("getEntryQuery requires a data argument");
@@ -275,6 +315,53 @@ export const getEntryQuery = ( entryId, data, fields, context={}) => {
     );
 
     //console.log("listQuery string: ", query(queryObj));
+
+    return {
+        query:gql`${query(queryObj)}`,
+        context: context
+    }
+
+};
+
+
+/**
+ * this function provides a executable graphql-query: "scan_{entryId}"
+ *
+ */
+export const getEntryScanQuery = ( entryId, data, fields, context={}) => {
+    console.log("getEntryScanQuery: ", entryId, data, fields, context);
+
+    if (data == undefined) {
+        console.error("getEntryScanQuery requires a data argument");
+        return undefined;
+    }
+
+    const queryObj = {};
+    queryObj[`scan_${entryId}`] = params(
+        Object.keys(data).reduce((result, key) => {
+            // when we have an array at the key-pos in data, then we want to get a range
+            if (Array.isArray(data[key])) {
+                if (data[key].length > 0 && data[key][0] !== undefined) {
+                    result[`start_${key}`] = data[key][0];
+                }
+
+                if (data[key].length > 1 && data[key][1] !== undefined) {
+                    result[`end_${key}`] = data[key][1];
+                }
+
+            } else {
+                result[key] = `"${data[key]}"`;
+            }
+
+            return result;
+        },{}),
+        Object.keys(fields).reduce((result, key) => {
+            result[key] = types.string;
+            return result;
+        },{})
+    );
+
+    console.log("scanQuery string: ", query(queryObj));
 
     return {
         query:gql`${query(queryObj)}`,

@@ -6,7 +6,7 @@ import { IInfrastructure } from "../types";
 
 import {
     setEntry, ddbGetEntry, ddbListEntries, getEntryListQuery, getEntryQuery, setEntryMutation, deleteEntryMutation,
-    deleteEntry
+    deleteEntry, getEntryScanQuery, ddbScan
 } from './datalayer-libs';
 import createMiddleware from '../middleware/middleware-component';
 
@@ -75,6 +75,8 @@ export interface IEntryProps {
 
     getEntryQuery: (dictKey: any) => any,
 
+    getEntryScanQuery: (dictKey: any) => any,
+
     /**
      * set an entry with the specified values
      *
@@ -85,6 +87,7 @@ export interface IEntryProps {
     setEntry: (args, context, tableName) => any,
     listEntries: (args, context, tableName, key) => any,
     getEntry: (args, context, tableName) => any,
+    scan: (args, context, tableName) => any,
 
 
     middleware: any,
@@ -106,6 +109,7 @@ export interface IEntryProps {
     getSecondaryListQueryName: () => string,
     getGetQueryName: () => string,
     getSetMutationName: () => string,
+    getScanName: () => string,
 
     /**
      * Returns whether this entry provides the query/mutation with the specified name
@@ -176,6 +180,17 @@ export const createEntryProps = (props): IEntryProps => {
             //console.log("fields: ", fields);
 
             return getEntryQuery(
+                props.id,
+                dictKey,
+                fields
+            );
+        },
+
+        getEntryScanQuery: (dictKey) => {
+            const fields = entryProps.createEntryFields();
+            //console.log("fields: ", fields);
+
+            return getEntryScanQuery(
                 props.id,
                 dictKey,
                 fields
@@ -261,6 +276,34 @@ export const createEntryProps = (props): IEntryProps => {
 
         },
 
+        scan: (args, context, tableName, key) => {
+
+            console.log("scan entry! ", args, context)
+
+            // TODO currently only scans for the rangeKey
+            return ddbScan(
+                tableName, //tablename
+                key, // key
+                props.rangeKey, // pkEntity,
+                args[`start_${props.rangeKey}`],    // start_value,
+                args[`end_${props.rangeKey}`],    // end_Value,
+                props.primaryKey, // skEntity,
+            ).then((result: any)=> {
+
+                console.log("entry-component getEntry result: ", result);
+
+                const data = result.jsonData !== undefined ? JSON.parse(result.jsonData) : {};
+
+                if (result && result.pk && result.sk) {
+                    data[props.primaryKey] = result.pk.substring(result.pk.indexOf("|") + 1);
+                    data[props.rangeKey] = result.sk.substring(result.sk.indexOf("|") + 1);
+                }
+                return data;
+
+            });
+
+        },
+
 
 
     deleteEntryMutation: (values) => {
@@ -299,6 +342,7 @@ export const createEntryProps = (props): IEntryProps => {
         getGetQueryName: () => "get_"+props.id,
         getSetMutationName: () => "set_"+props.id,
         getDeleteMutationName: () => "delete_"+props.id,
+        getScanName: () => "scan_"+props.id,
 
         /**
          * Returns whether this entry provides the query/mutation with the specified name
@@ -306,11 +350,11 @@ export const createEntryProps = (props): IEntryProps => {
          */
         providesQuery: (name: string) => {
 
-
             const result = name === entryProps.getPrimaryListQueryName() ||
                 name === entryProps.getRangeListQueryName() ||
                 name === entryProps.getSetMutationName() ||
-                name === entryProps.getDeleteMutationName();
+                name === entryProps.getDeleteMutationName() ||
+                name === entryProps.getScanName();
 
             //console.log("does ", props.id , " provide ", name, "? ", result)
 

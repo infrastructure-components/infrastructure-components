@@ -65,6 +65,8 @@ export interface IDataLayerProps {
 
     getEntryQuery: (entryId: string, dictKey: any ) => any,
 
+    getEntryScanQuery: (entryId: string, dictKey: any ) => any,
+
     setEntryMutation: (entryId: string, values: any ) => any,
 
     deleteEntryMutation: (entryId: string, values: any ) => any,
@@ -272,12 +274,35 @@ export default (props: IDataLayerArgs | any) => {
                         return entry.id;
                     }
 
-                    return entry.getEntry(args, context, process.env.TABLE_NAME);
+                    return entry.scan(args, context, process.env.TABLE_NAME);
 
 
                 }
             };
+            
+            
+            const scanArgs = {};
+            scanArgs[`start_${entry.rangeKey}`] = {name: `min-${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
+            scanArgs[`end_${entry.rangeKey}`] = {name: `max-${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
 
+            // scan the table
+            result[entry.getScanName()] = {
+                args: scanArgs,
+                type: getType,
+                resolve: (source, args, context, info) => {
+
+
+                    console.log("resolve scan: ", resolveWithData, source, args, context);
+
+                    if (!resolveWithData) {
+                        return entry.id;
+                    }
+
+                    return entry.scan(args, context, process.env.TABLE_NAME, "sk");
+
+
+                }
+            };
 
             return result;
         }, {}),
@@ -325,6 +350,18 @@ export default (props: IDataLayerArgs | any) => {
             return {};
 
         },
+
+        getEntryScanQuery:  (entryId, dictKey) => {
+            const entry = entries.find(entry => entry.id === entryId);
+            if (entry !== undefined) {
+                return entry.getEntryScanQuery(dictKey)
+            };
+
+            console.warn("could not find entry: ",entryId);
+            return {};
+
+        },
+
 
         setEntryMutation: (entryId, values) => {
             const entry = entries.find(entry => entry.id === entryId);
