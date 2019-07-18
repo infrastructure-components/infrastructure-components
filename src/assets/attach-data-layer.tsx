@@ -67,6 +67,15 @@ export function withDataLayer(Component) {
                         );
                     }
 
+                    const getEntryScanQuery = (entryId, dictKey) => {
+
+                        return context.dataLayer.getEntryScanQuery(
+                            entryId,
+                            dictKey
+                        );
+
+                    };
+
                     //console.log("entryListQuery: ", entryListQuery);
                     
                     return <Component
@@ -75,6 +84,7 @@ export function withDataLayer(Component) {
                         getEntryListQuery={entryListQuery}
                         getEntryQuery={getEntryQuery}
                         setEntryMutation={setEntryMutation}
+                        getEntryScanQuery={getEntryScanQuery}
                     />
                 }}
             </DataLayerContext.Consumer>
