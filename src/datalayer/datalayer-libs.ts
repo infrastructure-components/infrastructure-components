@@ -144,10 +144,23 @@ export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEnt
         }
     };
 
+    const allQ = {
+        // use the table_name as specified in the serverless.yml
+        TableName: tableName,
+        FilterExpression: `begins_with(${key}, :entity) and begins_with(${
+            key === "pk" ? "sk" : "pk"}, :rangeentity)`,
+        ExpressionAttributeValues: {
+            ":entity": entity,
+            ":rangeentity": rangeEntity
+        }
+    };
+
+
+
     //console.log("query: ", q);
 
     return promisify(callback =>
-        new AWS.DynamoDB.DocumentClient().query(q, callback))
+        new AWS.DynamoDB.DocumentClient().scan(start_value && end_value ? q : allQ, callback))
         .then(result => {
             console.log("ddb-result: ", result);
             return result["Items"];
@@ -155,6 +168,23 @@ export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEnt
             /**
              * TODO
 
+
+             return await client.select(Object.assign({
+             query: query,
+             context: context
+             }, params)).then(result => {
+             //console.log("select result: ", result)
+
+             return result.data.Items.concat(typeof result.data.LastEvaluatedKey != "undefined" ?
+             scan(
+             client, {
+             query: query,
+             context: context,
+             params: {
+             ExclusiveStartKey: result.data.LastEvaluatedKey
+             }
+             }
+             ): []);
             // continue scanning if we have more movies, because
             // scan can retrieve a maximum of 1MB of data
             if (typeof data.LastEvaluatedKey != "undefined") {
@@ -167,6 +197,7 @@ export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEnt
             //return result.Items.map(item => JSON.stringify(item));
         }).catch(error => { console.log(error) });
 };
+
 
 
 export const deleteEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
@@ -337,6 +368,9 @@ export const getEntryScanQuery = ( entryId, data, fields, context={}) => {
     }
 
     const queryObj = {};
+
+    // TODO !!!!!
+    // if ()
     queryObj[`scan_${entryId}`] = params(
         Object.keys(data).reduce((result, key) => {
             // when we have an array at the key-pos in data, then we want to get a range
@@ -361,7 +395,7 @@ export const getEntryScanQuery = ( entryId, data, fields, context={}) => {
         },{})
     );
 
-    console.log("scanQuery string: ", query(queryObj));
+    //console.log("scanQuery string: ", query(queryObj));
 
     return {
         query:gql`${query(queryObj)}`,
@@ -386,7 +420,7 @@ export async function select (client, {query, context={}})  {
     }).then(result => {
         //console.log("select result: ", result)
 
-        return result.data;
+        return result.data ? result.data : result;
 
     }).catch(error => {
         console.log(error);

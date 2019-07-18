@@ -278,7 +278,7 @@ export const createEntryProps = (props): IEntryProps => {
 
         scan: (args, context, tableName, key) => {
 
-            console.log("scan entry! ", args, context)
+            //console.log("scan entry! ", args, context)
 
             // TODO currently only scans for the rangeKey
             return ddbScan(
@@ -287,18 +287,25 @@ export const createEntryProps = (props): IEntryProps => {
                 props.rangeKey, // pkEntity,
                 args[`start_${props.rangeKey}`],    // start_value,
                 args[`end_${props.rangeKey}`],    // end_Value,
-                props.primaryKey, // skEntity,
+                props.primaryKey // skEntity,
             ).then((result: any)=> {
 
-                console.log("entry-component getEntry result: ", result);
+                //console.log("entry-component scan result: ", result);
+                return result.map(entry => {
+                    //console.log("scanned entry: ", entry);
+                    const data = entry.jsonData !== undefined ? JSON.parse(entry.jsonData) : {};
 
-                const data = result.jsonData !== undefined ? JSON.parse(result.jsonData) : {};
+                    if (entry && entry.pk && entry.sk) {
+                        data[props.primaryKey] = entry.pk.substring(entry.pk.indexOf("|") + 1);
+                        data[props.rangeKey] = entry.sk.substring(entry.sk.indexOf("|") + 1);
+                    }
 
-                if (result && result.pk && result.sk) {
-                    data[props.primaryKey] = result.pk.substring(result.pk.indexOf("|") + 1);
-                    data[props.rangeKey] = result.sk.substring(result.sk.indexOf("|") + 1);
-                }
-                return data;
+                    console.log("returned data: ", data);
+                    return data;
+                });
+
+
+
 
             });
 

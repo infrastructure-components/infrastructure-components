@@ -274,7 +274,7 @@ export default (props: IDataLayerArgs | any) => {
                         return entry.id;
                     }
 
-                    return entry.scan(args, context, process.env.TABLE_NAME);
+                    return entry.getEntry(args, context, process.env.TABLE_NAME);
 
 
                 }
@@ -282,13 +282,13 @@ export default (props: IDataLayerArgs | any) => {
             
             
             const scanArgs = {};
-            scanArgs[`start_${entry.rangeKey}`] = {name: `min-${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
-            scanArgs[`end_${entry.rangeKey}`] = {name: `max-${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
+            scanArgs[`start_${entry.rangeKey}`] = {name: `start_${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
+            scanArgs[`end_${entry.rangeKey}`] = {name: `end_${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
 
             // scan the table
             result[entry.getScanName()] = {
                 args: scanArgs,
-                type: getType,
+                type: resolveWithData ? new GraphQLList(listType) : listType,
                 resolve: (source, args, context, info) => {
 
 
