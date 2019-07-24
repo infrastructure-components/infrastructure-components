@@ -76,7 +76,19 @@ export interface IWebAppProps {
      * The id of the datalayer - if the webapp applies to one.
      * filled by the DataLayer
      */
-    dataLayerId?: any
+    dataLayerId?: any,
+
+    /**
+     * a function that the AuthenticationComponent provides, it lets the WebApp get the AuthenticatinId
+     * @param authenticationId
+     */
+    setAuthenticationId: (authenticationId: string) => void,
+
+    /**
+     * The id of the authentication-component - if the webapp applies to one.
+     * filled by the authentication-component
+     */
+    authenticationId?: any,
 }
 
 /**
@@ -124,6 +136,10 @@ export default (props: IWebAppArgs | any) => {
 
         setDataLayerId: (dataLayerId: string) => {
             props.dataLayerId = dataLayerId;
+        },
+
+        setAuthenticationId: (authenticationId: string) => {
+            props.authenticationId = authenticationId;
         }
     }
 

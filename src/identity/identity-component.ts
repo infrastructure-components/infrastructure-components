@@ -88,7 +88,7 @@ export default (props: IIdentityArgs | any) => {
         child.setStoreIdentityData(
 
             async function (request: any, secondaryKey: string, val: any, jsonData: any) {
-                console.log("identity: storeData: ", props);
+                //console.log("identity: storeData: ", props);
                 return await props.storeData(
                     IDENTITY_KEY, //pkEntity: string,
                     getBrowserId(request, IDENTITY_KEY), //pkVal: any,

@@ -21,6 +21,8 @@ export const AuthenticationProvider = require('./authentication/authentication-c
 export const SecuredRoute = require('./authentication/securedroute-component').default;
 export const SecuredService = require('./authentication/securedservice-component').default;
 export const Identity = require('./identity/identity-component').default;
+export const AUTH_RESPONSE = require('./authentication/authentication-component').AUTH_RESPONSE;
+
 
 export const INFRASTRUCTURE_MODES = require('./libs/loader').INFRASTRUCTURE_MODES;
 export const loadInfrastructureComponent = require('./libs/loader').loadInfrastructureComponent;
@@ -50,6 +52,7 @@ export const PARSER_MODES = require('./libs/parser').PARSER_MODES;
 
 export const setEntry = require('./datalayer/datalayer-libs').setEntry;
 export const getEntryListQuery = require('./datalayer/datalayer-libs').getEntryListQuery;
+export const ddbListEntries = require('./datalayer/datalayer-libs').ddbListEntries;
 export const getEntry = require('./datalayer/datalayer-libs').getEntry;
 export const mutate = require('./datalayer/datalayer-libs').mutate;
 export const select = require('./datalayer/datalayer-libs').select;
@@ -68,6 +71,10 @@ export const userLogout = require('./assets/attach-user').userLogout;
 export const AttachUser = require('./assets/attach-user').default;
 export const getUserId = require('./assets/attach-user').getUserId;
 export const getBrowserId = require('./identity/identity-component').getBrowserId;
+
+export const withAuthCallback = require('./assets/attach-auth').withAuthCallback;
+export const getAuthCallback = require('./assets/attach-auth').getAuthCallback;
+export const AttachAuth = require('./assets/attach-auth').default;
 
 
 export const ForceLogin = require('./assets/force-login').default;

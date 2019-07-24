@@ -18,11 +18,18 @@ import {SERVICE_INSTANCE_TYPE} from "../service/service-component";
 export const AUTHENTICATION_INSTANCE_TYPE = "AuthenticationComponent";
 
 export const AuthenticationProvider = {
+    EMAIL: "AUTH_EMAIL",
+    
     GITHUB: "AUTH_GITHUB",
 
     // TODO Medium Auth only partly implemented!!!
     MEDIUM: "AUTH_MEDIUM"
 };
+
+export const AUTH_RESPONSE = {
+    EMAIL_INVALID: "EMAIL_INVALID", // the e-mail format is invalid
+    NOT_IMPLEMENTED: "NOT_IMPLEMENTED" // the authCallback is not implemented for this provider
+}
 
 export const getProviderKey = (provider) => {
     return provider+SUFFIX_SECRET;
@@ -40,9 +47,11 @@ export const getClientSecret = (provider) => {
  * @param callbackUrl as defined in the app of the provider
  * @param provider to create the redirect Url for
  */
-export const createRequestLoginMiddleware = (clientId: string, callbackUrl: string, provider: string) => (err, req, res, next) => {
+export const createRequestLoginMiddleware = (clientId: string, callbackUrl: string, provider: string, loginUrl: string) => (err, req, res, next) => {
 
-    if (provider === AuthenticationProvider.GITHUB) {
+    if (provider === AuthenticationProvider.EMAIL) {
+        res.redirect(`${loginUrl}?page=${req.url}`);
+    } else if (provider === AuthenticationProvider.GITHUB) {
         res.redirect(`https://github.com/login/oauth/authorize?scope=user:email&client_id=${clientId}&redirect_uri=${callbackUrl}?page=${req.url}`);
     } else if (provider === AuthenticationProvider.MEDIUM) {
         res.redirect(`https://medium.com/m/oauth/authorize?client_id=${clientId}&scope=basicProfile,listPublications,publishPost&state=InteractiveMedium&response_type=code&redirect_uri=${callbackUrl}?page=${req.url}`);
@@ -57,7 +66,49 @@ export const createRequestLoginMiddleware = (clientId: string, callbackUrl: stri
  */
 export const createFetchAccessTokenFunction = (clientId: string, callbackUrl: string, provider: string) => (req: any) => {
 
-    if (provider === AuthenticationProvider.GITHUB) {
+    if (provider === AuthenticationProvider.EMAIL) {
+
+        console.log("this is the EMAIL - createFetchAccessTokenFunction middleware");
+
+        const { email, password, page } = req.query;
+        if (email !== undefined) {
+
+
+            // the function fFetch must call a service that responds with a json. this json is fed into createGetUserFunction
+            return {
+                redirectPage: page,
+                fFetch: async function () {
+
+                    // TODO: here we call the service to send an email to the user
+
+                    console.log("this is the fFetch of the mail-authentication");
+                    // this is the response
+                    return new Promise(function(resolve, reject) {
+
+                        resolve(JSON.stringify({
+                            id: email, // we take the email - that should be unique
+                            name: "",
+                            username: "",
+                            imageUrl:"",
+                            access_token: password,
+                            email: email
+                        }))
+                    });
+                }/*fetch(callbackUrl,{
+                    method: 'POST',
+                    body: `code=${code}&client_id=${clientId}&client_secret=${getClientSecret(provider)}&grant_type=authorization_code&redirect_uri=${callbackUrl}`,
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "Accept": "application/json",
+                        "Accept-Charset": "utf-8"
+                    }
+                })*/
+            }
+        }
+
+
+
+    } else if (provider === AuthenticationProvider.GITHUB) {
 
         // TODO check https://octokit.github.io/rest.js/ !!!
         // see docs: https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
@@ -249,6 +300,11 @@ const SUFFIX_SECRET = "_SECRET"
 export interface IAuthenticationArgs {
 
     /**
+     * a unique id or name of the datalayer
+     */
+    id: string,
+
+    /**
      * The provider must be a string of AuthenticationProvider
      */
     provider: string,
@@ -256,7 +312,7 @@ export interface IAuthenticationArgs {
     /**
      * The clientID provided by the Provider, e.g. from Github
      */
-    clientId: string,
+    clientId?: string,
 
     /**
      * a fully qualified url, as specified in the setup of the auth-provider
@@ -264,7 +320,10 @@ export interface IAuthenticationArgs {
     callbackUrl: string,
 
 
-
+    /**
+     * An url to redirect in order to request the user to login, used by the email authentication
+     */
+    loginUrl: string
 
 
 }
@@ -279,8 +338,14 @@ export interface IAuthenticationProps {
         storeIdentityData: (request: any, key: string, val: any, jsonData: any) => void
     ) => void,
 
-    storeAuthData?: (request: any, key: string, val: any, jsonData: any) => void
+    storeAuthData?: (request: any, key: string, val: any, jsonData: any) => void,
 
+    /**
+     *
+     * @param triggerRedirect function that triggers a redirect, that we can call with an argument
+     */
+    authCallback: (email: string, password: string, page: string,
+                   triggerRedirect: (url: string) => void, onResponse: (code:string)=> void) => void
 }
 
 
@@ -296,7 +361,7 @@ export default (props: IAuthenticationArgs | any) => {
     const componentProps: IInfrastructure & IComponent = {
         infrastructureType: Types.INFRASTRUCTURE_TYPE_COMPONENT,
         instanceType: AUTHENTICATION_INSTANCE_TYPE,
-        instanceId: undefined, // authentications cannot be found programmatically?!
+        instanceId: props.id,
     };
 
 
@@ -307,6 +372,26 @@ export default (props: IAuthenticationArgs | any) => {
             props.storeAuthData = storeIdentityData;
 
             //console.log("auth-props: ", props)
+        },
+
+        authCallback: (email: string, password: string, page: string, triggerRedirect: (url: string) => void, onResponse: (code:string) => void) => {
+            console.log("this is the auth-Callback");
+
+            if (props.provider === AuthenticationProvider.EMAIL) {
+                // verify the format of the e-mail address
+                if (!(/^([A-Za-z0-9_\-.])+@([A-Za-z0-9_\-.])+\.([A-Za-z]{2,})$/.test(email))) {
+                    onResponse(AUTH_RESPONSE.EMAIL_INVALID);
+                    return;
+                }
+
+                // redirect to the provided url that is
+                // TODO encrypt the password!
+                triggerRedirect(`${props.callbackUrl}?email=${email}&password=${password}&page=${page}`);
+            }
+
+
+            onResponse(AUTH_RESPONSE.NOT_IMPLEMENTED);
+
         }
 
     };
@@ -340,7 +425,7 @@ export default (props: IAuthenticationArgs | any) => {
             createMiddleware({ callback: createAuthMiddleware(getClientSecret(props.provider), onAuthenticated)}),
 
             // this middleware checks redirects the user to the login page, if she is not logged in
-            createMiddleware({ callback: createRequestLoginMiddleware(props.clientId, props.callbackUrl, props.provider)})
+            createMiddleware({ callback: createRequestLoginMiddleware(props.clientId, props.callbackUrl, props.provider, props.loginUrl)})
 
         ].concat(sr.middlewares);
 
@@ -358,7 +443,7 @@ export default (props: IAuthenticationArgs | any) => {
             createMiddleware({ callback: createAuthMiddleware(getClientSecret(props.provider), onAuthenticated)}),
 
             // this middleware checks redirects the user to the login page, if she is not logged in
-            createMiddleware({ callback: createRequestLoginMiddleware(props.clientId, props.callbackUrl, props.provider)})
+            createMiddleware({ callback: createRequestLoginMiddleware(props.clientId, props.callbackUrl, props.provider, props.loginUrl)})
 
         ].concat(service.middlewares);
 
@@ -368,6 +453,11 @@ export default (props: IAuthenticationArgs | any) => {
     });
 
 
+    // we need to provide the AuthenticationId to webApps, these may be anywhere in the tree, not
+    // only direct children. So rather than mapping the children, we need to change them
+    findComponentRecursively(props.children, (child) => child.setAuthenticationId !== undefined).forEach( child => {
+        child.setAuthenticationId(props.id)
+    });
 
     /**
      * The data-layer replaces the authentication component with its children

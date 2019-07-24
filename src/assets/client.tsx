@@ -52,6 +52,8 @@ const createClientWebApp = () => {
         __ISOMORPHIC_ID__
     );
 
+    
+
     /*
     const parsedUrl = req.url.indexOf("?") >= 0 ? req.url.substring(0, req.url.indexOf("?")) : req.url;
     console.log("parsedUrl: ", parsedUrl);
@@ -79,6 +81,8 @@ const createClientWebApp = () => {
     console.log("server: path params: ", foundPath ? foundPath.params : "---");*/
 
 
+
+
     // when we have a datalayer, we can hydrate the state!
     const fHydrate = webApp.dataLayerId !== undefined ? (node) => hydrateFromDataLayer(
         node,
@@ -98,7 +102,9 @@ const createClientWebApp = () => {
                 webApp.routes,
                 webApp.redirects,
                 basename,
-                webApp.listenOnBrowserHistory)
+                webApp.listenOnBrowserHistory,
+                require('infrastructure-components').getAuthCallback(isoConfig, webApp.authenticationId)
+            )
         ),
         document.getElementById('root')
     );

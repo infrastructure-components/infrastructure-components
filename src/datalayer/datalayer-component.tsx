@@ -130,7 +130,7 @@ export default (props: IDataLayerArgs | any) => {
                         return entry.id;
                     }
 
-                    console.log("resolve: ", resolveWithData, source, context, info, args);
+                    //console.log("resolve: ", resolveWithData, source, context, info, args);
 
                     // This context gets the data from the context put into the <Query/> or Mutation...
                     //console.log("context: ", context);

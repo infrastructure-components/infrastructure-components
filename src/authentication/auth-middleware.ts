@@ -35,6 +35,7 @@ export const createAuthMiddleware = (clientSecret, onAuthenticated: (userid:stri
 
     console.log("createAuthMiddleware", req.universalCookies);
 
+    // TODO EMAIL-authentication must be verified for the status in the Database! whether it is activated!!!!
 
     const webtoken = req.universalCookies.get(IC_WEB_TOKEN);
     const userId = req.universalCookies.get(IC_USER_ID);
@@ -105,7 +106,7 @@ export const createCallbackMiddleware = (
 
     const path = require('path');
 
-    console.log("THIS IS THE AUTH CALLBACK")
+    console.log("THIS IS THE AUTH CALLBACK");
 
     const { redirectPage, fFetch } = fetchAccessToken(req);
 

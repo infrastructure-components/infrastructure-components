@@ -155,7 +155,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
         //.filter(clientApp => clientApp.middlewares !== undefined)
         .map(clientApp => {
 
-            const serveMiddleware = (req, res, next) => serve(req, res, next, clientApp, assetsDir);
+            const serveMiddleware = (req, res, next) => serve(req, res, next, clientApp, assetsDir, isoConfig);
             const routes = clientApp.routes.filter(route => route.middlewares !== undefined && route.middlewares.length > 0);
 
             if (clientApp.method.toUpperCase() == "GET") {
@@ -192,7 +192,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
 };
 
 
-async function serve (req, res, next, clientApp, assetsDir) {
+async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
 
     //TODO use try catch depending on the environment
     //try {
@@ -260,7 +260,9 @@ async function serve (req, res, next, clientApp, assetsDir) {
             clientApp.redirects,
             basename,
             req.url,
-            context, req)
+            context,
+            req,
+            require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId))
     ).then(({connectedApp, getState}) => {
 
         //console.log("resolved...")

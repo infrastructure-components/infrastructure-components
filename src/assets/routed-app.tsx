@@ -172,17 +172,27 @@ const RoutedApp = withRouter(RawRoutedApp);
  * @param basename
  * @returns {any}
  */
-export const createClientApp = (routes: Array<IRoute>, redirects: Array<IRedirect>, basename: string, listen?: (location, action) => any) => {
+export const createClientApp = (
+    routes: Array<IRoute>,
+    redirects: Array<IRedirect>,
+    basename: string, 
+    listen?: (location, action) => any,
+    authCallback?: any
+) => {
+    
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
     const AttachUser = require("infrastructure-components").AttachUser;
+    const AttachAuth = require("infrastructure-components").AttachAuth;
 
     return <BrowserRouter basename={basename}>
         <AttachRequest>
             <AttachUser>
-                <AttachRoutes routes={routes}>
-                    <RoutedApp routes={routes} redirects={redirects} listen={listen}/>
-                </AttachRoutes>
+                <AttachAuth authCallback={authCallback}>
+                    <AttachRoutes routes={routes}>
+                        <RoutedApp routes={routes} redirects={redirects} listen={listen}/>
+                    </AttachRoutes>
+                </AttachAuth>
             </AttachUser>
         </AttachRequest>
     </BrowserRouter>;
@@ -194,18 +204,22 @@ export const createServerApp = (
     basename: string,
     url: string,
     context: any,
-    request: any) => {
+    request: any,
+    authCallback: any) => {
 
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
     const AttachUser = require("infrastructure-components").AttachUser;
+    const AttachAuth = require("infrastructure-components").AttachAuth;
 
     return <StaticRouter context={context} location={url} basename={basename}>
         <AttachRequest request={request}>
             <AttachUser>
-                <AttachRoutes routes={routes}>
-                    <RoutedApp routes={routes} redirects={redirects} />
-                </AttachRoutes>
+                <AttachAuth authCallback={authCallback}>
+                    <AttachRoutes routes={routes}>
+                        <RoutedApp routes={routes} redirects={redirects} />
+                    </AttachRoutes>
+                </AttachAuth>
             </AttachUser>
         </AttachRequest>
     </StaticRouter>;
