@@ -19,6 +19,14 @@ export const IC_WEB_TOKEN = "IC_WEB_TOKEN";
  */
 export const IC_USER_ID = 'IC_USER_ID';
 
+export const EMAIL_CONFIRMATION_PARAM = "confirmationtoken";
+export const EMAIL_PARAM = "email";
+export const PASSWORD_PARAM = "password";
+
+export const AUTH_STATUS = {
+    PENDING: "pending", // the authentication is pending, e.g. e-mail waitung for the confirmation
+    ACTIVE: "active" // the authentication is active
+}
 
 
 /**
@@ -34,8 +42,6 @@ export const IC_USER_ID = 'IC_USER_ID';
 export const createAuthMiddleware = (clientSecret, onAuthenticated: (userid:string) => void) => (req, res, next) => {
 
     console.log("createAuthMiddleware", req.universalCookies);
-
-    // TODO EMAIL-authentication must be verified for the status in the Database! whether it is activated!!!!
 
     const webtoken = req.universalCookies.get(IC_WEB_TOKEN);
     const userId = req.universalCookies.get(IC_USER_ID);
@@ -84,8 +90,35 @@ export interface IUserData {
     username: string,
     imageUrl: string,
     email: string,
-    access_token: string
+    access_token: string,
+    encrypted_password?: string,
+    status?: string
 }
+
+const getEncryptedAccessToken = (id, clientSecret, access_token) => {
+
+    const today = new Date();
+    const expirationDate = new Date(today);
+    expirationDate.setDate(today.getDate() + 60);
+
+    // we use the clientSecret to sign the webtoken
+    const webtoken = jwt.sign({
+        id: id,
+        exp: expirationDate.getTime() / 1000,
+    }, clientSecret);
+
+    // now let's use the webtoken to encrypt the access token
+    const encryptedAccessToken = jwt.sign({
+        id: id,
+        accessToken: access_token,
+        exp: expirationDate.getTime() / 1000,
+    }, webtoken);
+
+    return {
+        webtoken: webtoken,
+        encryptedAccessToken: encryptedAccessToken
+    };
+};
 
 /**
  * Use this middleware at the endpoint that is specified as the callback-url.
@@ -101,12 +134,115 @@ export const createCallbackMiddleware = (
     clientSecret,
     fetchAccessToken: (req: any) => any,
     getUserData: (resJson: any) => Promise<IUserData>,
-    storeAuthData: (request: any, key: string, val: any, jsonData: any) => void
+    storeAuthData: (request: any, key: string, val: any, jsonData: any) => void,
+    getAuthData: (request: any, matchBrowserIdentity: boolean, key: string, val: any) => any
 ) => async function (req, res, next) {
 
     const path = require('path');
 
     console.log("THIS IS THE AUTH CALLBACK");
+
+
+
+    // we use this middleware also as endpoint for email confirmation, then the token-parameter must be specified
+    const email_confirmation = req.query[EMAIL_CONFIRMATION_PARAM];
+    const email_param = req.query[EMAIL_PARAM];
+    const password_param = req.query[PASSWORD_PARAM];
+
+    console.log("received params: ", email_confirmation, email_param, password_param);
+
+    if (email_param) {
+        // get the entry of the database
+
+        const authDataList = await getAuthData(
+            req, // request: any
+            false, //matchBrowserIdentity -- we do not want to match the browser identity, the user might use another browser to confirm he mail address
+            IC_USER_ID, // key: string
+            email_param//val: any,
+        );
+
+        console.log("retrieved auth-data-list: ", authDataList);
+
+        // check whether the user already exists
+        const parsedAuthDataList = authDataList.map(raw=> JSON.parse(raw.jsonData));
+
+        if (password_param && parsedAuthDataList.length > 0) {
+
+            const authData = parsedAuthDataList
+                .reduce((result, cur) => result !== undefined ? result : (
+                    // check whether the password is correct
+                    cur.encrypted_password === password_param ? cur: undefined
+                ), undefined);
+
+            if (authData !== undefined) {
+
+                // create a new webtoken, i.e. other browser will be logged out!
+                const { webtoken, encryptedAccessToken } = getEncryptedAccessToken(email_param, clientSecret, password_param);
+
+                // put the encrypted web token into the database, this is user (browser)-specific data!
+                const storeResult = await storeAuthData(
+                    req, // request: any
+                    IC_USER_ID, // key: string
+                    email_param, //val: any,
+                    Object.assign({}, authData, {
+                        encryptedAccessToken: encryptedAccessToken
+                    })
+                );
+
+                req.universalCookies.set(IC_WEB_TOKEN, webtoken, { path: '/' });
+
+                console.log("store email verified result: ", storeResult);
+
+                res.redirect(path.join(getBasename(), "/"));
+
+
+            } else {
+                console.log ("could not verify password, ", password_param,email_param);
+                next("login failure");
+            }
+
+            return;
+        } else if (email_confirmation && parsedAuthDataList.length > 0) {
+
+
+            const authData = parsedAuthDataList
+                .reduce((result, cur) => result !== undefined ? result : (
+                    cur.encryptedAccessToken === email_confirmation ? cur: undefined
+                ), undefined);
+
+            console.log("retrieved auth-data: ", authData);
+
+            if (authData !== undefined) {
+
+                const { webtoken, encryptedAccessToken } = getEncryptedAccessToken(email_param, clientSecret, email_confirmation);
+
+
+                // put the encrypted web token into the database, this is user (browser)-specific data!
+                const storeResult = await storeAuthData(
+                    req, // request: any
+                    IC_USER_ID, // key: string
+                    email_param, //val: any,
+                    Object.assign({}, authData, {
+                        status: AUTH_STATUS.ACTIVE,
+                        encryptedAccessToken: encryptedAccessToken
+                    })
+                );
+
+                req.universalCookies.set(IC_WEB_TOKEN, webtoken, { path: '/' });
+
+                console.log("store email verified result: ", storeResult);
+
+                res.redirect(path.join(getBasename(), "/"));
+
+
+            } else {
+                console.log ("could not verify access token, ", email_confirmation,email_param);
+                next("access token is wrong");
+            }
+            return;
+        }
+        
+    }
 
     const { redirectPage, fFetch } = fetchAccessToken(req);
 
@@ -115,9 +251,7 @@ export const createCallbackMiddleware = (
     req["redirectPage"] = redirectPage;
 
 
-    await fFetch().then(function(response) {
-        return response.json();
-    }).then(async function(resJson) {
+    await fFetch().then(async function(resJson) {
 
         //const { token_type, access_token /*, refresh_token, scope, expires_at */} = resJson;
 
@@ -125,27 +259,12 @@ export const createCallbackMiddleware = (
         await getUserData(resJson).then(async function(data) {
             console.log(JSON.stringify(data));
 
-            const {id, name, username, imageUrl, access_token, email } = data;
+            const {id, name, username, imageUrl, access_token, email, status } = data;
 
             console.log("id: ", id);
             console.log("name: ", name);
 
-            const today = new Date();
-            const expirationDate = new Date(today);
-            expirationDate.setDate(today.getDate() + 60);
-
-            // we use the clientSecret to sign the webtoken
-            const webtoken = jwt.sign({
-                id: id,
-                exp: expirationDate.getTime() / 1000,
-            }, clientSecret);
-
-            // now let's use the webtoken to encrypt the access token
-            const encryptedAccessToken = jwt.sign({
-                id: id,
-                accessToken: access_token,
-                exp: expirationDate.getTime() / 1000,
-            }, webtoken);
+            const { webtoken, encryptedAccessToken } = getEncryptedAccessToken(id, clientSecret, access_token);
 
             //console.log("encryptedAccessToken: ", encryptedAccessToken);
 
@@ -159,19 +278,25 @@ export const createCallbackMiddleware = (
                 IC_USER_ID, // key: string
                 id, //val: any,
                 {
-                    encryptedAccessToken: encryptedAccessToken,
+                    /** We only store the encrypted token when we have an active status, i.e. a auth-provider
+                     * we keep it in clear-text for e-mail  */
+                    encryptedAccessToken: status === AUTH_STATUS.ACTIVE ? encryptedAccessToken : access_token,
                     name: name,
                     username: username,
                     imageUrl: imageUrl,
-                    email: email
+                    email: email,
+                    status: status,
                 } //jsonData: any
             );
 
             console.log("storeResult: ", storeResult);
 
 
-            // give the webtoken to back to the user
-            req.universalCookies.set(IC_WEB_TOKEN, webtoken, { path: '/' });
+            // give the webtoken to back to the user - if the account is valid, only!
+            if (status === AUTH_STATUS.ACTIVE) {
+                req.universalCookies.set(IC_WEB_TOKEN, webtoken, { path: '/' });
+
+            }
             req.universalCookies.set(IC_USER_ID, id, { path: '/' });
 
             console.log("done") //'http://' +path.join(req.headers.host +  +

@@ -9,13 +9,17 @@ import { isSecuredRoute } from './securedroute-component';
 import { isSecuredEntry } from './securedentry-component';
 import createRoute, { ROUTE_INSTANCE_TYPE } from '../route/route-component';
 import { getChildrenArray, findComponentRecursively } from '../libs';
-import {createAuthMiddleware, createCallbackMiddleware, IUserData} from "./auth-middleware";
+import {
+    createAuthMiddleware, createCallbackMiddleware, IUserData, EMAIL_CONFIRMATION_PARAM, EMAIL_PARAM, PASSWORD_PARAM,
+    AUTH_STATUS
+} from "./auth-middleware";
 
 import bodyParser from 'body-parser';
 import {isSecuredService} from "./securedservice-component";
 import {SERVICE_INSTANCE_TYPE} from "../service/service-component";
 
 export const AUTHENTICATION_INSTANCE_TYPE = "AuthenticationComponent";
+
 
 export const AuthenticationProvider = {
     EMAIL: "AUTH_EMAIL",
@@ -29,7 +33,7 @@ export const AuthenticationProvider = {
 export const AUTH_RESPONSE = {
     EMAIL_INVALID: "EMAIL_INVALID", // the e-mail format is invalid
     NOT_IMPLEMENTED: "NOT_IMPLEMENTED" // the authCallback is not implemented for this provider
-}
+};
 
 export const getProviderKey = (provider) => {
     return provider+SUFFIX_SECRET;
@@ -50,6 +54,7 @@ export const getClientSecret = (provider) => {
 export const createRequestLoginMiddleware = (clientId: string, callbackUrl: string, provider: string, loginUrl: string) => (err, req, res, next) => {
 
     if (provider === AuthenticationProvider.EMAIL) {
+        console.log("request login from: ", loginUrl);
         res.redirect(`${loginUrl}?page=${req.url}`);
     } else if (provider === AuthenticationProvider.GITHUB) {
         res.redirect(`https://github.com/login/oauth/authorize?scope=user:email&client_id=${clientId}&redirect_uri=${callbackUrl}?page=${req.url}`);
@@ -64,35 +69,100 @@ export const createRequestLoginMiddleware = (clientId: string, callbackUrl: stri
 /**
  * Create a function that creates a function that fetches the AccessToken of the provider
  */
-export const createFetchAccessTokenFunction = (clientId: string, callbackUrl: string, provider: string) => (req: any) => {
+export const createFetchAccessTokenFunction = (
+    clientId: string,
+    callbackUrl: string,
+    provider: string,
+    senderEmail?: string,
+    getSubject?: (recipient: string) => string,
+    getHtmlText?: (recipient: string, url: string) => string,
+) => (req: any) => {
 
     if (provider === AuthenticationProvider.EMAIL) {
 
         console.log("this is the EMAIL - createFetchAccessTokenFunction middleware");
 
         const { email, password, page } = req.query;
-        if (email !== undefined) {
-
-
+        
+        if (email !== undefined && password !== undefined) {
+            
             // the function fFetch must call a service that responds with a json. this json is fed into createGetUserFunction
             return {
                 redirectPage: page,
                 fFetch: async function () {
 
+                    const uuidv4 = require('uuid/v4');
+                    const access_token = uuidv4();
+                    
                     // TODO: here we call the service to send an email to the user
+                    // see: https://docs.aws.amazon.com/de_de/sdk-for-javascript/v2/developer-guide/ses-examples-sending-email.html
+                    const AWS = require('aws-sdk');
+
+
+                    // Create sendEmail params
+                    var params = {
+                        Destination: { /* required */
+                            BccAddresses: [
+                                senderEmail
+                            ],
+                            CcAddresses: [
+                            ],
+                            ToAddresses: [
+                                email
+                            ]
+                        },
+                        Message: { /* required */
+                            Body: { /* required */
+                                Html: {
+                                    Charset: "UTF-8",
+                                    Data: getHtmlText(email,
+                                        `${callbackUrl}?${EMAIL_CONFIRMATION_PARAM}=${access_token}&${EMAIL_PARAM}=${email}`)
+                                },
+                                /*Text: {
+                                    Charset: "UTF-8",
+                                    Data: "TEXT_FORMAT_BODY"
+                                }*/
+                            },
+                            Subject: {
+                                Charset: 'UTF-8',
+                                Data: getSubject(email)
+                            }
+                        },
+                        Source: senderEmail, /* required */
+                        ReplyToAddresses: [
+                            senderEmail
+                        ],
+                    };
 
                     console.log("this is the fFetch of the mail-authentication");
                     // this is the response
                     return new Promise(function(resolve, reject) {
 
-                        resolve(JSON.stringify({
-                            id: email, // we take the email - that should be unique
-                            name: "",
-                            username: "",
-                            imageUrl:"",
-                            access_token: password,
-                            email: email
-                        }))
+                        // Create the promise and SES service object
+                        var sendPromise = new AWS.SES({apiVersion: '2010-12-01'}).sendEmail(params).promise();
+
+                        // Handle promise's fulfilled/rejected states
+                        sendPromise.then(
+                            function(data) {
+                                console.log(data.MessageId);
+
+                                resolve({
+                                    id: email, // we take the email - that should be unique
+                                    name: "",
+                                    username: "",
+                                    imageUrl:"",
+                                    access_token: access_token,
+                                    email: email,
+                                    encrypted_password: password,
+                                    status: AUTH_STATUS.PENDING
+                                })
+                            }).catch(
+                            function(err) {
+                                console.error(err, err.stack);
+                                reject(err);
+                            });
+
+
                     });
                 }/*fetch(callbackUrl,{
                     method: 'POST',
@@ -141,6 +211,8 @@ export const createFetchAccessTokenFunction = (clientId: string, callbackUrl: st
                             "Accept": "application/json",
                             "Accept-Charset": "utf-8"
                         }
+                    }).then(function(response) {
+                        return response.json();
                     })
                 }
             }
@@ -169,6 +241,8 @@ export const createFetchAccessTokenFunction = (clientId: string, callbackUrl: st
                         "Accept": "application/json",
                         "Accept-Charset": "utf-8"
                     }
+                }).then(function(response) {
+                    return response.json();
                 })
             }
         }
@@ -185,7 +259,15 @@ export const createGetUserFunction = (provider: string) => async function (resJs
 
     console.log("resJson: ", resJson);
 
-    if (provider === AuthenticationProvider.GITHUB) {
+    if (provider === AuthenticationProvider.EMAIL) {
+
+        // we just provide the response-json
+        return new Promise(function(resolve, reject) {
+
+            resolve(resJson)
+        });
+        
+    } else if (provider === AuthenticationProvider.GITHUB) {
         const { token_type, access_token, /*refresh_token, scope, expires_at */ } = resJson;
 
         // try the freshly acquired token and get the user's Medium.com id
@@ -244,7 +326,8 @@ export const createGetUserFunction = (provider: string) => async function (resJs
                 username: data.login,
                 imageUrl: data.avatar_url,
                 email: data.email,
-                access_token: access_token
+                access_token: access_token,
+                status: AUTH_STATUS.ACTIVE
             }
 
         });
@@ -276,7 +359,8 @@ export const createGetUserFunction = (provider: string) => async function (resJs
                 username: data.username,
                 imageUrl: data.imageUrl,
                 email: data.email,
-                access_token: access_token
+                access_token: access_token,
+                status: AUTH_STATUS.ACTIVE
             }
             
         });
@@ -323,8 +407,26 @@ export interface IAuthenticationArgs {
     /**
      * An url to redirect in order to request the user to login, used by the email authentication
      */
-    loginUrl: string
+    loginUrl: string,
 
+    /**
+     * The email address we use to send the confirmation request email. This email address must be verified in
+     * AWS Simple Email Service (SES)
+     */
+    senderEmail?: string,
+
+    /**
+     * callback to provide the subject of the confirmation email
+     * @param recipient
+     */
+    getSubject: (recipient: string) => string,
+
+    /**
+     * callback to provide the text (in html) of the confirmation email
+     * @param recipient
+     * @param url
+     */
+    getHtmlText: (recipient: string, url: string) => string,
 
 }
 
@@ -340,12 +442,15 @@ export interface IAuthenticationProps {
 
     storeAuthData?: (request: any, key: string, val: any, jsonData: any) => void,
 
+    setGetIdentityData: (getIdentityData: (request: any, matchBrowserIdentity: boolean, key: string, val: any) => any) => void,
+
+    getAuthData?: (request: any, matchBrowserIdentity: boolean, key: string, val: any) => any,
+
     /**
      *
      * @param triggerRedirect function that triggers a redirect, that we can call with an argument
      */
-    authCallback: (email: string, password: string, page: string,
-                   triggerRedirect: (url: string) => void, onResponse: (code:string)=> void) => void
+    authCallback: (email: string, password: string, page: string, onResponse: (code:string)=> void) => void
 }
 
 
@@ -365,8 +470,10 @@ export default (props: IAuthenticationArgs | any) => {
     };
 
 
-    // set our storeData-Property
+
     const authenticationProps: IAuthenticationProps = {
+
+        // set our storeData-Property
         setStoreIdentityData: (storeIdentityData: (request: any, key: string, val: any, jsonData: any) => void) => {
             //console.log("setStoreIdentityData: ", storeIdentityData);
             props.storeAuthData = storeIdentityData;
@@ -374,7 +481,11 @@ export default (props: IAuthenticationArgs | any) => {
             //console.log("auth-props: ", props)
         },
 
-        authCallback: (email: string, password: string, page: string, triggerRedirect: (url: string) => void, onResponse: (code:string) => void) => {
+        setGetIdentityData: (getIdentityData: (request: any, matchBrowserIdentity: boolean, key: string, val: any) => any ) => {
+            props.getAuthData = getIdentityData;
+        },
+
+        authCallback: (email: string, password: string, page: string, onResponse: (code:string) => void) => {
             console.log("this is the auth-Callback");
 
             if (props.provider === AuthenticationProvider.EMAIL) {
@@ -386,7 +497,8 @@ export default (props: IAuthenticationArgs | any) => {
 
                 // redirect to the provided url that is
                 // TODO encrypt the password!
-                triggerRedirect(`${props.callbackUrl}?email=${email}&password=${password}&page=${page}`);
+                window.location.href = `${props.callbackUrl}?${EMAIL_PARAM}=${email}&${PASSWORD_PARAM}=${password}&page=${page}`;
+                return;
             }
 
 
@@ -484,13 +596,20 @@ export default (props: IAuthenticationArgs | any) => {
                         createFetchAccessTokenFunction(
                             props.clientId,
                             props.callbackUrl,
-                            props.provider
+                            props.provider,
+                            props.senderEmail,
+                            props.getSubject,
+                            props.getHtmlText
+
                         ), //fetchAccessToken
                         createGetUserFunction(props.provider),
                         async function (request: any, key: string, val: any, jsonData: any) {
                             return await props.storeAuthData(request, key, val, jsonData)
-                        }
-                        //props.storeAuthData
+                        },//props.storeAuthData
+                        async function (request: any, matchBrowserIdentity: boolean, key: string, val: any) {
+                            return await props.getAuthData(request, matchBrowserIdentity, key, val)
+                        } //getAuthData
+                        
                     )}),
 
                     // the render function should never be called for the Callback-Middleware redirects to the

@@ -4,7 +4,7 @@ import {
     IPlugin, forwardChildWebpackConfigs, forwardChildPostBuilds,
     forwardChildIamRoleStatements
 } from '../libs/plugin';
-import { isAuthentication, getProviderKey, getClientSecret } from './authentication-component';
+import {isAuthentication, getProviderKey, getClientSecret, AuthenticationProvider} from './authentication-component';
 import * as deepmerge from 'deepmerge';
 
 /**
@@ -46,6 +46,19 @@ export const AuthenticationPlugin = (props: IIdentityPlugin): IPlugin => {
 
             console.log("slsEnv: ", slsEnv)
 
+            const iamRoleStatements = [
+                component.provider === AuthenticationProvider.EMAIL ? {
+                    Effect: "Allow",
+                    Action: [
+                        "ses:SendEmail"
+                    ],
+                    Resource: [
+                        '"arn:aws:ses:${self:provider.region}:*:identity/'+`${component.senderEmail}"`
+                    ]
+                } : {}
+            ].concat(forwardChildIamRoleStatements(childConfigs));
+
+
             return {
 
                 slsConfigs: deepmerge.all([slsEnv].concat(childConfigs.map(config => config.slsConfigs)) ),
@@ -55,7 +68,7 @@ export const AuthenticationPlugin = (props: IIdentityPlugin): IPlugin => {
 
                 postBuilds: forwardChildPostBuilds(childConfigs),
 
-                iamRoleStatements: forwardChildIamRoleStatements(childConfigs)
+                iamRoleStatements: iamRoleStatements
 
                 /* THESE VALUES MUST NOT BE PROVIDED BY A CHILD, THEY ARE NOT FORWARED UPWARDS
 

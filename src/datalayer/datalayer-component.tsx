@@ -20,7 +20,7 @@ import { isWebApp } from '../webapp/webapp-component';
 import { isAuthentication } from '../authentication/authentication-component';
 import { isIdentity } from '../identity/identity-component'
 import { isEntry } from './entry-component';
-import { setEntry, ddbListEntries, getEntryListQuery } from './datalayer-libs';
+import { setEntry, ddbGetEntry, ddbListEntries, getEntryListQuery } from './datalayer-libs';
 
 export const DATALAYER_INSTANCE_TYPE = "DataLayerComponent";
 
@@ -421,6 +421,31 @@ export default (props: IDataLayerArgs | any) => {
                     skVal, // skId
                     jsonData // jsonData
                 )
+            }
+        );
+
+        child.setGetData(
+            async function (pkEntity, pkVal, skEntity, skVal) {
+                if (pkVal !== undefined) {
+                    return await ddbGetEntry(
+                        process.env.TABLE_NAME, //"code-architect-dev-data-layer",
+                        pkEntity, // schema.Entry.ENTITY, //pkEntity
+                        pkVal, // pkId
+                        skEntity, //schema.Data.ENTITY, // skEntity
+                        skVal // skId
+
+                    )
+                } else {
+                    return ddbListEntries(
+                        process.env.TABLE_NAME, //tableName
+                        "sk", //key
+                        skEntity, // entity
+                        skVal, //value,
+                        pkEntity// rangeEntity
+                    )
+                }
+
+
             }
         );
     });

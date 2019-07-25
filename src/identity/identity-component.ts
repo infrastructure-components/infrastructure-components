@@ -55,7 +55,13 @@ export interface IIdentityProps {
         storeData: (pkEntity: string, pkVal: any, skEntity: string, skVal: any, jsonData: any) => void
     ) => void
 
-    storeData?: (pkEntity: string, pkVal: any, skEntity: string, skVal: any, jsonData: any) => void
+    storeData?: (pkEntity: string, pkVal: any, skEntity: string, skVal: any, jsonData: any) => void,
+
+    setGetData: (
+        storeData: (pkEntity: string, pkVal: any, skEntity: string, skVal: any) => any
+    ) => void
+
+    getData?: (pkEntity: string, pkVal: any, skEntity: string, skVal: any) => any
 }
 
 
@@ -79,6 +85,11 @@ export default (props: IIdentityArgs | any) => {
         setStoreData: (storeData: (pkEntity: string, pkVal: any, skEntity: string, skVal: any, jsonData: any) => void) => {
             //console.log("setStoreData: ",storeData)
             props.storeData = storeData;
+        },
+
+        setGetData: (getData: (pkEntity: string, pkVal: any, skEntity: string, skVal: any) => void) => {
+            //console.log("setStoreData: ",storeData)
+            props.getData = getData;
         }
     }
 
@@ -95,6 +106,19 @@ export default (props: IIdentityArgs | any) => {
                     secondaryKey, //skEntity: string,
                     val, //skVal: any,
                     jsonData //: any
+                )
+            }
+        );
+
+        child.setGetIdentityData(
+
+            async function (request: any, matchBrowserIdentity: boolean, secondaryKey: string, val: any) {
+                //console.log("identity: storeData: ", props);
+                return await props.getData(
+                    IDENTITY_KEY, //pkEntity: string,
+                    matchBrowserIdentity ? getBrowserId(request, IDENTITY_KEY) : undefined, //pkVal: any,
+                    secondaryKey, //skEntity: string,
+                    val //skVal: any,
                 )
             }
         );
