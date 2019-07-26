@@ -148,6 +148,7 @@ export const createCallbackMiddleware = (
     const email_confirmation = req.query[EMAIL_CONFIRMATION_PARAM];
     const email_param = req.query[EMAIL_PARAM];
     const password_param = req.query[PASSWORD_PARAM];
+    const page = req.query["page"];
 
     console.log("received params: ", email_confirmation, email_param, password_param);
 
@@ -166,7 +167,8 @@ export const createCallbackMiddleware = (
         // check whether the user already exists
         const parsedAuthDataList = authDataList.map(raw=> JSON.parse(raw.jsonData));
 
-        if (password_param && parsedAuthDataList.length > 0) {
+        // the user logs in with her email and password
+        if (password_param !== undefined && parsedAuthDataList.length > 0) {
 
             const authData = parsedAuthDataList
                 .reduce((result, cur) => result !== undefined ? result : (
@@ -189,21 +191,25 @@ export const createCallbackMiddleware = (
                     })
                 );
 
+
                 req.universalCookies.set(IC_WEB_TOKEN, webtoken, { path: '/' });
+                req.universalCookies.set(IC_USER_ID, email_param, { path: '/' });
 
-                console.log("store email verified result: ", storeResult);
 
-                res.redirect(path.join(getBasename(), "/"));
+                console.log("store password verified result: ", storeResult);
+
+                res.redirect(`${path.join(getBasename(), page !== undefined ? page : "/")}?message=success`);
 
 
             } else {
                 console.log ("could not verify password, ", password_param,email_param);
-                next("login failure");
+                return next("login failure");
             }
 
             return;
-        } else if (email_confirmation && parsedAuthDataList.length > 0) {
 
+        } else if (email_confirmation && parsedAuthDataList.length > 0) {
+            // the user clicks the link from within the confirmation email
 
             const authData = parsedAuthDataList
                 .reduce((result, cur) => result !== undefined ? result : (
@@ -228,20 +234,24 @@ export const createCallbackMiddleware = (
                     })
                 );
 
+                console.log("webtoken: ", webtoken, email_param)
+
                 req.universalCookies.set(IC_WEB_TOKEN, webtoken, { path: '/' });
+                req.universalCookies.set(IC_USER_ID, email_param, { path: '/' });
 
                 console.log("store email verified result: ", storeResult);
 
-                res.redirect(path.join(getBasename(), "/"));
+                res.redirect(`${path.join(getBasename(), page !== undefined ? page : "/")}?message=mailverified`);
 
 
             } else {
                 console.log ("could not verify access token, ", email_confirmation,email_param);
-                next("access token is wrong");
+
+                return next("access token is wrong");
             }
             return;
         }
-        
+
     }
 
     const { redirectPage, fFetch } = fetchAccessToken(req);
@@ -277,7 +287,7 @@ export const createCallbackMiddleware = (
                 req, // request: any
                 IC_USER_ID, // key: string
                 id, //val: any,
-                {
+                Object.assign({
                     /** We only store the encrypted token when we have an active status, i.e. a auth-provider
                      * we keep it in clear-text for e-mail  */
                     encryptedAccessToken: status === AUTH_STATUS.ACTIVE ? encryptedAccessToken : access_token,
@@ -286,7 +296,10 @@ export const createCallbackMiddleware = (
                     imageUrl: imageUrl,
                     email: email,
                     status: status,
-                } //jsonData: any
+
+                }, password_param ? {
+                    encrypted_password: password_param
+                } : {}) //jsonData: any
             );
 
             console.log("storeResult: ", storeResult);
@@ -295,9 +308,10 @@ export const createCallbackMiddleware = (
             // give the webtoken to back to the user - if the account is valid, only!
             if (status === AUTH_STATUS.ACTIVE) {
                 req.universalCookies.set(IC_WEB_TOKEN, webtoken, { path: '/' });
+                req.universalCookies.set(IC_USER_ID, id, { path: '/' });
 
             }
-            req.universalCookies.set(IC_USER_ID, id, { path: '/' });
+
 
             console.log("done") //'http://' +path.join(req.headers.host +  +
             res.redirect(path.join(getBasename(), redirectPage));
@@ -307,4 +321,4 @@ export const createCallbackMiddleware = (
     });
     
 
-}
+};

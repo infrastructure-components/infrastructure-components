@@ -9,8 +9,16 @@ import { isSecuredRoute } from './securedroute-component';
 import { isSecuredEntry } from './securedentry-component';
 import createRoute, { ROUTE_INSTANCE_TYPE } from '../route/route-component';
 import { getChildrenArray, findComponentRecursively } from '../libs';
+
+import {getBasename} from '../libs/iso-libs';
+
 import {
-    createAuthMiddleware, createCallbackMiddleware, IUserData, EMAIL_CONFIRMATION_PARAM, EMAIL_PARAM, PASSWORD_PARAM,
+    createAuthMiddleware,
+    createCallbackMiddleware,
+    IUserData,
+    EMAIL_CONFIRMATION_PARAM,
+    EMAIL_PARAM,
+    PASSWORD_PARAM,
     AUTH_STATUS
 } from "./auth-middleware";
 
@@ -53,9 +61,17 @@ export const getClientSecret = (provider) => {
  */
 export const createRequestLoginMiddleware = (clientId: string, callbackUrl: string, provider: string, loginUrl: string) => (err, req, res, next) => {
 
+    const path = require('path');
+
+    console.log("createRequestLoginMiddleware: ", err);
+
     if (provider === AuthenticationProvider.EMAIL) {
         console.log("request login from: ", loginUrl);
-        res.redirect(`${loginUrl}?page=${req.url}`);
+
+        const page = err && req.query && req.query.page ? req.query.page : req.url;
+
+        res.redirect(`${path.join(getBasename(), loginUrl)}?page=${page}${err ? `&message=${err}` : "" }`);
+
     } else if (provider === AuthenticationProvider.GITHUB) {
         res.redirect(`https://github.com/login/oauth/authorize?scope=user:email&client_id=${clientId}&redirect_uri=${callbackUrl}?page=${req.url}`);
     } else if (provider === AuthenticationProvider.MEDIUM) {
@@ -611,6 +627,10 @@ export default (props: IAuthenticationArgs | any) => {
                         } //getAuthData
                         
                     )}),
+
+                    createMiddleware({
+                        callback: createRequestLoginMiddleware(props.clientId, props.callbackUrl, props.provider, props.loginUrl)
+                    }),
 
                     // the render function should never be called for the Callback-Middleware redirects to the
                     // page that was requested in the first request
