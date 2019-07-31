@@ -142,8 +142,7 @@ export const createCallbackMiddleware = (
 
     console.log("THIS IS THE AUTH CALLBACK");
 
-
-
+    
     // we use this middleware also as endpoint for email confirmation, then the token-parameter must be specified
     const email_confirmation = req.query[EMAIL_CONFIRMATION_PARAM];
     const email_param = req.query[EMAIL_PARAM];

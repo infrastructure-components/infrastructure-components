@@ -70,6 +70,8 @@ export const withUser = require('./assets/attach-user').withUser;
 export const userLogout = require('./assets/attach-user').userLogout;
 export const AttachUser = require('./assets/attach-user').default;
 export const getUserId = require('./assets/attach-user').getUserId;
+export const getWebToken = require('./assets/attach-user').getWebToken;
+
 export const getBrowserId = require('./identity/identity-component').getBrowserId;
 
 export const withAuthCallback = require('./assets/attach-auth').withAuthCallback;

@@ -25,6 +25,18 @@ export function getUserId(request) {
 
 }
 
+
+export function getWebToken(request) {
+    if (request) {
+        return new Cookies(request.headers.cookie).get(IC_WEB_TOKEN)
+    } else if (ExecutionEnvironment.canUseDOM) {
+        return new Cookies().get(IC_WEB_TOKEN)
+    }
+
+    return undefined;
+
+}
+
 interface IAttachUserProps {
     request: any // passed by `withRequest`
 }
