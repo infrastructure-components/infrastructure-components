@@ -238,7 +238,10 @@ export const createFetchAccessTokenFunction = (
 
     } else if (provider === AuthenticationProvider.MEDIUM) {
 
+        console.log("Medium callback: ", req.query)
         const { state, code, error, page } = req.query;
+
+        
         if (error !== undefined) {
             // TODO handle an error, e.g. user does not authorize the app
 

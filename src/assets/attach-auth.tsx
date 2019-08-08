@@ -14,7 +14,7 @@ interface IAttachAuthProps {
     children: any
 }
 /**
- * This HOC attaches the User-Id to a webapp, may be undefined!
+ * This HOC attaches the auth-callback to a webapp, may be undefined!
  */
 const AttachAuth= (props: IAttachAuthProps) => {
 
