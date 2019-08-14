@@ -4,11 +4,11 @@
  * NOTE, we Ignore the infrastructure-scripts libraries when bundling, so these can be used ...
  * We also put fs to empty! If you need other libs, add them to `node: { fs: empty }`
  */
-import { isSinglePageApp } from './spa-component';
+import { isServiceOrientedApp } from './soa-component';
 import { resolveAssetsPath } from '../libs/iso-libs';
 import * as deepmerge from 'deepmerge';
 import { IConfigParseResult } from '../libs/config-parse-result';
-import { IPlugin } from '../libs/plugin';
+import {IPlugin, forwardChildIamRoleStatements} from '../libs/plugin';
 import { PARSER_MODES } from '../libs/parser';
 
 import extractDomain from 'extract-domain';
@@ -16,7 +16,7 @@ import extractDomain from 'extract-domain';
 /**
  * Parameters that apply to the whole Plugin, passed by other plugins
  */
-export interface ISpaPlugin {
+export interface ISoaPlugin {
 
     /**
      * the stage is the environment to apply
@@ -43,7 +43,7 @@ export interface ISpaPlugin {
  * A Plugin to detect SinglePage-App-Components
  * @param props
  */
-export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
+export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
 
     //console.log("configFilePath: " , props.configFilePath);
 
@@ -51,7 +51,7 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
         // identify Isomorphic-App-Components
         applies: (component): boolean => {
 
-            return isSinglePageApp(component);
+            return isServiceOrientedApp(component);
         },
 
         // convert the component into configuration parts
@@ -61,12 +61,59 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
             infrastructureMode: string | undefined
     ): IConfigParseResult => {
 
+            console.log("services: ", component.services);
             const path = require('path');
+
+            // we use the hardcoded name `server` as name
+            const serverName = "server";
+
+            const serverBuildPath = path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath);
+
+
+
+            // the service-oriented app has a server application
+            const serverWebPack = require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").complementWebpackConfig(
+                require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").createServerWebpackConfig(
+                    "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "soa-server.js"), //entryPath: string,
+                    serverBuildPath, //use the buildpath from the parent plugin
+                    serverName, // name of the server
+                    {
+                        __CONFIG_FILE_PATH__: require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").pathToConfigFile(props.configFilePath), // replace the IsoConfig-Placeholder with the real path to the main-config-bundle
+
+                        // required of data-layer, makes the context match!
+                        "infrastructure-components": path.join(
+                            require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                            "node_modules", "infrastructure-components", "dist", "index.js"),
+
+                        // required of the routed-app
+                        "react-router-dom": path.join(
+                            require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                            "node_modules", "react-router-dom"),
+
+                        // required of the data-layer / apollo
+                        "react-apollo": path.join(
+                            require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
+                            "node_modules", "react-apollo"),
+                    }, {
+                        __SERVICEORIENTED_ID__: `"${component.instanceId}"`,
+                        //__ASSETS_PATH__: `"${component.assetsPath}"`,
+                        __DATALAYER_ID__: `"${component.dataLayerId}"`,
+                        /*__RESOLVED_ASSETS_PATH__: `"${resolveAssetsPath(
+                            component.buildPath,
+                            serverName,
+                            component.assetsPath )
+                            }"`*/
+
+                        // TODO add replacements of datalayers here!
+                    }
+                ),
+                props.parserMode === PARSER_MODES.MODE_DEPLOY //isProd
+            );
 
             
             const webappBuildPath = path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath);
 
-            const spaWebPack = require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs")
+            const soaWebPack = require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs")
                 .complementWebpackConfig(require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs")
                     .createClientWebpackConfig(
                         "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "spa.js"), //entryPath: string,
@@ -83,9 +130,9 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
                                 "node_modules", "react-router-dom"),
 
                             // required of the data-layer / apollo
-                            "react-apollo": path.join(
+                            /*"react-apollo": path.join(
                                 require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
-                                "node_modules", "react-apollo"),
+                                "node_modules", "react-apollo"),*/
                         }, {
                         }
                     ),
@@ -96,10 +143,57 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
             // provide all client configs in a flat list
             const webpackConfigs: any = childConfigs.reduce((result, config) => result.concat(config.webpackConfigs), []);
 
-            const createHtml = () => {
+            const copyAssetsPostBuild = () => {
+                //console.log("check for >>copyAssetsPostBuild<<");
+             /*   if (props.parserMode !== PARSER_MODES.MODE_DOMAIN && props.parserMode !== PARSER_MODES.MODE_DEPLOY) {
+                    // always copy the assets, unless we setup the domain
+                    console.log("copyAssetsPostBuild: now copy the assets!");
+
+                    webpackConfigs.map(config => require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").copyAssets( config.output.path, path.join(serverBuildPath, serverName, component.assetsPath)));
+
+                } else {
+                    // delete the assets folder for we don't want to include all these bundled files in the deployment-package
+                    const rimraf = require("rimraf");
+                    rimraf.sync(path.join(serverBuildPath, serverName, component.assetsPath));
+
+                }
+                */
+            };
+
+            const environments = childConfigs.reduce((result, config) => (result !== undefined ? result : []).concat(config.environments !== undefined ? config.environments : []), []);
+
+            // check whether we already created the domain of this environment
+            const deployedDomain = process.env[`DOMAIN_${props.stage}`] !== undefined;
+
+
+            const domain = childConfigs.map(config => config.domain).reduce((result, domain) => result !== undefined ? result : domain, undefined);
+            const certArn = childConfigs.map(config => config.certArn).reduce((result, certArn) => result !== undefined ? result : certArn, undefined);
+
+
+            const stagePath = props.parserMode === PARSER_MODES.MODE_DEPLOY &&
+                domain == undefined &&
+                environments !== undefined &&
+                environments.length > 0 ? environments[0].name : undefined;
+
+            const createHtml = ({serviceEndpoints}) => {
                 //console.log("check for >>copyAssetsPostBuild<<");
                 //if (props.parserMode == PARSER_MODES.MODE_BUILD) {
                 console.log("write the index.html!");
+                console.log("serviceEndpoints: ", serviceEndpoints);
+
+
+                // we need to get rid of the path of the endpoint
+                const servicePath = serviceEndpoints && serviceEndpoints.length > 0 ? (
+                    stagePath ?
+                        // when we have a stagePath, we can remove anything behind it
+                        serviceEndpoints[0].substr(0, serviceEndpoints[0].indexOf(stagePath)+stagePath.length) :
+                        // when we don't have a stagePath - TODO
+                        serviceEndpoints[0]
+                ) : undefined;
+
+
+                
+                console.log ("servicePath: " , servicePath);
 
                 require('fs').writeFileSync(path.join(webappBuildPath, component.stackName, "index.html"), `<!DOCTYPE html>
 <html lang="en">
@@ -116,6 +210,9 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <script>
+        ${servicePath !== undefined ? `window.__BASENAME__ ="${servicePath}"` : ""};
+    </script>
     <script src="${component.stackName}.bundle.js"></script>
   </body>
 </html>`);
@@ -126,12 +223,6 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
 
 
 
-            // check whether we already created the domain of this environment
-            const deployedDomain = process.env[`DOMAIN_${props.stage}`] !== undefined;
-
-
-            const domain = childConfigs.map(config => config.domain).reduce((result, domain) => result !== undefined ? result : domain, undefined);
-            const certArn = childConfigs.map(config => config.certArn).reduce((result, certArn) => result !== undefined ? result : certArn, undefined);
 
             const invalidateCloudFrontCache = () => {
                 if (deployedDomain && props.parserMode === PARSER_MODES.MODE_DEPLOY) {
@@ -184,6 +275,71 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
                 }
             }
 
+            const additionalStatements: Array<any> = forwardChildIamRoleStatements(childConfigs).concat(
+                component.iamRoleStatements ? component.iamRoleStatements : []
+            );
+
+            const iamRoleAssignment = {
+                functions: {}
+            };
+
+            iamRoleAssignment.functions[serverName] = {
+                role: "ServiceOrientedAppLambdaRole"
+            }
+
+
+            const iamPermissions = {
+
+                resources: {
+                    Resources: {
+                        ServiceOrientedAppLambdaRole: {
+                            Type: "AWS::IAM::Role",
+
+                            Properties: {
+                                RoleName: "${self:service}-${self:provider.stage, env:STAGE, 'dev'}-ServiceOrientedAppLambdaRole",
+                                AssumeRolePolicyDocument: {
+                                    Version: '"2012-10-17"',
+                                    Statement: [
+                                        {
+                                            Effect: "Allow",
+                                            Principal: {
+                                                Service: ["lambda.amazonaws.com"]
+                                            },
+                                            Action: "sts:AssumeRole"
+                                        }
+                                    ]
+                                },
+                                Policies: [
+                                    {
+                                        PolicyName: "${self:service}-${self:provider.stage, env:STAGE, 'dev'}-ServiceOrientedAppLambdaPolicy",
+                                        PolicyDocument: {
+                                            Version: '"2012-10-17"',
+                                            Statement: [
+                                                {
+                                                    Effect: "Allow",
+                                                    Action: [
+                                                        '"logs:*"',
+                                                        '"cloudwatch:*"'
+                                                    ],
+                                                    Resource: '"*"'
+                                                }, {
+                                                    Effect: "Allow",
+                                                    Action: [
+                                                        "s3:Get*",
+                                                        "s3:List*",
+                                                    ],
+                                                    Resource: '"*"'
+                                                },
+
+                                            ].concat(additionalStatements)
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                    },
+                }
+            }
 
             /**
              * ONLY add the domain config if we are in domain mode!
@@ -279,30 +435,54 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
             } : {};
 
             return {
-                stackType: "SPA",
+                stackType: "SOA",
                 
                 slsConfigs: deepmerge.all([
-                    require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").toSpaSlsConfig(
+                    require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").toSoaSlsConfig(
                         component.stackName,
+                        serverName,
                         component.buildPath,
+                        component.assetsPath,
                         component.region,
-                        domain
+                        component.services
                     ),
 
-                    domainConfig,
+                        // # allows running the stack locally on the dev-machine
+                        {
+                            plugins: ["serverless-offline", "serverless-pseudo-parameters"],
 
-                    ...childConfigs.map(config => config.slsConfigs)
+                            custom: {
+
+                                "serverless-offline": {
+                                    host: "0.0.0.0",
+                                    port: "${self:provider.port, env:PORT, '3000'}"
+                                }
+                            }
+
+                        },
+
+                        domainConfig,
+
+                        ...childConfigs.map(config => config.slsConfigs),
+
+                        // add the IAM-Role-Statements
+                        iamPermissions,
+
+                        // assign the role
+                        // assign the role
+                        iamRoleAssignment
                     ]
                 ),
                 
                 // add the server config 
-                webpackConfigs: webpackConfigs.concat([spaWebPack]),
+                webpackConfigs: webpackConfigs.concat([soaWebPack, serverWebPack]),
 
-                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [createHtml, writeDomainEnv, deployWithDomain, invalidateCloudFrontCache /*, postDeploy*/]),
+                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds),
+                    [createHtml, writeDomainEnv, copyAssetsPostBuild, deployWithDomain, invalidateCloudFrontCache /*, postDeploy*/]),
 
                 iamRoleStatements: [],
                 
-                environments: childConfigs.reduce((result, config) => (result !== undefined ? result : []).concat(config.environments !== undefined ? config.environments : []), []),
+                environments: environments,
 
                 stackName: component.stackName,
 
@@ -316,8 +496,7 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
 
                 certArn: certArn,
 
-                // start the sls-stack offline does not work and does make sense either, we can use the hot-dev-mode
-                supportOfflineStart: false,
+                supportOfflineStart: true,
                 supportCreateDomain: true
             }
         }

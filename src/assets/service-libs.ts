@@ -34,8 +34,14 @@ export async function callService(id: string, args: any, onResult: (result: any)
         onError(`could not find service with id: ${id}`);
         return;
     }
-    
-    const urlPath = getBasename() !== undefined ? path.join(getBasename(), serviceComponent.path) : serviceComponent.path;
+
+    const basename = getBasename();
+    const urlPath = basename !== undefined ? (
+        basename.startsWith("http") ?
+            basename + serviceComponent.path :
+            path.join(basename, serviceComponent.path)
+    ) : serviceComponent.path;
+
     //console.log("urlPath: ", urlPath);
 
     const params = {

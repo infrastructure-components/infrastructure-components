@@ -202,7 +202,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
     let context: any = {};
 
 
-    const  basename = getBasename();
+    const basename = getBasename();
 
     // creating the stylesheet
     const sheet = new ServerStyleSheet();
