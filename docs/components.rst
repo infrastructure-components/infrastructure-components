@@ -27,6 +27,15 @@ with a custom html and Javascript code.
 
 See :doc:`components/webapp` for more details.
 
+
+:ref:`Service`
+==================
+
+The Service-Components is available in :doc:`apps/soa` and :doc:`apps/isomorphic`. It specifies a server-side route to
+one or many :doc:`components/middleware`-components
+
+See :doc:`components/service` for more details.
+
 :ref:`Middleware`
 ==================
 

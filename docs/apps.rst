@@ -41,6 +41,15 @@ application than a traditional website.
 :doc:`apps/spa` provides further details on Infrastructure-Component's ``SinglePageApp``.
 
 
+:ref:`ServiceOrientedApp`
+=====================
+
+A Service-Oriented-App (SOA) is an interactive web application just like a Single-Page-App. Additionally, it supports
+services. These services run as AWS Lambda function on the server side.
+
+:doc:`apps/soa` provides further details on Infrastructure-Component's ``ServiceOrientedApp``.
+
+
 :ref:`IsomorphicApp`
 ====================
 
