@@ -19,12 +19,19 @@ const promisify = foo => new Promise((resolve, reject) => {
     })
 });
 
-export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData) => {
+const applyOfflineConfig = (offline: boolean) => {
+    return offline ? {
+        region: 'localhost',
+        endpoint: 'http://localhost:8000'
+    } : {}
+};
+
+export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData, isOffline) => {
 
     console.log("setEntry: ", pkEntity, "|", pkId, "|", skEntity, "|", skId );
 
     return promisify(callback =>
-        new AWS.DynamoDB.DocumentClient().update({
+        new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).update({
             TableName: tableName,
             /**
              * ALL KEYS MUST BE SPECIFIED HERE!
@@ -60,7 +67,7 @@ export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData) =>
  * @param rangeEntity specify the entity of the range
  * @returns {Promise<string>|any}
  */
-export const ddbListEntries = (tableName, key, entity, value, rangeEntity) => {
+export const ddbListEntries = (tableName, key, entity, value, rangeEntity, isOffline) => {
 
     console.log("ddbListEntries: ", tableName, key, entity, value, rangeEntity);
 
@@ -85,7 +92,7 @@ export const ddbListEntries = (tableName, key, entity, value, rangeEntity) => {
     //console.log("query: ", q);
 
     return promisify(callback =>
-        new AWS.DynamoDB.DocumentClient().query(q, callback))
+        new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).query(q, callback))
         .then(result => {
             console.log("ddb-result: ", result);
             return result["Items"];
@@ -101,7 +108,7 @@ export const ddbListEntries = (tableName, key, entity, value, rangeEntity) => {
         }).catch(error => { console.log(error) });
 };
 
-export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
+export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue, isOffline) => {
 
     console.log("ddbGetEntry: ", `${pkEntity}|${pkValue}`, ` -- ${skEntity}|${skValue}`, " -- ", tableName);
 
@@ -116,7 +123,7 @@ export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => 
     console.log("ddbGetEntry-query: ", q);
 
     return promisify(callback =>
-        new AWS.DynamoDB.DocumentClient().get(q, callback))
+        new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).get(q, callback))
         .then(result => {
             console.log("ddbGetEntry result: ", result);
 
@@ -125,7 +132,7 @@ export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => 
         }).catch(error => { console.log(error) });
 };
 
-export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEntity) => {
+export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEntity, isOffline) => {
 
     console.log("scan: ", tableName, key, entity, start_value, end_value, rangeEntity);
 
@@ -160,7 +167,7 @@ export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEnt
     //console.log("query: ", q);
 
     return promisify(callback =>
-        new AWS.DynamoDB.DocumentClient().scan(start_value && end_value ? q : allQ, callback))
+        new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).scan(start_value && end_value ? q : allQ, callback))
         .then(result => {
             console.log("ddb-result: ", result);
             return result["Items"];
@@ -200,14 +207,14 @@ export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEnt
 
 
 
-export const deleteEntry = (tableName, pkEntity, pkValue, skEntity, skValue) => {
+export const deleteEntry = (tableName, pkEntity, pkValue, skEntity, skValue, isOffline) => {
 
     console.log("delete entry: ", pkEntity, pkValue, skEntity, skValue)
     //console.log("pk: ", `${pkEntity}|${pkValue}`);
     //console.log("sk: ", `${skEntity}|${skValue}`);
 
     return promisify(callback =>
-        new AWS.DynamoDB.DocumentClient().delete({
+        new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).delete({
             // use the table_name as specified in the serverless.yml
             TableName: tableName,
             Key: {

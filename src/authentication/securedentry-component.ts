@@ -118,7 +118,7 @@ export default (props: IEntryArgs | any) => {
     return Object.assign(entryProps, {
 
         // we need to adjust the writing into the table
-        setEntry: (args, context, tableName) => {
+        setEntry: (args, context, tableName, isOffline) => {
 
             setUserIdFromContext(context);
 
@@ -134,11 +134,13 @@ export default (props: IEntryArgs | any) => {
                         result[key] = args[key];
                     }
                     return result;
-                },{}) // jsonData
+                },{}), // jsonData,
+                isOffline
+
             );
         },
 
-        deleteEntry: (args, context, tableName) => {
+        deleteEntry: (args, context, tableName, isOffline) => {
 
             setUserIdFromContext(context);
             
@@ -147,11 +149,12 @@ export default (props: IEntryArgs | any) => {
                 props.primaryKey, // schema.Entry.ENTITY, //pkEntity
                 args[props.primaryKey], // pkId
                 IC_USER_ID, //schema.Data.ENTITY, // skEntity
-                `${securedEntryProps.userId}|${props.rangeKey}|${args[props.rangeKey]}` // skId
+                `${securedEntryProps.userId}|${props.rangeKey}|${args[props.rangeKey]}`, // skId
+                isOffline
             );
         },
 
-        listEntries: (args, context, tableName, key) => {
+        listEntries: (args, context, tableName, key, isOffline) => {
 
             setUserIdFromContext(context);
 
@@ -164,7 +167,8 @@ export default (props: IEntryArgs | any) => {
                 key, // key
                 entity, //entity
                 args[key === "pk" ? props.primaryKey : props.rangeKey], //value
-                range //rangeEntity
+                range, //rangeEntity
+                isOffline
             ).then(results => {
 
                 console.log("promised: ", results);

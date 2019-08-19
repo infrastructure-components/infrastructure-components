@@ -115,6 +115,24 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
 
                 },*/
 
+                plugins: ["serverless-dynamodb-local"],
+
+                /* see: https://www.npmjs.com/package/serverless-dynamodb-local */
+                custom: {
+                    "dynamodb": {
+                        stages: ["dev", ],
+                        start: {
+                            port: 8000,
+                            inMemory: "true",
+                            heapInitial: "200m",
+                            heapMax: "1g",
+                            migrate: "true",
+                            //seed: "true",
+                            convertEmptyValues: "true"
+                        }
+                    }
+                },
+
                 provider: {
                     environment: {
                         // set the table name in an environment variable

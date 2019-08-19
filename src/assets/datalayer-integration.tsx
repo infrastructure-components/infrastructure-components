@@ -103,6 +103,42 @@ export const hydrateFromDataLayer = (app, dataLayer) => {
     </ApolloProvider>
 };
 
+/**
+ *  function to be used to provide the data-layer to a single-page-app-client (esp. SOA!)
+ */
+export const renderFromDataLayer = (app, dataLayer) => {
+    const AttachDataLayer = require("infrastructure-components").AttachDataLayer;
+    console.log("connect, dataLayer: ", dataLayer);
+
+    var preloadedState = {};
+
+    /*if (typeof window != 'undefined' && window.__APOLLO_STATE__) {
+        preloadedState = window.__APOLLO_STATE__;
+        delete window.__APOLLO_STATE__;
+    }*/
+
+    console.log("uri: ", window.__GRAPHQL__);
+
+    const client = new ApolloClient({
+        cache: new InMemoryCache(), /*.restore(preloadedState),*/
+        link: createHttpLink({
+            uri: window.__GRAPHQL__,
+            credentials: 'include',
+        })
+    });
+
+    console.log("local client: ", client);
+
+
+    return <ApolloProvider client={ client } >
+        <ApolloConsumer>
+            {client => <AttachDataLayer apolloClient={client} dataLayer={dataLayer}>{app}</AttachDataLayer>}
+        </ApolloConsumer>
+
+    </ApolloProvider>
+
+}
+
 export const createApolloClient = (dataLayer, graphqlUrl, request) => {
     //console.log("STAGE_PATH: ", process.env.STAGE_PATH);
     //console.log("DOMAIN_ENABLED: ", process.env.DOMAIN_ENABLED);

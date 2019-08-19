@@ -1,37 +1,31 @@
 declare var __SERVICEORIENTED_ID__: any;
 declare var __DATALAYER_ID__: any;
+declare var __ISOFFLINE__: any;
 
 // this must be imported to allow async-functions within an AWS lambda environment
 // see: https://github.com/babel/babel/issues/5085
 import "@babel/polyfill";
 
-import React, { ReactNode} from "react";
+import React, { ReactNode } from "react";
 import ReactDOMServer from "react-dom/server";
 import express from "express";
 import serverless from "serverless-http";
-//import ConnectSequence from 'connect-sequence';
 
-//import {serviceAttachDataLayer} from "./attach-data-layer";
+
 
 import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
 
-/*
-import {
-    graphql,
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLString,
-    GraphQLNonNull
-}  from 'graphql';*/
+// DataLayer imports....
+import ConnectSequence from 'connect-sequence';
+import { graphql }  from 'graphql';
+import {serviceAttachDataLayer} from "./attach-data-layer";
 
-import { getClientFilename } from '../libs/server-libs';
-
-
+//import { getClientFilename } from '../libs/server-libs';
 //import {loadIsoConfigFromComponent, applyCustomComponents} from "../isolib";
 //import { applyAppClientModules } from '../types/client-app-config';
 
-const createServer = (serviceOrientedId) => {
+const createServer = (serviceOrientedId, isOffline) => {
 
     // express is the web-framework that lets us configure the endpoints
     const app = express();
@@ -52,12 +46,9 @@ const createServer = (serviceOrientedId) => {
         soaConfig,
         Types.INFRASTRUCTURE_TYPE_CONFIGURATION,
         serviceOrientedId
-    )
-
-    // connect the middlewares
-    //soaApp.middlewares.map(mw => app.use(mw.callback));
-
-    /*
+    );
+    
+    
 
     // let's extract it from the root configuration
     const dataLayer = extractObject(
@@ -69,6 +60,13 @@ const createServer = (serviceOrientedId) => {
     if (dataLayer) {
 
         console.log ("Datalayer Active: ", dataLayer.id)
+
+        console.log ("isOffline: ", isOffline);
+
+        if (isOffline) {
+            console.log("setOffline!")
+            dataLayer.setOffline(true);
+        }
 
         app.use('/query', async (req, res, next) => {
             const parsedBody = JSON.parse(req.body);
@@ -103,16 +101,16 @@ const createServer = (serviceOrientedId) => {
             );
         });
 
-    };*/
+    };
 
     // flattens the callbacks
     const unpackMiddlewares = (middlewares) => {
         // always returns the list of callbacks
         const cbList = (mw) => Array.isArray(mw.callback) ? mw.callback : [mw.callback];
-        return middlewares.reduce((res,mw) => res.concat(...cbList(mw)), /*dataLayer ? [
+        return middlewares.reduce((res,mw) => res.concat(...cbList(mw)), dataLayer ? [
             // when we have a dataLayer, let's attach it to the request
             serviceAttachDataLayer(dataLayer)
-        ] :*/ [])
+        ] : [])
     };
 
 
@@ -144,4 +142,4 @@ const createServer = (serviceOrientedId) => {
 
 
 // these variables are replaced during compilation
-export default serverless(createServer(__SERVICEORIENTED_ID__));
+export default serverless(createServer(__SERVICEORIENTED_ID__, __ISOFFLINE__));

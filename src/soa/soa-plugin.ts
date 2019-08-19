@@ -96,8 +96,10 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                             "node_modules", "react-apollo"),
                     }, {
                         __SERVICEORIENTED_ID__: `"${component.instanceId}"`,
+                        __ISOFFLINE__: props.parserMode === PARSER_MODES.MODE_START,
                         //__ASSETS_PATH__: `"${component.assetsPath}"`,
                         __DATALAYER_ID__: `"${component.dataLayerId}"`,
+
                         /*__RESOLVED_ASSETS_PATH__: `"${resolveAssetsPath(
                             component.buildPath,
                             serverName,
@@ -105,7 +107,7 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                             }"`*/
 
                         // TODO add replacements of datalayers here!
-                    }
+                    },
                 ),
                 props.parserMode === PARSER_MODES.MODE_DEPLOY //isProd
             );
@@ -116,7 +118,7 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
             const soaWebPack = require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs")
                 .complementWebpackConfig(require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs")
                     .createClientWebpackConfig(
-                        "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "spa.js"), //entryPath: string,
+                        "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "soa.js"), //entryPath: string,
                         path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath), //use the buildpath from the parent plugin
                         component.id, //appName
                         undefined, //assetsPath
@@ -130,9 +132,9 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                                 "node_modules", "react-router-dom"),
 
                             // required of the data-layer / apollo
-                            /*"react-apollo": path.join(
+                            "react-apollo": path.join(
                                 require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
-                                "node_modules", "react-apollo"),*/
+                                "node_modules", "react-apollo"),
                         }, {
                         }
                     ),
@@ -175,7 +177,8 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                 environments !== undefined &&
                 environments.length > 0 ? environments[0].name : undefined;
 
-            const createHtml = ({serviceEndpoints}) => {
+            const createHtml = ( { serviceEndpoints }) => {
+
                 //console.log("check for >>copyAssetsPostBuild<<");
                 //if (props.parserMode == PARSER_MODES.MODE_BUILD) {
                 console.log("write the index.html!");
@@ -195,6 +198,15 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                 
                 console.log ("servicePath: " , servicePath);
 
+
+                // TODO this should not be hard-coded
+                const graphqlUrl = component.dataLayerId ? (
+                    props.parserMode === PARSER_MODES.MODE_START ? "http://localhost:8000" : servicePath+"/query"
+                ) : undefined;
+
+                //region: 'localhost',
+                //endpoint: 'http://localhost:8000',
+
                 require('fs').writeFileSync(path.join(webappBuildPath, component.stackName, "index.html"), `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -211,6 +223,7 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script>
+        ${graphqlUrl !== undefined ? `window.__GRAPHQL__ ="${graphqlUrl}"` : ""};
         ${servicePath !== undefined ? `window.__BASENAME__ ="${servicePath}"` : ""};
     </script>
     <script src="${component.stackName}.bundle.js"></script>
@@ -447,6 +460,9 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                         component.services
                     ),
 
+                        // the datalayer (maybe a child-config) must load before the plugin serverless-offline!
+                        ...childConfigs.map(config => config.slsConfigs),
+
                         // # allows running the stack locally on the dev-machine
                         {
                             plugins: ["serverless-offline", "serverless-pseudo-parameters"],
@@ -455,7 +471,7 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
 
                                 "serverless-offline": {
                                     host: "0.0.0.0",
-                                    port: "${self:provider.port, env:PORT, '3000'}"
+                                    port: "${self:provider.port, env:PORT, '3001'}"
                                 }
                             }
 
@@ -463,7 +479,7 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
 
                         domainConfig,
 
-                        ...childConfigs.map(config => config.slsConfigs),
+
 
                         // add the IAM-Role-Statements
                         iamPermissions,

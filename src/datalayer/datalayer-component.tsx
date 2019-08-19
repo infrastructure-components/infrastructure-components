@@ -79,7 +79,13 @@ export interface IDataLayerProps {
      * The Apollo-Client: used at server-side only! Used to provide the Apollo-Client to middlewares
      */
     client?: any
-    setClient: (client: any) => void
+    setClient: (client: any) => void,
+
+    /**
+     * set to true when running in offline mode
+     */
+    isOffline: boolean,
+    setOffline: (offline: boolean) => void
 };
 
 
@@ -135,7 +141,7 @@ export default (props: IDataLayerArgs | any) => {
                     // This context gets the data from the context put into the <Query/> or Mutation...
                     //console.log("context: ", context);
 
-                    const result = entry.setEntry(args, context, process.env.TABLE_NAME);
+                    const result = entry.setEntry(args, context, process.env.TABLE_NAME, complementedProps["isOffline"]);
 
 
                     console.log("result: ", result);
@@ -158,7 +164,7 @@ export default (props: IDataLayerArgs | any) => {
                     // This context gets the data from the context put into the <Query/> or Mutation...
                     //console.log("context: ", context);
 
-                    const result = entry.deleteEntry(args, context, process.env.TABLE_NAME);
+                    const result = entry.deleteEntry(args, context, process.env.TABLE_NAME, complementedProps["isOffline"]);
 
 
                     console.log("result: ", result);
@@ -194,7 +200,7 @@ export default (props: IDataLayerArgs | any) => {
                         return entry.id;
                     }
 
-                    return entry.listEntries(args, context, process.env.TABLE_NAME, "pk");
+                    return entry.listEntries(args, context, process.env.TABLE_NAME, "pk", complementedProps["isOffline"]);
 
                     /*
                     return ddbListEntries(
@@ -235,7 +241,7 @@ export default (props: IDataLayerArgs | any) => {
                         return entry.id;
                     }
 
-                    return entry.listEntries(args, context, process.env.TABLE_NAME, "sk");
+                    return entry.listEntries(args, context, process.env.TABLE_NAME, "sk", complementedProps["isOffline"]);
 
                     /*
                     return ddbListEntries(
@@ -274,7 +280,7 @@ export default (props: IDataLayerArgs | any) => {
                         return entry.id;
                     }
 
-                    return entry.getEntry(args, context, process.env.TABLE_NAME);
+                    return entry.getEntry(args, context, process.env.TABLE_NAME, complementedProps["isOffline"]);
 
 
                 }
@@ -298,7 +304,7 @@ export default (props: IDataLayerArgs | any) => {
                         return entry.id;
                     }
 
-                    return entry.scan(args, context, process.env.TABLE_NAME, "sk");
+                    return entry.scan(args, context, process.env.TABLE_NAME, "sk", complementedProps["isOffline"]);
 
 
                 }
@@ -387,6 +393,10 @@ export default (props: IDataLayerArgs | any) => {
 
         setClient: (client) => {
             complementedProps["client"] = client;
+        },
+
+        setOffline: (offline: boolean) => {
+            complementedProps["isOffline"] = offline;
         }
 
     };
@@ -419,7 +429,8 @@ export default (props: IDataLayerArgs | any) => {
                     pkVal, // pkId
                     skEntity, //schema.Data.ENTITY, // skEntity
                     skVal, // skId
-                    jsonData // jsonData
+                    jsonData, // jsonData
+                    complementedProps["isOffline"]
                 )
             }
         );
@@ -432,8 +443,8 @@ export default (props: IDataLayerArgs | any) => {
                         pkEntity, // schema.Entry.ENTITY, //pkEntity
                         pkVal, // pkId
                         skEntity, //schema.Data.ENTITY, // skEntity
-                        skVal // skId
-
+                        skVal, // skId
+                        complementedProps["isOffline"]
                     )
                 } else {
                     return ddbListEntries(
@@ -441,7 +452,8 @@ export default (props: IDataLayerArgs | any) => {
                         "sk", //key
                         skEntity, // entity
                         skVal, //value,
-                        pkEntity// rangeEntity
+                        pkEntity, // rangeEntity
+                        complementedProps["isOffline"]
                     )
                 }
 

@@ -5,17 +5,16 @@ import Types from '../types';
 import { IConfiguration } from "../types/configuration";
 import { IInfrastructure } from "../types";
 
-import { isMiddleware } from '../middleware/middleware-component';
-import { isWebApp } from '../webapp/webapp-component';
 import { isRoute } from '../route/route-component';
 
 import {getChildrenArray, findComponentRecursively} from '../libs';
 
 import { SoaPlugin } from './soa-plugin';
-//import { WebAppPlugin } from '../webapp/webapp-plugin';
 import { EnvironmentPlugin } from '../environment/environment-plugin';
 import { ServicePlugin } from "../service/service-plugin";
 import { isService } from "../service/service-component";
+import {DataLayerPlugin} from "../datalayer/datalayer-plugin";
+import {isDataLayer} from "../datalayer/datalayer-component";
 
 export const SERVICEORIENTED_INSTANCE_TYPE = "ServiceOrientedComponent";
 
@@ -64,6 +63,23 @@ export interface IServiceOrientedProps {
      * Services of the app
      */
     services: Array<any>,
+
+    /**
+     * Filled when the Isomorphic App has a DataLayer
+     */
+    dataLayerId?: string,
+
+    /**
+     * Additional iam-permissions
+     * e.g. [
+     * {
+     *   Effect: "Allow",
+     *   Action: ["dynamodb:Query"],
+     *   Resource:  "arn:aws:dynamodb:us-west-2:111110002222:table/my-new-table"
+     * }
+     * ]
+     */
+    iamRoleStatements?: Array<any>
 }
 
 /**
@@ -102,6 +118,11 @@ export default (props: IServiceOrientedArgs | any) => {
 
             ServicePlugin({}),
 
+            DataLayerPlugin({
+                buildPath: props.buildPath,
+                configFilePath: configPath,
+            }),
+
         ] : []
     };
 
@@ -115,6 +136,8 @@ export default (props: IServiceOrientedArgs | any) => {
         redirects: [],
 
         services: findComponentRecursively(props.children, isService),
+
+        dataLayerId: findComponentRecursively(props.children, isDataLayer).reduce((res, dl) => res ? res : dl.id, undefined)
     }
     
 

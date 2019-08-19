@@ -84,10 +84,10 @@ export interface IEntryProps {
      */
     setEntryMutation: (values: any) => any,
 
-    setEntry: (args, context, tableName) => any,
-    listEntries: (args, context, tableName, key) => any,
-    getEntry: (args, context, tableName) => any,
-    scan: (args, context, tableName) => any,
+    setEntry: (args, context, tableName, isOffline) => any,
+    listEntries: (args, context, tableName, key, isOffline) => any,
+    getEntry: (args, context, tableName, isOffline) => any,
+    scan: (args, context, tableName, isOffline) => any,
 
 
     middleware: any,
@@ -100,7 +100,7 @@ export interface IEntryProps {
      */
     deleteEntryMutation: (values: any) => any,
 
-    deleteEntry: (args, context, tableName) => any,
+    deleteEntry: (args, context, tableName, isOffline) => any,
 
     /**
      * Provide the name of the list-query with primary entity
@@ -209,7 +209,7 @@ export const createEntryProps = (props): IEntryProps => {
 
         },
 
-        setEntry: (args, context, tableName) => {
+        setEntry: (args, context, tableName, isOffline) => {
 
             console.log("setEntry: ", args);
 
@@ -224,11 +224,12 @@ export const createEntryProps = (props): IEntryProps => {
                         result[key] = args[key];
                     }
                     return result;
-                }, {}) // jsonData
+                }, {}), // jsonData
+                isOffline // do we run offline?
             );
         },
 
-        listEntries: (args, context, tableName, key) => {
+        listEntries: (args, context, tableName, key, isOffline) => {
             const entity = key === "pk" ? props.primaryKey : props.rangeKey;
             const range = key === "pk" ? props.rangeKey : props.primaryKey;
 
@@ -237,7 +238,8 @@ export const createEntryProps = (props): IEntryProps => {
                 key, // key
                 entity, //entity
                 args[entity], //value
-                range //rangeEntity
+                range, //rangeEntity
+                isOffline
             ).then(results => {
 
                 console.log("promised: ", results);
@@ -252,14 +254,15 @@ export const createEntryProps = (props): IEntryProps => {
 
         },
 
-        getEntry: (args, context, tableName) => {
+        getEntry: (args, context, tableName, isOffline) => {
 
             return ddbGetEntry(
-                    tableName, //tablename
-                    props.primaryKey, // pkEntity,
-                    args[props.primaryKey],    // pkValue,
-                    props.rangeKey, // skEntity,
-                    args[props.rangeKey]// skValue
+                tableName, //tablename
+                props.primaryKey, // pkEntity,
+                args[props.primaryKey],    // pkValue,
+                props.rangeKey, // skEntity,
+                args[props.rangeKey], // skValue
+                isOffline
             ).then((result: any)=> {
 
                 console.log("entry-component getEntry result: ", result);
@@ -276,7 +279,7 @@ export const createEntryProps = (props): IEntryProps => {
 
         },
 
-        scan: (args, context, tableName, key) => {
+        scan: (args, context, tableName, key, isOffline) => {
 
             //console.log("scan entry! ", args, context)
 
@@ -287,7 +290,8 @@ export const createEntryProps = (props): IEntryProps => {
                 props.rangeKey, // pkEntity,
                 args[`start_${props.rangeKey}`],    // start_value,
                 args[`end_${props.rangeKey}`],    // end_Value,
-                props.primaryKey // skEntity,
+                props.primaryKey, // skEntity,
+                isOffline
             ).then((result: any)=> {
 
                 //console.log("entry-component scan result: ", result);
@@ -326,15 +330,15 @@ export const createEntryProps = (props): IEntryProps => {
 
         },
 
-        deleteEntry: (args, context, tableName) => {
+        deleteEntry: (args, context, tableName, isOffline) => {
 
             return deleteEntry(
                 tableName, //"code-architect-dev-data-layer",
                 props.primaryKey, // schema.Entry.ENTITY, //pkEntity
                 args[props.primaryKey], // pkId
                 props.rangeKey, //schema.Data.ENTITY, // skEntity
-                args[props.rangeKey] // skId
-
+                args[props.rangeKey], // skId
+                isOffline
             );
         },
 
