@@ -39,8 +39,8 @@ See :doc:`components/service` for more details.
 :ref:`Middleware`
 ==================
 
-The Middleware-Components is available only in an :doc:`apps/isomorphic`. In this context, it specifies a server-side
-function that runs whenever a user requests a page from the server.
+The Middleware-Components is available only in an :doc:`apps/isomorphic` or as child of a :doc:`components/service`.
+In an Isomorphic App context, it specifies a server-side function that runs whenever a user requests a page from the server.
 
 See :doc:`components/middleware` for more details.
 
@@ -61,3 +61,21 @@ development-environments from your production-environment. An environment lets y
 www.your-domain.com.
 
 See :doc:`components/environment` for more details.
+
+
+:ref:`DataLayer`
+================
+
+The DataLayer-component adds a NoSQL-database (DynamoDB) to your app. It takes
+It takes :doc:`components/entry` and :doc:`components/service` as children. The DataLayer is available in
+a :doc:`apps/soa` and in an :doc:`apps/isomorphic`.
+
+See :doc:`components/datalayer` for more details.
+
+
+:ref:`Entry`
+================
+
+The Entry-component describes the type of items in your database. The entry must be a child of a :doc:`components/datalayer`.
+
+See :doc:`components/entry` for more details.
