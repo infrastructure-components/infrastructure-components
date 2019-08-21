@@ -69,7 +69,7 @@ export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData, is
  */
 export const ddbListEntries = (tableName, key, entity, value, rangeEntity, isOffline) => {
 
-    console.log("ddbListEntries: ", tableName, key, entity, value, rangeEntity);
+    //console.log("ddbListEntries: ", tableName, key, entity, value, rangeEntity);
 
     const q = {
         // use the table_name as specified in the serverless.yml
@@ -110,7 +110,7 @@ export const ddbListEntries = (tableName, key, entity, value, rangeEntity, isOff
 
 export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue, isOffline) => {
 
-    console.log("ddbGetEntry: ", `${pkEntity}|${pkValue}`, ` -- ${skEntity}|${skValue}`, " -- ", tableName);
+    //console.log("ddbGetEntry: ", `${pkEntity}|${pkValue}`, ` -- ${skEntity}|${skValue}`, " -- ", tableName);
 
     const q = {
         TableName: tableName,
@@ -134,7 +134,7 @@ export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue, isO
 
 export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEntity, isOffline) => {
 
-    console.log("scan: ", tableName, key, entity, start_value, end_value, rangeEntity);
+    //console.log("scan: ", tableName, key, entity, start_value, end_value, rangeEntity);
 
     const q = {
         // use the table_name as specified in the serverless.yml
@@ -209,7 +209,7 @@ export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEnt
 
 export const deleteEntry = (tableName, pkEntity, pkValue, skEntity, skValue, isOffline) => {
 
-    console.log("delete entry: ", pkEntity, pkValue, skEntity, skValue)
+    //console.log("delete entry: ", pkEntity, pkValue, skEntity, skValue)
     //console.log("pk: ", `${pkEntity}|${pkValue}`);
     //console.log("sk: ", `${skEntity}|${skValue}`);
 
@@ -454,7 +454,7 @@ export async function mutate (client, { mutation, context={}}) {
     }
 
 
-    console.log("mutate: ", mutation, context);
+    //console.log("mutate: ", mutation, context);
 
     //console.log("mutation string: ", mutation(mutationObj));
 
