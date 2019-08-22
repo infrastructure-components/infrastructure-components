@@ -35,7 +35,7 @@ const createServer = (serviceOrientedId, isOffline) => {
     // serve static files - the async components of the server - only used of localhost
     //app.use('/'+assetsDir, express.static(resolvedAssetsPath));
 
-    
+
     // load the IsomorphicComponent
     // we must load it directly from the module here, to enable the aliad of the config_file_path
     const soaConfig = loadConfigurationFromModule(require('__CONFIG_FILE_PATH__'), INFRASTRUCTURE_MODES.RUNTIME);
@@ -59,17 +59,62 @@ const createServer = (serviceOrientedId, isOffline) => {
 
     if (dataLayer) {
 
-        console.log ("Datalayer Active: ", dataLayer.id)
+        //console.log ("Datalayer Active: ", dataLayer.id)
 
-        console.log ("isOffline: ", isOffline);
+        //console.log ("isOffline: ", isOffline);
 
         if (isOffline) {
             console.log("setOffline!")
             dataLayer.setOffline(true);
+
+
+        } else {
+
+            const cors = require('cors');
+
+            const corsOptions = {
+                origin(origin, callback) {
+                    callback(null, true);
+                },
+                credentials: true
+            };
+            app.use(cors(corsOptions));
+
+            // TODO only allow the domains of the app (S3, APIs)
+            var allowCrossDomain = function(req, res, next) {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                //res.header('Access-Control-Allow-Headers', 'Content-Type,token');
+                next();
+            }
+            app.use(allowCrossDomain);
+
         }
 
         app.use('/query', async (req, res, next) => {
-            const parsedBody = JSON.parse(req.body);
+            //console.log("request: ", req);
+
+            const parseBody = (body) => {
+                try {
+                    return JSON.parse(body);
+                } catch (e) {
+                    console.log("cannot parse body: ", body.toString());
+
+
+                    return body.toJSON();
+                }
+            }
+
+
+            const parsedBody = parseBody(req.body);
+            //console.log("parsedBody: ", parsedBody);
+
+            if (!parsedBody.query) {
+                res.status(500).set({
+                    "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
+                    //"Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
+                }).send(JSON.stringify(req))
+            }
 
             await graphql(dataLayer.getSchema(false), parsedBody.query).then(
                 result_type => {
@@ -90,16 +135,25 @@ const createServer = (serviceOrientedId, isOffline) => {
                             await graphql(dataLayer.getSchema(true), parsedBody.query).then(
                                 result => res.status(200).set({
                                     "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
-                                    "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
+                                    // both does not work together?! see: https://stackoverflow.com/questions/19743396/cors-cannot-use-wildcard-in-access-control-allow-origin-when-credentials-flag-i
+                                    //"Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
                                 }).send(JSON.stringify(result)),
-                                err => res.status(500).send(err)
+                                err => res.set({
+                                    "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
+                                    //"Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
+                                }).status(500).send(err)
                             );
                         })
                         .run();
                 },
-                err => res.status(500).send(err)
+                err => res.set({
+                    "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
+                    //"Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
+                }).status(500).send(err)
             );
+
         });
+
 
     };
 

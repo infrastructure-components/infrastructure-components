@@ -21,7 +21,7 @@ The ``<Entry />``-component requires you to define the following properties:
 
 * ``id`` the unique string that identifies your entry.
 * ``primaryKey`` the name of the first queryable field
-* ``rangeKey`` the name of the seconf queryable field
+* ``rangeKey`` the name of the second queryable field
 * ``data`` a Javascript object. each key in this object specifies a data field of the entry. The value specifies the
 type of data. Currently, only ``GraphQLString`` is supported.
 

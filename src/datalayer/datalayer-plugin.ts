@@ -128,8 +128,9 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                             heapMax: "1g",
                             migrate: "true",
                             //seed: "true",
-                            convertEmptyValues: "true"
-                        }
+                            convertEmptyValues: "true",
+                            //cors: ['localhost:3000', 'localhost:3001']
+                        },
                     }
                 },
 

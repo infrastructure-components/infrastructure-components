@@ -110,21 +110,26 @@ export const renderFromDataLayer = (app, dataLayer) => {
     const AttachDataLayer = require("infrastructure-components").AttachDataLayer;
     console.log("connect, dataLayer: ", dataLayer);
 
-    var preloadedState = {};
 
-    /*if (typeof window != 'undefined' && window.__APOLLO_STATE__) {
-        preloadedState = window.__APOLLO_STATE__;
-        delete window.__APOLLO_STATE__;
-    }*/
 
     console.log("uri: ", window.__GRAPHQL__);
 
     const client = new ApolloClient({
-        cache: new InMemoryCache(), /*.restore(preloadedState),*/
-        link: createHttpLink({
+        cache: new InMemoryCache(),
+        link: createHttpLink(Object.assign({
             uri: window.__GRAPHQL__,
-            credentials: 'include',
-        })
+
+            /*credentials: 'include',
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                'Access-Control-Allow-Headers': 'application/json, Content-Type,token'
+            }*/
+        },
+            /*window.__GRAPHQL__.indexOf("localhost") > 0 ? {fetchOptions: {
+                mode: "no-cors",
+            }} : {}*/
+        ))
     });
 
     console.log("local client: ", client);

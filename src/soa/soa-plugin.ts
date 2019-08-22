@@ -201,7 +201,7 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
 
                 // TODO this should not be hard-coded
                 const graphqlUrl = component.dataLayerId ? (
-                    props.parserMode === PARSER_MODES.MODE_START ? "http://localhost:8000" : servicePath+"/query"
+                    props.parserMode === PARSER_MODES.MODE_START ? "http://localhost:3001/query" : servicePath+"/query"
                 ) : undefined;
 
                 //region: 'localhost',

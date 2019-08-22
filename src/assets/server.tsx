@@ -79,7 +79,9 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
         console.log ("Datalayer Active: ", dataLayer.id)
 
         app.use('/query', async (req, res, next) => {
+            console.log(req.body);
             const parsedBody = JSON.parse(req.body);
+            console.log(parsedBody)
             
             await graphql(dataLayer.getSchema(false), parsedBody.query).then(
                 result_type => {
@@ -102,12 +104,18 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
                                     "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
                                     "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
                                 }).send(JSON.stringify(result)),
-                                err => res.status(500).send(err)
+                                err => res.set({
+                                    "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
+                                    "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
+                                }).status(500).send(err)
                             );
                         })
                         .run();
                 },
-                err => res.status(500).send(err)
+                err => res.set({
+                    "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
+                    "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
+                }).status(500).send(err)
             );
         });
 

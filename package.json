@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.2.9",
+  "version": "0.2.10-alpha.32",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -33,6 +33,7 @@
     "aws-sdk": "^2.447.0",
     "body-parser": "^1.19.0",
     "connect-sequence": "^2.1.1",
+    "cors": "^2.8.5",
     "deepmerge": "^3.2.0",
     "es6-promise": "^4.2.6",
     "exenv": "^1.2.2",
