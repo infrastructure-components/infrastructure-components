@@ -109,6 +109,8 @@ export interface IEntryProps {
     getSecondaryListQueryName: () => string,
     getGetQueryName: () => string,
     getSetMutationName: () => string,
+    getPrimaryScanName: () => string,
+    getRangeScanName: () => string,
     getScanName: () => string,
 
     /**
@@ -281,22 +283,23 @@ export const createEntryProps = (props): IEntryProps => {
 
         scan: (args, context, tableName, key, isOffline) => {
 
-            //console.log("scan entry! ", args, context)
+            console.log("scan entry! ", args, context)
 
-            // TODO currently only scans for the rangeKey
+
+
             return ddbScan(
                 tableName, //tablename
                 key, // key
-                props.rangeKey, // pkEntity,
-                args[`start_${props.rangeKey}`],    // start_value,
-                args[`end_${props.rangeKey}`],    // end_Value,
-                props.primaryKey, // skEntity,
+                key === "pk" ? props.primaryKey : props.rangeKey, // pkEntity,
+                args.scanall ? undefined : args[`start_${key === "pk" ? props.primaryKey : props.rangeKey}`],    // start_value,
+                args.scanall ? undefined : args[`end_${key === "pk" ? props.primaryKey : props.rangeKey}`],    // end_Value,
+                key === "pk" ? props.rangeKey : props.primaryKey, // skEntity,
                 isOffline
             ).then((result: any)=> {
 
-                //console.log("entry-component scan result: ", result);
+                console.log("entry-component scan result: ", result);
                 return result.map(entry => {
-                    //console.log("scanned entry: ", entry);
+                    console.log("scanned entry: ", entry);
                     const data = entry.jsonData !== undefined ? JSON.parse(entry.jsonData) : {};
 
                     if (entry && entry.pk && entry.sk) {
@@ -317,7 +320,7 @@ export const createEntryProps = (props): IEntryProps => {
 
 
 
-    deleteEntryMutation: (values) => {
+        deleteEntryMutation: (values) => {
             const fields = entryProps.createEntryFields();
             //const fields = entryProps.createEntryFields();
             //console.log("fields: ", fields);
@@ -353,6 +356,8 @@ export const createEntryProps = (props): IEntryProps => {
         getGetQueryName: () => "get_"+props.id,
         getSetMutationName: () => "set_"+props.id,
         getDeleteMutationName: () => "delete_"+props.id,
+        getPrimaryScanName: () => "scan_"+props.id+"_"+props.primaryKey,
+        getRangeScanName: () => "scan_"+props.id+"_"+props.rangeKey,
         getScanName: () => "scan_"+props.id,
 
         /**
@@ -365,7 +370,10 @@ export const createEntryProps = (props): IEntryProps => {
                 name === entryProps.getRangeListQueryName() ||
                 name === entryProps.getSetMutationName() ||
                 name === entryProps.getDeleteMutationName() ||
-                name === entryProps.getScanName();
+                name === entryProps.getPrimaryScanName() ||
+                name === entryProps.getRangeScanName() ||
+                name === entryProps.getScanName()
+            ;
 
             //console.log("does ", props.id , " provide ", name, "? ", result)
 

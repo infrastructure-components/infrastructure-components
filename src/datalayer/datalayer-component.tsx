@@ -287,13 +287,13 @@ export default (props: IDataLayerArgs | any) => {
             };
             
             
-            const scanArgs = {};
-            scanArgs[`start_${entry.rangeKey}`] = {name: `start_${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
-            scanArgs[`end_${entry.rangeKey}`] = {name: `end_${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
+            const scanRangeArgs = {};
+            scanRangeArgs[`start_${entry.rangeKey}`] = {name: `start_${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
+            scanRangeArgs[`end_${entry.rangeKey}`] = {name: `end_${entry.rangeKey}`, type: new GraphQLNonNull(GraphQLString)};
 
             // scan the table
-            result[entry.getScanName()] = {
-                args: scanArgs,
+            result[entry.getRangeScanName()] = {
+                args: scanRangeArgs,
                 type: resolveWithData ? new GraphQLList(listType) : listType,
                 resolve: (source, args, context, info) => {
 
@@ -309,6 +309,51 @@ export default (props: IDataLayerArgs | any) => {
 
                 }
             };
+
+            const scanPrimaryArgs = {};
+            scanPrimaryArgs[`start_${entry.primaryKey}`] = {name: `start_${entry.primaryKey}`, type: new GraphQLNonNull(GraphQLString)};
+            scanPrimaryArgs[`end_${entry.primaryKey}`] = {name: `end_${entry.primaryKey}`, type: new GraphQLNonNull(GraphQLString)};
+
+            // scan the table
+            result[entry.getPrimaryScanName()] = {
+                args: scanPrimaryArgs,
+                type: resolveWithData ? new GraphQLList(listType) : listType,
+                resolve: (source, args, context, info) => {
+
+
+                    console.log("resolve scan: ", resolveWithData, source, args, context);
+
+                    if (!resolveWithData) {
+                        return entry.id;
+                    }
+
+                    return entry.scan(args, context, process.env.TABLE_NAME, "pk", complementedProps["isOffline"]);
+
+
+                }
+            };
+
+            const scanAllArgs = {scanall: {name: "scanall", type: new GraphQLNonNull(GraphQLString)}};
+
+            // scan the table
+            result[entry.getScanName()] = {
+                args: scanAllArgs,
+                type: resolveWithData ? new GraphQLList(listType) : listType,
+                resolve: (source, args, context, info) => {
+
+
+                    console.log("resolve scan: ", resolveWithData, source, args, context);
+
+                    if (!resolveWithData) {
+                        return entry.id;
+                    }
+
+                    return entry.scan(args, context, process.env.TABLE_NAME, "pk", complementedProps["isOffline"]);
+
+
+                }
+            };
+
 
             return result;
         }, {}),

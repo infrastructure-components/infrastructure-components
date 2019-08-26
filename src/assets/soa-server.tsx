@@ -116,8 +116,10 @@ const createServer = (serviceOrientedId, isOffline) => {
                 }).send(JSON.stringify(req))
             }
 
+            //console.log("now starting qgl-query/mutation")
             await graphql(dataLayer.getSchema(false), parsedBody.query).then(
                 result_type => {
+                    console.log("result_type: ", result_type);
                     const entryQueryName = Object.keys(result_type.data)[0];
 
                     // when the query resolves, we get back

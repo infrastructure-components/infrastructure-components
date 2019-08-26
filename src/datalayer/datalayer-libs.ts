@@ -6,6 +6,9 @@ import AWS from 'aws-sdk';
 import gql from 'graphql-tag';
 import Cookies from 'universal-cookie';
 
+import { mutation, params, types, query } from 'typed-graphqlify'
+import {IC_USER_ID} from "../authentication/auth-middleware";
+
 /**
  * transforms a function into a Promise
  */
@@ -28,7 +31,7 @@ const applyOfflineConfig = (offline: boolean) => {
 
 export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData, isOffline) => {
 
-    console.log("setEntry: ", pkEntity, "|", pkId, "|", skEntity, "|", skId );
+    //console.log("setEntry: ", pkEntity, "|", pkId, "|", skEntity, "|", skId );
 
     return promisify(callback =>
         new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).update({
@@ -120,7 +123,7 @@ export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue, isO
         }
     };
 
-    console.log("ddbGetEntry-query: ", q);
+    //console.log("ddbGetEntry-query: ", q);
 
     return promisify(callback =>
         new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).get(q, callback))
@@ -230,9 +233,6 @@ export const deleteEntry = (tableName, pkEntity, pkValue, skEntity, skValue, isO
         }).catch(error => { console.log(error) });
 };
 
-import { mutation, params, types, query } from 'typed-graphqlify'
-import {IC_USER_ID} from "../authentication/auth-middleware";
-
 
 
 /**
@@ -240,7 +240,7 @@ import {IC_USER_ID} from "../authentication/auth-middleware";
  * TODO the fields must be taken from the data-layer, not requiring the user to provide them
  */
 export const setEntryMutation = ( entryId, data, fields, context={}) => {
-    console.log("setEntryMutation: ", entryId, data, fields);
+    //console.log("setEntryMutation: ", entryId, data, fields);
 
 
     const mutationObj = {};
@@ -264,7 +264,7 @@ export const setEntryMutation = ( entryId, data, fields, context={}) => {
 
 
 export const deleteEntryMutation = ( entryId, data, fields, context={}) => {
-    console.log("deleteEntryMutation: ", entryId, data);
+    //console.log("deleteEntryMutation: ", entryId, data);
 
     const mutationObj = {};
     mutationObj[`delete_${entryId}`] = params(
@@ -370,44 +370,69 @@ export const getEntryScanQuery = ( entryId, data, fields, context={}) => {
     console.log("getEntryScanQuery: ", entryId, data, fields, context);
 
     if (data == undefined) {
-        console.error("getEntryScanQuery requires a data argument");
+        console.error("getEntryScanQuery requires a data argument, this may be empty");
         return undefined;
     }
 
+
     const queryObj = {};
 
-    // TODO !!!!!
-    // if ()
-    queryObj[`scan_${entryId}`] = params(
-        Object.keys(data).reduce((result, key) => {
-            // when we have an array at the key-pos in data, then we want to get a range
-            if (Array.isArray(data[key])) {
-                if (data[key].length > 0 && data[key][0] !== undefined) {
-                    result[`start_${key}`] = data[key][0];
+    if (Object.keys(data).length > 0) {
+        const queryKey = Object.keys(data)[0];
+
+        queryObj[`scan_${entryId}_${queryKey}`] = params(
+            Object.keys(data).reduce((result, key) => {
+                // when we have an array at the key-pos in data, then we want to get a range
+                if (Array.isArray(data[key])) {
+                    if (data[key].length > 0 && data[key][0] !== undefined) {
+                        result[`start_${key}`] = `"${data[key][0]}"`;
+                    }
+
+                    if (data[key].length > 1 && data[key][1] !== undefined) {
+                        result[`end_${key}`] = `"${data[key][1]}"`;
+                    }
+
+                } else {
+                    result[key] = `"${data[key]}"`;
                 }
 
-                if (data[key].length > 1 && data[key][1] !== undefined) {
-                    result[`end_${key}`] = data[key][1];
-                }
+                return result;
+            },{}),
+            Object.keys(fields).reduce((result, key) => {
+                result[key] = types.string;
+                return result;
+            },{})
+        );
 
-            } else {
-                result[key] = `"${data[key]}"`;
-            }
+        console.log(gql`${query(queryObj)}`);
 
-            return result;
-        },{}),
-        Object.keys(fields).reduce((result, key) => {
-            result[key] = types.string;
-            return result;
-        },{})
-    );
+        return {
+            query:gql`${query(queryObj)}`,
+            context: context
+        }
+
+    } else {
+
+        queryObj[`scan_${entryId}`] = params(
+            {scanall:`"yes"`},
+            Object.keys(fields).reduce((result, key) => {
+                result[key] = types.string;
+                return result;
+            },{})
+        );
+
+        console.log(gql`${query(queryObj)}`);
+
+        return {
+            query:gql`${query(queryObj)}`,
+            context: context
+        }
+
+    }
 
     //console.log("scanQuery string: ", query(queryObj));
 
-    return {
-        query:gql`${query(queryObj)}`,
-        context: context
-    }
+
 
 };
 

@@ -354,6 +354,12 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                 }
             }
 
+            // TODO this should rather be put into DataLayer-Plugin!!!
+            const dataLayerService = component.dataLayerId !== undefined ? [{
+                method: "ANY",
+                path: "query"
+            }] : [];
+
             /**
              * ONLY add the domain config if we are in domain mode!
              * TODO once the domain has been added, we need to add this with every deployment
@@ -457,7 +463,7 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                         component.buildPath,
                         component.assetsPath,
                         component.region,
-                        component.services
+                        dataLayerService.concat(component.services)
                     ),
 
                         // the datalayer (maybe a child-config) must load before the plugin serverless-offline!

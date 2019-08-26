@@ -76,6 +76,31 @@ export function withDataLayer(Component) {
 
                     };
 
+                    const deleteEntryMutation = (entryId, values) => {
+                        return context.dataLayer.deleteEntryMutation(
+                            entryId,
+                            values
+                        );
+                    }
+
+                    const createMutation = (useMutation, entryId, values) => {
+                        const { mutation } = setEntryMutation(entryId, values);
+
+                        const [f, { data }] = useMutation(mutation, {
+                            context: context,
+                            client: context.apolloClient
+                        });
+
+                        return f;
+                    };
+
+                    const createQuery = (useQuery, {query}) => {
+                        return useQuery(query, {
+                            context: context,
+                            client: context.apolloClient
+                        })
+                    }
+
                     //console.log("entryListQuery: ", entryListQuery);
                     
                     return <Component
@@ -85,6 +110,9 @@ export function withDataLayer(Component) {
                         getEntryQuery={getEntryQuery}
                         setEntryMutation={setEntryMutation}
                         getEntryScanQuery={getEntryScanQuery}
+                        deleteEntryMutation={deleteEntryMutation}
+                        createMutation={createMutation}
+                        createQuery={createQuery}
                     />
                 }}
             </DataLayerContext.Consumer>
