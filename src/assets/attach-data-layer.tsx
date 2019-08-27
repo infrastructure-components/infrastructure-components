@@ -83,8 +83,19 @@ export function withDataLayer(Component) {
                         );
                     }
 
-                    const createMutation = (useMutation, entryId, values) => {
+                    const createSetMutation = (useMutation, entryId, values) => {
                         const { mutation } = setEntryMutation(entryId, values);
+
+                        const [f, { data }] = useMutation(mutation, {
+                            context: context,
+                            client: context.apolloClient
+                        });
+
+                        return f;
+                    };
+
+                    const createDeleteMutation = (useMutation, entryId, values) => {
+                        const { mutation } = deleteEntryMutation(entryId, values);
 
                         const [f, { data }] = useMutation(mutation, {
                             context: context,
@@ -111,7 +122,8 @@ export function withDataLayer(Component) {
                         setEntryMutation={setEntryMutation}
                         getEntryScanQuery={getEntryScanQuery}
                         deleteEntryMutation={deleteEntryMutation}
-                        createMutation={createMutation}
+                        createSetMutation={createSetMutation}
+                        createDeleteMutation={createDeleteMutation}
                         createQuery={createQuery}
                     />
                 }}
