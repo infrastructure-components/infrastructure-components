@@ -85,12 +85,12 @@ export const createAuthMiddleware = (clientSecret, onAuthenticated: (userid:stri
 };
 
 export interface IUserData {
-    id: string,
-    name: string,
-    username: string,
-    imageUrl: string,
-    email: string,
-    access_token: string,
+    id: string | undefined,
+    name: string | undefined,
+    username: string | undefined,
+    imageUrl: string | undefined,
+    email: string | undefined,
+    access_token: string | undefined,
     encrypted_password?: string,
     status?: string
 }
@@ -266,7 +266,7 @@ export const createCallbackMiddleware = (
 
         // try the freshly acquired token and get the user's Medium.com id
         await getUserData(resJson).then(async function(data) {
-            console.log(JSON.stringify(data));
+            console.log("get user data: ", JSON.stringify(data));
 
             const {id, name, username, imageUrl, access_token, email, status } = data;
 

@@ -75,7 +75,7 @@ export const createRequestLoginMiddleware = (clientId: string, callbackUrl: stri
     } else if (provider === AuthenticationProvider.GITHUB) {
         res.redirect(`https://github.com/login/oauth/authorize?scope=user:email&client_id=${clientId}&redirect_uri=${callbackUrl}?page=${req.url}`);
     } else if (provider === AuthenticationProvider.MEDIUM) {
-        res.redirect(`https://medium.com/m/oauth/authorize?client_id=${clientId}&scope=basicProfile,listPublications,publishPost&state=InteractiveMedium&response_type=code&redirect_uri=${callbackUrl}?page=${req.url}`);
+        res.redirect(`https://medium.com/m/oauth/authorize?client_id=${clientId}&scope=basicProfile,listPublications,publishPost&state=${req.url}&response_type=code&redirect_uri=${callbackUrl}`);
     }
 
     return;
@@ -239,7 +239,7 @@ export const createFetchAccessTokenFunction = (
     } else if (provider === AuthenticationProvider.MEDIUM) {
 
         console.log("Medium callback: ", req.query)
-        const { state, code, error, page } = req.query;
+        const { state, code, error } = req.query;
 
         
         if (error !== undefined) {
@@ -251,18 +251,21 @@ export const createFetchAccessTokenFunction = (
 
         } else if (code !== undefined) {
             return {
-                redirectPage: page,
-                fFetch: fetch('https://api.medium.com/v1/tokens',{
-                    method: 'POST',
-                    body: `code=${code}&client_id=${clientId}&client_secret=${getClientSecret(provider)}&grant_type=authorization_code&redirect_uri=${callbackUrl}`,
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "Accept": "application/json",
-                        "Accept-Charset": "utf-8"
-                    }
-                }).then(function(response) {
-                    return response.json();
-                })
+                redirectPage: state,
+                fFetch: async function () {
+                    return await fetch('https://api.medium.com/v1/tokens', {
+                        method: 'POST',
+                        body: `code=${code}&client_id=${clientId}&client_secret=${getClientSecret(provider)}&grant_type=authorization_code&redirect_uri=${callbackUrl}`,
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "Accept": "application/json",
+                            "Accept-Charset": "utf-8"
+                        }
+                    }).then(function (response) {
+                        console.log("request data: ", response)
+                        return response.json();
+                    })
+                }
             }
         }
 
@@ -276,7 +279,7 @@ export const createFetchAccessTokenFunction = (
 
 export const createGetUserFunction = (provider: string) => async function (resJson: any): Promise<IUserData> {
 
-    console.log("resJson: ", resJson);
+    console.log("createGetUserFunction: ", resJson);
 
     if (provider === AuthenticationProvider.EMAIL) {
 
@@ -354,6 +357,7 @@ export const createGetUserFunction = (provider: string) => async function (resJs
 
 
     } else if (provider === AuthenticationProvider.MEDIUM) {
+        console.log("fetch user data of medium-user")
         const { token_type, access_token, refresh_token, scope, expires_at } = resJson;
 
         // try the freshly acquired token and get the user's Medium.com id
@@ -367,11 +371,13 @@ export const createGetUserFunction = (provider: string) => async function (resJs
             }
         }).then(function(response) {
 
+            //console.log("user data fetched: ", response);
             // now parse the json
             return response.json();
 
-        }).then(function(data){
+        }).then(function({data}){
 
+            console.log("user data parsed: ", data);
             return {
                 id: data.id,
                 name: data.name,
