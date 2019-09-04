@@ -2,6 +2,7 @@ declare var __ASSETS_PATH__: any;
 declare var __RESOLVED_ASSETS_PATH__: any;
 declare var __ISOMORPHIC_ID__: any;
 declare var __DATALAYER_ID__: any;
+declare var __ISOFFLINE__: any;
 
 // this must be imported to allow async-functions within an AWS lambda environment
 // see: https://github.com/babel/babel/issues/5085
@@ -41,7 +42,7 @@ import { getClientFilename } from '../libs/server-libs';
 //import {loadIsoConfigFromComponent, applyCustomComponents} from "../isolib";
 //import { applyAppClientModules } from '../types/client-app-config';
 
-const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
+const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) => {
 
     // express is the web-framework that lets us configure the endpoints
     const app = express();
@@ -77,6 +78,34 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId) => {
     if (dataLayer) {
 
         console.log ("Datalayer Active: ", dataLayer.id)
+
+        if (isOffline) {
+            console.log("setOffline!")
+            dataLayer.setOffline(true);
+
+
+        } else {
+
+            const cors = require('cors');
+
+            const corsOptions = {
+                origin(origin, callback) {
+                    callback(null, true);
+                },
+                credentials: true
+            };
+            app.use(cors(corsOptions));
+
+            // TODO only allow the domains of the app (S3, APIs)
+            var allowCrossDomain = function(req, res, next) {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                //res.header('Access-Control-Allow-Headers', 'Content-Type,token');
+                next();
+            }
+            app.use(allowCrossDomain);
+
+        }
 
         app.use('/query', async (req, res, next) => {
             console.log(req.body);
@@ -403,4 +432,4 @@ const server = lib.default('${ssrConfig.assetsPath}', '${resolveAssetsPath(ssrCo
 exports.default = server;*/
 
 // these variables are replaced during compilation
-export default serverless(createServer(__ASSETS_PATH__, __RESOLVED_ASSETS_PATH__, __ISOMORPHIC_ID__));
+export default serverless(createServer(__ASSETS_PATH__, __RESOLVED_ASSETS_PATH__, __ISOMORPHIC_ID__, __ISOFFLINE__));

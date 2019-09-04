@@ -94,7 +94,7 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                     } : {},
                     component.domain !== undefined ? {
                         provider: {
-                            stage_path: "",
+                            stage_path: "''",
 
                             environment: {
                                 DOMAIN_URL: `"https://${component.domain}"`
