@@ -77,10 +77,10 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
 
     if (dataLayer) {
 
-        console.log ("Datalayer Active: ", dataLayer.id)
+        //console.log ("Datalayer Active: ", dataLayer.id)
 
         if (isOffline) {
-            console.log("setOffline!")
+            //console.log("setOffline!")
             dataLayer.setOffline(true);
 
 
@@ -108,16 +108,16 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
         }
 
         app.use('/query', async (req, res, next) => {
-            console.log(req.body);
+            //console.log(req.body);
             const parsedBody = JSON.parse(req.body);
-            console.log(parsedBody)
+            //console.log(parsedBody)
             
             await graphql(dataLayer.getSchema(false), parsedBody.query).then(
                 result_type => {
                     const entryQueryName = Object.keys(result_type.data)[0];
                     
                     // when the query resolves, we get back 
-                    console.log("pre-resolve | found entry: ", entryQueryName)
+                    //console.log("pre-resolve | found entry: ", entryQueryName)
 
                     new ConnectSequence(req, res, next)
                         .append(...dataLayer.entries.filter(entry => entry.providesQuery(entryQueryName)).map(entry=> entry.middleware.callback))
@@ -166,7 +166,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
 
 
 
-        console.log("found service: ", service);
+        //console.log("found service: ", service);
 
         if (service.method.toUpperCase() == "GET") {
             app.get(service.path, ...unpackMiddlewares(service.middlewares));
@@ -185,7 +185,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
         return service;
     });
 
-    console.log("webApps: ",isoApp.webApps.length, " -> ", isoApp.webApps);
+    //console.log("webApps: ",isoApp.webApps.length, " -> ", isoApp.webApps);
 
     // split the clientApps here and define a function for each of the clientApps, with the right middleware
     isoApp.webApps
@@ -246,7 +246,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
 
 
     const parsedUrl = req.url.indexOf("?") >= 0 ? req.url.substring(0, req.url.indexOf("?")) : req.url;
-    console.log("parsedUrl: ", parsedUrl);
+    //console.log("parsedUrl: ", parsedUrl);
 
 
     ////////// TODO refactor
@@ -268,7 +268,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
     let { path } = matchResult;
 
     //console.log("found: ", foundPath);
-    console.log("server: path params: ", foundPath ? foundPath.params : "---");
+    //console.log("server: path params: ", foundPath ? foundPath.params : "---");
 
     const routePath = foundPath ? (
         foundPath.path.indexOf("/:") > 0 ?
@@ -286,7 +286,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
     const fConnectWithDataLayer = clientApp.dataLayerId !== undefined ?
         connectWithDataLayer(clientApp.dataLayerId, req) :
         async function (app) {
-            console.log("default dummy data layer")
+            //console.log("default dummy data layer")
             return {connectedApp: app, getState: () => ""};
         };
 
@@ -366,7 +366,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
  */
 function renderHtmlPage(html, styles, preloadedState, helmet, basename, routePath, clientApp, assetsDir) {
     //<link rel="icon" href="/assets/favicon.ico" type="image/ico" />
-    console.log(preloadedState);
+    //console.log(preloadedState);
     const path = require('path');
 
     const calcBase = () => {
@@ -378,7 +378,7 @@ function renderHtmlPage(html, styles, preloadedState, helmet, basename, routePat
     //For each"/" in the entered path after the basename, we need to add "../" to the assets-path
     //when there is a basename, it must be added
 
-    console.log("calcBase: ", calcBase());
+    //console.log("calcBase: ", calcBase());
 
     return `<!doctype html>
     <html>
@@ -405,7 +405,6 @@ function renderHtmlPage(html, styles, preloadedState, helmet, basename, routePat
         <script>
             var loadscript = document.createElement('script');
             function getPath() {
-                console.log( window.location.pathname);
                 const basePath = ${basename !== "/" ? "window.location.pathname.startsWith(\""+basename+"\") ? \"\": \"/\" " : "\"\"" };
                 const routePath= "${routePath !== "/" ? routePath : ""}";
                 const pre = window.location.pathname.startsWith(basePath+routePath+"/") ? ".." : "";

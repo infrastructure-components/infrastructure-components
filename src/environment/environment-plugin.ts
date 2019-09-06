@@ -77,7 +77,13 @@ export const EnvironmentPlugin = (props: IEnvironmentPlugin): IPlugin => {
                     {
                         // set the stage-name
                         provider: {
-                            stage: component.name
+                            stage: component.name,
+
+                            environment: component.envValues.reduce((result, entry) => {
+                                const newResult = Object.assign({}, result);
+                                newResult[entry.name] = entry.value
+                                return newResult;
+                            }, {})
                         }
                     },
                     component.offlinePort !== undefined && props.parserMode === PARSER_MODES.MODE_START ? {

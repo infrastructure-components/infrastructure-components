@@ -92,7 +92,7 @@ const createClientWebApp = () => {
             webApp.dataLayerId
         )
     ) : (node) => {
-        console.log("this is the dummy data layer hydration");
+        //console.log("this is the dummy data layer hydration");
         return node;
     };
 

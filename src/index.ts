@@ -10,6 +10,7 @@ export const withRequest = require('./components/attach-request').withRequest;
 export const AttachRequest = require('./components/attach-request').default;
 export const IsomorphicApp = require('./isomorphic/iso-component').default;
 export const Environment = require('./environment/environment-component').default;
+export const EnvValue = require('./environment/env-value-component').default;
 export const SinglePageApp = require('./spa/spa-component').default;
 export const ServiceOrientedApp = require('./soa/soa-component').default;
 export const DataLayer = require('./datalayer/datalayer-component').default;

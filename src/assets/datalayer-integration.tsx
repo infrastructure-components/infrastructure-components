@@ -108,11 +108,11 @@ export const hydrateFromDataLayer = (app, dataLayer) => {
  */
 export const renderFromDataLayer = (app, dataLayer) => {
     const AttachDataLayer = require("infrastructure-components").AttachDataLayer;
-    console.log("connect, dataLayer: ", dataLayer);
+    //console.log("connect, dataLayer: ", dataLayer);
 
 
 
-    console.log("uri: ", window.__GRAPHQL__);
+    //console.log("uri: ", window.__GRAPHQL__);
 
     const client = new ApolloClient({
         cache: new InMemoryCache(),
@@ -132,7 +132,7 @@ export const renderFromDataLayer = (app, dataLayer) => {
         ))
     });
 
-    console.log("local client: ", client);
+    //console.log("local client: ", client);
 
 
     return <ApolloProvider client={ client } >
@@ -193,7 +193,7 @@ export const createApolloClient = (dataLayer, graphqlUrl, request) => {
 
     });
 
-    console.log("client: ", client);
+    //console.log("client: ", client);
     return client;
 
 

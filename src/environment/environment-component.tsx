@@ -3,6 +3,8 @@ import * as React from 'react';
 import Types from '../types';
 import { IComponent } from "../types/component";
 import { IInfrastructure } from "../types";
+import { isEnvValue } from './env-value-component';
+import { findComponentRecursively } from '../libs';
 
 export const ENVIRONMENT_INSTANCE_TYPE = "EnvironmentComponent";
 
@@ -28,7 +30,7 @@ export interface IEnvironmentArgs {
 }
 
 export interface IEnvironmentProps {
-
+    envValues: Array<any>
 }
 
 
@@ -53,7 +55,7 @@ export default (props: IEnvironmentArgs | any) => {
     };
 
     const environmentProps: IEnvironmentProps = {
-
+        envValues: findComponentRecursively(props.children, isEnvValue),
     }
 
     return Object.assign(props, componentProps, environmentProps);

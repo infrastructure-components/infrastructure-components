@@ -149,7 +149,7 @@ export const serviceAttachDataLayer = (dataLayer) => {
         const client = createApolloClient(dataLayer, getGraphqlUrl(), req);
         dataLayer.setClient(client);
 
-        console.log("attaching the dataLayer, client: ", client);
+        //console.log("attaching the dataLayer, client: ", client);
 
         req.dataLayer = dataLayer;
         req.dataLayer.client = client;
