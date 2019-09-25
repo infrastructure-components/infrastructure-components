@@ -72,7 +72,7 @@ export interface IIdentityProps {
  */
 export default (props: IIdentityArgs | any) => {
 
-    console.log ("Identity: ",props );
+    //console.log ("Identity: ",props );
 
     const componentProps: IInfrastructure & IComponent = {
         infrastructureType: Types.INFRASTRUCTURE_TYPE_COMPONENT,
@@ -141,7 +141,7 @@ export default (props: IIdentityArgs | any) => {
             // but for the browser, we provide the cookie
             createMiddleware({ callback: (req, res, next) => {
 
-                console.log("this it the identity-mw")
+                //console.log("this it the identity-mw")
                 findComponentRecursively(props.children, (child) => child.setIdentity !== undefined).forEach( child => {
                     child.setIdentity(getBrowserId(req, IDENTITY_KEY));
                 });

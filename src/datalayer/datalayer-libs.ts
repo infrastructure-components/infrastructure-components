@@ -97,7 +97,7 @@ export const ddbListEntries = (tableName, key, entity, value, rangeEntity, isOff
     return promisify(callback =>
         new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).query(q, callback))
         .then(result => {
-            console.log("ddb-result: ", result);
+            //console.log("ddb-result: ", result);
             return result["Items"];
 
             /*
@@ -128,7 +128,7 @@ export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue, isO
     return promisify(callback =>
         new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).get(q, callback))
         .then(result => {
-            console.log("ddbGetEntry result: ", result);
+            //console.log("ddbGetEntry result: ", result);
 
             return result["Item"] ? result["Item"] : result;
 
@@ -172,7 +172,7 @@ export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEnt
     return promisify(callback =>
         new AWS.DynamoDB.DocumentClient(applyOfflineConfig(isOffline)).scan(start_value && end_value ? q : allQ, callback))
         .then(result => {
-            console.log("ddb-result: ", result);
+            //console.log("ddb-result: ", result);
             return result["Items"];
 
             /**
@@ -361,13 +361,17 @@ export const getEntryQuery = ( entryId, data, fields, context={}) => {
 
 };
 
+export const updateEntryQuery = ( entryId, callback, context={}) => {
+    return {entryId: entryId, callback: callback, context: context };
+}
+
 
 /**
  * this function provides a executable graphql-query: "scan_{entryId}"
  *
  */
 export const getEntryScanQuery = ( entryId, data, fields, context={}) => {
-    console.log("getEntryScanQuery: ", entryId, data, fields, context);
+    //console.log("getEntryScanQuery: ", entryId, data, fields, context);
 
     if (data == undefined) {
         console.error("getEntryScanQuery requires a data argument, this may be empty");
@@ -404,7 +408,7 @@ export const getEntryScanQuery = ( entryId, data, fields, context={}) => {
             },{})
         );
 
-        console.log(gql`${query(queryObj)}`);
+        //console.log(gql`${query(queryObj)}`);
 
         return {
             query:gql`${query(queryObj)}`,
@@ -421,7 +425,7 @@ export const getEntryScanQuery = ( entryId, data, fields, context={}) => {
             },{})
         );
 
-        console.log(gql`${query(queryObj)}`);
+        //console.log(gql`${query(queryObj)}`);
 
         return {
             query:gql`${query(queryObj)}`,
@@ -486,7 +490,30 @@ export async function mutate (client, { mutation, context={}}) {
     return await client.mutate({
         mutation: mutation,
         context: context
-    }).then(result => { console.log(result)}).catch(error => { console.log(error) });
+    }).then(result => { /*console.log(result)*/}).catch(error => { console.log(error) });
+
+};
+
+/**
+ *
+ * @param client
+ * @param callback (oldData) => newData
+ * @param context
+ * @returns {Promise<any>}
+ */
+export async function update (client, { entryId, getEntryQuery, setEntryMutation}) {
+
+    const oldData = await select(
+        client,
+        getEntryQuery()
+    );
+
+
+    return await mutate(
+        client,
+        setEntryMutation(oldData[`get_${entryId}`])
+    );
+
 
 };
 

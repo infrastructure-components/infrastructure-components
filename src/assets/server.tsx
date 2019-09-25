@@ -281,7 +281,15 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
 
     //console.log("app data layer id: ", clientApp.dataLayerId);
 
+    const serverState = {};
+    const setServerValue = (id, value) => {
+        serverState[id] = value;
+        //console.log("set ", id, " -> ", value)
+    }
 
+    const getIsomorphicState = () => {
+        return `window.__ISOMORPHICSTATE__ = ${JSON.stringify(serverState)}`
+    };
 
     const fConnectWithDataLayer = clientApp.dataLayerId !== undefined ?
         connectWithDataLayer(clientApp.dataLayerId, req) :
@@ -299,7 +307,8 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
             req.url,
             context,
             req,
-            require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId))
+            require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId),
+            setServerValue)
     ).then(({connectedApp, getState}) => {
 
         //console.log("resolved...")
@@ -317,7 +326,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
 
             // render a page with the state and return it in the response
         res.status(200).send(
-            fRender(htmlData, styles, getState(), helmetData, basename, routePath, clientApp, assetsDir)
+            fRender(htmlData, styles, getState(), getIsomorphicState(), helmetData, basename, routePath, clientApp, assetsDir)
         ).end();
     });
 
@@ -364,7 +373,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
  * @param preloadedState the state in form of a script
  * @param helmet
  */
-function renderHtmlPage(html, styles, preloadedState, helmet, basename, routePath, clientApp, assetsDir) {
+function renderHtmlPage(html, styles, preloadedState, isomorphicState, helmet, basename, routePath, clientApp, assetsDir) {
     //<link rel="icon" href="/assets/favicon.ico" type="image/ico" />
     //console.log(preloadedState);
     const path = require('path');
@@ -400,6 +409,7 @@ function renderHtmlPage(html, styles, preloadedState, helmet, basename, routePat
         <div id="root">${html.trim()}</div>
         <script>
           ${preloadedState}
+          ${isomorphicState}
           window.__BASENAME__ = "${basename}";
         </script>
         <script>

@@ -45,7 +45,7 @@ interface IAttachUserProps {
  */
 const AttachUser: React.SFC<IAttachUserProps> = (props) => {
 
-    console.log("attaching user: ", getUserId(undefined));
+    //console.log("attaching user: ", getUserId(undefined));
 
     return <UserContext.Provider
         value={{

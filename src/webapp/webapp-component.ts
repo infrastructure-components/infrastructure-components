@@ -34,7 +34,7 @@ export interface IWebAppArgs {
      */
     method: string,
 
-    renderHtmlPage?: (html, styles, preloadedState, helmet, basename, routePath, clientApp, assetsDir) => string,
+    renderHtmlPage?: (html, styles, preloadedState, isomorphicState, helmet, basename, routePath, clientApp, assetsDir) => string,
 
     /**
      * When specified, we get a function that listens to local route-changes

@@ -177,20 +177,24 @@ export const createClientApp = (
     redirects: Array<IRedirect>,
     basename: string, 
     listen?: (location, action) => any,
-    authCallback?: any
+    authCallback?: any,
+    preloadedState? : any
 ) => {
     
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
     const AttachUser = require("infrastructure-components").AttachUser;
     const AttachAuth = require("infrastructure-components").AttachAuth;
+    const AttachIsomorphicState = require("infrastructure-components").AttachIsomorphicState;
 
     return <BrowserRouter basename={basename}>
         <AttachRequest>
             <AttachUser>
                 <AttachAuth authCallback={authCallback}>
                     <AttachRoutes routes={routes}>
-                        <RoutedApp routes={routes} redirects={redirects} listen={listen}/>
+                        <AttachIsomorphicState preloadedState={preloadedState}>
+                            <RoutedApp routes={routes} redirects={redirects} listen={listen}/>
+                        </AttachIsomorphicState>
                     </AttachRoutes>
                 </AttachAuth>
             </AttachUser>
@@ -205,19 +209,24 @@ export const createServerApp = (
     url: string,
     context: any,
     request: any,
-    authCallback: any) => {
+    authCallback: any,
+    setServerValue: any
+) => {
 
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
     const AttachUser = require("infrastructure-components").AttachUser;
     const AttachAuth = require("infrastructure-components").AttachAuth;
+    const AttachIsomorphicState = require("infrastructure-components").AttachIsomorphicState;
 
     return <StaticRouter context={context} location={url} basename={basename}>
         <AttachRequest request={request}>
             <AttachUser>
                 <AttachAuth authCallback={authCallback}>
                     <AttachRoutes routes={routes}>
-                        <RoutedApp routes={routes} redirects={redirects} />
+                        <AttachIsomorphicState setServerValue={setServerValue}>
+                            <RoutedApp routes={routes} redirects={redirects} />
+                        </AttachIsomorphicState>
                     </AttachRoutes>
                 </AttachAuth>
             </AttachUser>

@@ -75,7 +75,7 @@ window.__GRAPHQL__ = "${url}"`;
 export const hydrateFromDataLayer = (app, dataLayer) => {
 
     const AttachDataLayer = require("infrastructure-components").AttachDataLayer;
-    console.log("hydration, dataLayer: ", dataLayer);
+    //console.log("hydration, dataLayer: ", dataLayer);
 
     var preloadedState = {};
     if (typeof window != 'undefined' && window.__APOLLO_STATE__) {
@@ -83,7 +83,7 @@ export const hydrateFromDataLayer = (app, dataLayer) => {
         delete window.__APOLLO_STATE__;
     }
 
-    console.log("uri: ", window.__GRAPHQL__);
+    //console.log("uri: ", window.__GRAPHQL__);
 
     const client = new ApolloClient({
         cache: new InMemoryCache().restore(preloadedState),
@@ -93,7 +93,7 @@ export const hydrateFromDataLayer = (app, dataLayer) => {
         })
     });
 
-    console.log("local client: ", client);
+    //console.log("local client: ", client);
 
     return <ApolloProvider client={ client } >
         <ApolloConsumer>
@@ -166,7 +166,7 @@ export const createApolloClient = (dataLayer, graphqlUrl, request) => {
      */
 
 
-    console.log("graphqlUrl: ", graphqlUrl);
+    //console.log("graphqlUrl: ", graphqlUrl);
     //console.log("schema: ", schema);
 
     const client = new ApolloClient({
@@ -200,6 +200,7 @@ export const createApolloClient = (dataLayer, graphqlUrl, request) => {
 }
 
 export const getGraphqlUrl = () => {
+    // does not work offline, but does not need to!
     return process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
 }
 

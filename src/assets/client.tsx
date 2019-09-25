@@ -8,6 +8,7 @@ declare var __DATALAYER_ID__: any;
 declare global {
     interface Window {
         __BASENAME__: any;
+        __ISOMORPHICSTATE__: any;
     }
 }
 
@@ -81,7 +82,7 @@ const createClientWebApp = () => {
     console.log("server: path params: ", foundPath ? foundPath.params : "---");*/
 
 
-
+    const preloadedState = typeof window != 'undefined' && window.__ISOMORPHICSTATE__ ? window.__ISOMORPHICSTATE__ : undefined;
 
     // when we have a datalayer, we can hydrate the state!
     const fHydrate = webApp.dataLayerId !== undefined ? (node) => hydrateFromDataLayer(
@@ -103,7 +104,8 @@ const createClientWebApp = () => {
                 webApp.redirects,
                 basename,
                 webApp.listenOnBrowserHistory,
-                require('infrastructure-components').getAuthCallback(isoConfig, webApp.authenticationId)
+                require('infrastructure-components').getAuthCallback(isoConfig, webApp.authenticationId),
+                preloadedState
             )
         ),
         document.getElementById('root')

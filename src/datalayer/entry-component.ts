@@ -130,8 +130,13 @@ export const createEntryProps = (props): IEntryProps => {
                 return result;
             }, {});
 
-            fields[props.primaryKey] = {type: GraphQLString};
-            fields[props.rangeKey] = {type: GraphQLString};
+            if (props.primaryKey) {
+                fields[props.primaryKey] = {type: GraphQLString};
+            }
+
+            if (props.rangeKey) {
+                fields[props.rangeKey] = {type: GraphQLString};
+            }
 
             return fields;
         },
@@ -147,8 +152,13 @@ export const createEntryProps = (props): IEntryProps => {
 
             const args = {};
 
-            args[props.primaryKey] = {name: props.primaryKey, type: GraphQLString};
-            args[props.rangeKey] = {name: props.rangeKey, type: GraphQLString};
+            if (props.primaryKey) {
+                args[props.primaryKey] = {name: props.primaryKey, type: GraphQLString};
+            }
+
+            if (props.rangeKey) {
+                args[props.rangeKey] = {name: props.rangeKey, type: GraphQLString};
+            }
 
             return args;
         },
@@ -160,8 +170,13 @@ export const createEntryProps = (props): IEntryProps => {
                 return result;
             }, {});
 
-            args[props.primaryKey] = {name: props.primaryKey, type: GraphQLString};
-            args[props.rangeKey] = {name: props.rangeKey, type: GraphQLString};
+            if (props.primaryKey) {
+                args[props.primaryKey] = {name: props.primaryKey, type: GraphQLString};
+            }
+
+            if (props.rangeKey) {
+                args[props.rangeKey] = {name: props.rangeKey, type: GraphQLString};
+            }
 
             return args;
         },
@@ -186,6 +201,7 @@ export const createEntryProps = (props): IEntryProps => {
                 dictKey,
                 fields
             );
+
         },
 
         getEntryScanQuery: (dictKey) => {
@@ -400,7 +416,7 @@ export default (props: IEntryArgs | any) => {
     };
 
 
-    return createEntryProps(Object.assign({}, props,componentProps));
+    return createEntryProps(Object.assign({}, props, componentProps));
 
 
 };

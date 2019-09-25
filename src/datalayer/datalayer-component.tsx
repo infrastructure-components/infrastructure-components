@@ -71,6 +71,8 @@ export interface IDataLayerProps {
 
     deleteEntryMutation: (entryId: string, values: any ) => any,
 
+    updateEntryQuery: (entryId, fDictKey: (oldData) => any) => any,
+
     getSchema?: any // optional only because it is implemented in a separate object below. but it is required!
 
     entries: any,
@@ -144,7 +146,7 @@ export default (props: IDataLayerArgs | any) => {
                     const result = entry.setEntry(args, context, process.env.TABLE_NAME, complementedProps["isOffline"]);
 
 
-                    console.log("result: ", result);
+                    //console.log("result: ", result);
                     return result;
                 }
             };
@@ -159,7 +161,7 @@ export default (props: IDataLayerArgs | any) => {
                         return entry.id;
                     }
 
-                    console.log("resolve: ", resolveWithData, source, context, info, args);
+                    //console.log("resolve: ", resolveWithData, source, context, info, args);
 
                     // This context gets the data from the context put into the <Query/> or Mutation...
                     //console.log("context: ", context);
@@ -186,6 +188,7 @@ export default (props: IDataLayerArgs | any) => {
 
             // list all the items, specifying the primaryKey
             const inputArgs = {};
+
             inputArgs[entry.primaryKey] = {name: entry.primaryKey, type: new GraphQLNonNull(GraphQLString)};
 
             result[entry.getPrimaryListQueryName()] = {
@@ -265,8 +268,14 @@ export default (props: IDataLayerArgs | any) => {
             };
 
             const inputArgsGet = {};
-            inputArgsGet[entry.primaryKey] = {name: entry.primaryKey, type: new GraphQLNonNull(GraphQLString)};
-            inputArgsGet[entry.rangeKey] = {name: entry.rangeKey, type: new GraphQLNonNull(GraphQLString)};
+
+            if (entry.primaryKey) {
+                inputArgsGet[entry.primaryKey] = {name: entry.primaryKey, type: new GraphQLNonNull(GraphQLString)};
+            }
+
+            if (entry.rangeKey) {
+                inputArgsGet[entry.rangeKey] = {name: entry.rangeKey, type: new GraphQLNonNull(GraphQLString)};
+            }
 
             result[entry.getGetQueryName()] = {
                 args: inputArgsGet,
@@ -432,6 +441,17 @@ export default (props: IDataLayerArgs | any) => {
 
             console.warn("could not find entry: ", entryId);
             return {};
+        },
+
+        updateEntryQuery: (entryId, fDictKey: (oldData) => any) => {
+
+            return {
+                entryId: entryId,
+                getEntryQuery: () => datalayerProps.getEntryQuery(entryId, fDictKey({})),
+                setEntryMutation: (oldData) => datalayerProps.setEntryMutation(entryId, fDictKey(oldData)),
+
+            };
+
         },
 
 

@@ -6,8 +6,6 @@
 export const WebApp = require('./webapp/webapp-component').default;
 export const Middleware = require('./middleware/middleware-component').default;
 export const Route = require('./route/route-component').default;
-export const withRequest = require('./components/attach-request').withRequest;
-export const AttachRequest = require('./components/attach-request').default;
 export const IsomorphicApp = require('./isomorphic/iso-component').default;
 export const Environment = require('./environment/environment-component').default;
 export const EnvValue = require('./environment/env-value-component').default;
@@ -16,6 +14,12 @@ export const ServiceOrientedApp = require('./soa/soa-component').default;
 export const DataLayer = require('./datalayer/datalayer-component').default;
 export const Entry = require('./datalayer/entry-component').default;
 export const Service = require('./service/service-component').default;
+
+export const withRequest = require('./components/attach-request').withRequest;
+export const AttachRequest = require('./components/attach-request').default;
+export const withIsomorphicState = require('./components/attach-isomorphic-state').withIsomorphicState;
+export const AttachIsomorphicState = require('./components/attach-isomorphic-state').default;
+
 
 export const SecuredEntry = require('./authentication/securedentry-component').default;
 export const Authentication = require('./authentication/authentication-component').default;
@@ -56,6 +60,7 @@ export const setEntry = require('./datalayer/datalayer-libs').setEntry;
 export const getEntryListQuery = require('./datalayer/datalayer-libs').getEntryListQuery;
 export const ddbListEntries = require('./datalayer/datalayer-libs').ddbListEntries;
 export const getEntry = require('./datalayer/datalayer-libs').getEntry;
+export const update = require('./datalayer/datalayer-libs').update;
 export const mutate = require('./datalayer/datalayer-libs').mutate;
 export const select = require('./datalayer/datalayer-libs').select;
 export const withDataLayer = require('./assets/attach-data-layer').withDataLayer;
