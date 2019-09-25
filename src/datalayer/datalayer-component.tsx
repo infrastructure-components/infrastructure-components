@@ -186,6 +186,7 @@ export default (props: IDataLayerArgs | any) => {
             //console.log("listType: ", listType);
 
 
+            //console.log("dl-comp-props: ", complementedProps["isOffline"], datalayerProps["isOffline"])
             // list all the items, specifying the primaryKey
             const inputArgs = {};
 
@@ -197,33 +198,13 @@ export default (props: IDataLayerArgs | any) => {
                 resolve: (source, args, context, info) => {
 
 
-                    //console.log("resolve: ", resolveWithData, source, args, context);
+                    console.log("resolve list: ", resolveWithData, source, args, context, complementedProps["isOffline"]);
 
                     if (!resolveWithData) {
                         return entry.id;
                     }
 
                     return entry.listEntries(args, context, process.env.TABLE_NAME, "pk", complementedProps["isOffline"]);
-
-                    /*
-                    return ddbListEntries(
-                        process.env.TABLE_NAME, //tablename
-                        "pk", // key
-                        entry.primaryKey, //entity
-                        args[entry.primaryKey], //value
-                        entry.rangeKey //rangeEntity
-                    ).then(results => {
-
-                        console.log("promised: ", results);
-                        return results.map(item => {
-                            const data = item.jsonData !== undefined ? JSON.parse(item.jsonData) : {};
-                            data[entry.primaryKey] = item.pk.substring(item.pk.indexOf("|")+1);
-                            data[entry.rangeKey] = item.sk.substring(item.sk.indexOf("|")+1);
-                            return data;
-                        });
-
-                    });*/
-
                 }
             };
 
@@ -238,7 +219,7 @@ export default (props: IDataLayerArgs | any) => {
                 type: resolveWithData ? new GraphQLList(listType): listType,
                 resolve: (source, args, context, info) => {
 
-                    //console.log("resolve: ", resolveWithData, source, args, context);
+                    console.log("resolve: ", resolveWithData, source, args, context, complementedProps["isOffline"]);
 
                     if (!resolveWithData) {
                         return entry.id;
@@ -246,24 +227,6 @@ export default (props: IDataLayerArgs | any) => {
 
                     return entry.listEntries(args, context, process.env.TABLE_NAME, "sk", complementedProps["isOffline"]);
 
-                    /*
-                    return ddbListEntries(
-                        process.env.TABLE_NAME, //tablename
-                        "sk", // key
-                        entry.rangeKey, //entity
-                        args[entry.rangeKey], //value
-                        entry.primaryKey //rangeEntity
-                    ).then(results => {
-
-                        console.log("promised: ", results);
-                        return results.map(item => {
-                            const data = item.jsonData !== undefined ? JSON.parse(item.jsonData) : {};
-                            data[entry.primaryKey] = item.pk.substring(item.pk.indexOf("|")+1);
-                            data[entry.rangeKey] = item.sk.substring(item.sk.indexOf("|")+1);
-                            return data;
-                        });
-
-                    });*/
                 }
             };
 

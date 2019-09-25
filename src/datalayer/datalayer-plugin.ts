@@ -26,6 +26,7 @@ import {PARSER_MODES} from "../libs/parser";
  * - `IsomorphicApp`
  */
 export interface IDataLayerPlugin {
+
     /**
      * path to a directory where we put the final bundles
      */
@@ -60,7 +61,7 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
         ):IConfigParseResult => {
 
             // the datalayer has a (query) server application
-            const queryWebPack = (args) => require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").complementWebpackConfig(
+            /*const queryWebPack = (args) => require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").complementWebpackConfig(
                 require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").createServerWebpackConfig(
                     "./"+path.join("node_modules", "infrastructure-components", "dist" , "assets", "data-layer.js"), //entryPath: string,
                     path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath), //use the buildpath from the parent plugin
@@ -75,17 +76,18 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
 
                     // replacementsDict
                     {
-                        __DATALAYER_ID__: `"${component.id}"`
+                        __DATALAYER_ID__: `"${component.id}"`,
+
                         /*,
                         __ASSETS_PATH__: `"${component.assetsPath}"`,
                         __RESOLVED_ASSETS_PATH__: `"${resolveAssetsPath(
                             component.buildPath,
                             serverName,
                             component.assetsPath )
-                            }"`*/
+                            }"`* /
                     }
                 )
-            );
+            );*/
 
             /**
              * setup a database and a handler

@@ -215,7 +215,7 @@ export const getGraphqlUrl = () => {
  * @param app the ReactApp to connect with the DataLayer
  * @schema specifies the schema to connect the store with, if undefined: use the uri (via network). see [[UseSchemaLinkSpec]]
  */
-export const connectWithDataLayer = (dataLayerId, request) => async (app) => {
+export const connectWithDataLayer = (dataLayerId, request, isOffline) => async (app) => {
 
     /**
      * we MUST NOT IMPORT CONTEXTs directly, but require them at time of use generally from Infrastructure-Components
@@ -237,6 +237,10 @@ export const connectWithDataLayer = (dataLayerId, request) => async (app) => {
         dataLayerId
     );
 
+    if (isOffline) {
+        //console.log("connectWithDataLayer - setOffline!")
+        dataLayer.setOffline(true);
+    }
 
 
     //console.log("dataLayer: ", dataLayer);

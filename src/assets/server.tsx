@@ -85,6 +85,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
 
 
         } else {
+            console.log("NOT offline!")
 
             const cors = require('cors');
 
@@ -108,7 +109,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
         }
 
         app.use('/query', async (req, res, next) => {
-            //console.log(req.body);
+            console.log("query-endpoint / offline: ", isOffline);
             const parsedBody = JSON.parse(req.body);
             //console.log(parsedBody)
             
@@ -192,7 +193,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
         //.filter(clientApp => clientApp.middlewares !== undefined)
         .map(clientApp => {
 
-            const serveMiddleware = (req, res, next) => serve(req, res, next, clientApp, assetsDir, isoConfig);
+            const serveMiddleware = (req, res, next) => serve(req, res, next, clientApp, assetsDir, isoConfig, isOffline);
             const routes = clientApp.routes.filter(route => route.middlewares !== undefined && route.middlewares.length > 0);
 
             if (clientApp.method.toUpperCase() == "GET") {
@@ -229,7 +230,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
 };
 
 
-async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
+async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline) {
 
     //TODO use try catch depending on the environment
     //try {
@@ -292,7 +293,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig) {
     };
 
     const fConnectWithDataLayer = clientApp.dataLayerId !== undefined ?
-        connectWithDataLayer(clientApp.dataLayerId, req) :
+        connectWithDataLayer(clientApp.dataLayerId, req, isOffline) :
         async function (app) {
             //console.log("default dummy data layer")
             return {connectedApp: app, getState: () => ""};

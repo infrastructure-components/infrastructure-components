@@ -43,6 +43,7 @@ export function withDataLayer(Component) {
                     //console.log("value of context: ", context);
                     const entryListQuery = (entryId, dictKey) => {
 
+                        //console.log("attach datalayer layer: ", context.dataLayer["isOffline"])
                         return context.dataLayer.getEntryListQuery(
                             entryId,
                             dictKey
@@ -61,6 +62,7 @@ export function withDataLayer(Component) {
 
                     const setEntryMutation = (entryId, values) => {
 
+                        //console.log("attach datalayer layer: ", context.dataLayer["isOffline"])
                         return context.dataLayer.setEntryMutation(
                             entryId,
                             values

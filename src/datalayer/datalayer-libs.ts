@@ -72,7 +72,7 @@ export const setEntry = (tableName, pkEntity, pkId, skEntity, skId, jsonData, is
  */
 export const ddbListEntries = (tableName, key, entity, value, rangeEntity, isOffline) => {
 
-    //console.log("ddbListEntries: ", tableName, key, entity, value, rangeEntity);
+    //console.log("ddbListEntries: ", tableName, key, entity, value, rangeEntity, isOffline);
 
     const q = {
         // use the table_name as specified in the serverless.yml
@@ -88,7 +88,7 @@ export const ddbListEntries = (tableName, key, entity, value, rangeEntity, isOff
             }, :entity)`,
         ExpressionAttributeValues: {
             ":value": `${entity}|${value}`,
-            ":entity": rangeEntity
+            ":entity": rangeEntity ? rangeEntity : "undefined"
         }
     };
 
@@ -137,7 +137,7 @@ export const ddbGetEntry = (tableName, pkEntity, pkValue, skEntity, skValue, isO
 
 export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEntity, isOffline) => {
 
-    //console.log("scan: ", tableName, key, entity, start_value, end_value, rangeEntity);
+    //console.log("scan: ", tableName, key, entity, start_value, end_value, rangeEntity, isOffline);
 
     const q = {
         // use the table_name as specified in the serverless.yml
@@ -150,7 +150,7 @@ export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEnt
         ExpressionAttributeValues: {
             ":sv": `${entity}|${start_value}`,
             ":ev": `${entity}|${end_value}`,
-            ":entity": rangeEntity
+            ":entity": rangeEntity ? rangeEntity : "undefined"
         }
     };
 
@@ -161,7 +161,7 @@ export const ddbScan = (tableName, key, entity, start_value, end_value, rangeEnt
             key === "pk" ? "sk" : "pk"}, :rangeentity)`,
         ExpressionAttributeValues: {
             ":entity": entity,
-            ":rangeentity": rangeEntity
+            ":rangeentity": rangeEntity ? rangeEntity : "undefined"
         }
     };
 

@@ -229,7 +229,7 @@ export const createEntryProps = (props): IEntryProps => {
 
         setEntry: (args, context, tableName, isOffline) => {
 
-            console.log("setEntry: ", args);
+            //console.log("setEntry: ", args, "offline: ", isOffline);
 
             return setEntry(
                 tableName, //"code-architect-dev-data-layer",
@@ -251,6 +251,8 @@ export const createEntryProps = (props): IEntryProps => {
             const entity = key === "pk" ? props.primaryKey : props.rangeKey;
             const range = key === "pk" ? props.rangeKey : props.primaryKey;
 
+            //console.log("listEntries: offline? ", isOffline)
+
             return ddbListEntries(
                 tableName, //tablename
                 key, // key
@@ -260,7 +262,7 @@ export const createEntryProps = (props): IEntryProps => {
                 isOffline
             ).then(results => {
 
-                console.log("promised: ", results);
+                //console.log("promised: ", results);
                 return results.map(item => {
                     const data = item.jsonData !== undefined ? JSON.parse(item.jsonData) : {};
                     data[props.primaryKey] = item.pk.substring(item.pk.indexOf("|") + 1);
@@ -283,7 +285,7 @@ export const createEntryProps = (props): IEntryProps => {
                 isOffline
             ).then((result: any)=> {
 
-                console.log("entry-component getEntry result: ", result);
+                //console.log("entry-component getEntry result: ", result);
 
                 const data = result.jsonData !== undefined ? JSON.parse(result.jsonData) : {};
 
@@ -299,7 +301,7 @@ export const createEntryProps = (props): IEntryProps => {
 
         scan: (args, context, tableName, key, isOffline) => {
 
-            console.log("scan entry! ", args, context)
+            //console.log("scan entry! ", args,  "offline: ", isOffline)
 
 
 
@@ -313,9 +315,9 @@ export const createEntryProps = (props): IEntryProps => {
                 isOffline
             ).then((result: any)=> {
 
-                console.log("entry-component scan result: ", result);
+                //console.log("entry-component scan result: ", result);
                 return result.map(entry => {
-                    console.log("scanned entry: ", entry);
+                    //console.log("scanned entry: ", entry);
                     const data = entry.jsonData !== undefined ? JSON.parse(entry.jsonData) : {};
 
                     if (entry && entry.pk && entry.sk) {
@@ -323,7 +325,7 @@ export const createEntryProps = (props): IEntryProps => {
                         data[props.rangeKey] = entry.sk.substring(entry.sk.indexOf("|") + 1);
                     }
 
-                    console.log("returned data: ", data);
+                    //console.log("returned data: ", data);
                     return data;
                 });
 
@@ -362,7 +364,7 @@ export const createEntryProps = (props): IEntryProps => {
         },
 
         middleware: createMiddleware({ callback: (req, res, next) => {
-            console.log("this is the mw of the entry: ", props.id)
+            //console.log("this is the mw of the entry: ", props.id)
             return next();
 
         }}),

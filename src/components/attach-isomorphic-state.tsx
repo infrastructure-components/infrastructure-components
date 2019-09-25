@@ -40,7 +40,7 @@ export function withIsomorphicState(Component) {
                         //console.log("value: ", value);
                         //const [clientValue, clientSetter] = useState(value);
                         // we ignore the clientProps...but we take the props from the preloadedState!
-                        return <Component {...props} useIsomorphicState={(id, initialValue) => useState(value[id])} />
+                        return <Component {...props} useIsomorphicState={(id, initialValue) => useState( value? value[id]:undefined)} />
 
                     } else {
 
