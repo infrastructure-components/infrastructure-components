@@ -283,12 +283,17 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
     //console.log("app data layer id: ", clientApp.dataLayerId);
 
     const serverState = {};
-    const setServerValue = (id, value) => {
-        serverState[id] = value;
-        //console.log("set ", id, " -> ", value)
+    const setServerValue = (id, value, isInitial=false) => {
+        if (!serverState[id] || !isInitial) {
+            serverState[id] = value;
+            //console.log("set >>", id, "<< -> ", value);
+        }
+
+
     }
 
     const getIsomorphicState = () => {
+        //console.log("serverState: ", serverState);
         return `window.__ISOMORPHICSTATE__ = ${JSON.stringify(serverState)}`
     };
 
