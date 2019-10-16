@@ -1,11 +1,10 @@
 {
   "name": "infrastructure-components",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "postinstall": "icinstall install"
+    "build": "tsc"
   },
   "bin": {
     "icinstall": "./scripts/index.js"
