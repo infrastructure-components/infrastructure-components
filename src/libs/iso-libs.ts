@@ -13,8 +13,8 @@ export const resolveAssetsPath = (buildPath: string, serverName: string, assetsP
 };
 
 
-export const getStaticBucketName = (stackName: string, assetsPath: string | undefined, stage: string) => {
-    return `infrcomp-${stackName}-${assetsPath !== undefined ? assetsPath+"-" : ""}${stage}`;
+export const getStaticBucketName = (accountId: string, stackName: string, assetsPath: string | undefined, stage: string) => {
+    return `infrcomp-${accountId}-${stackName}-${assetsPath !== undefined ? assetsPath+"-" : ""}${stage}`;
 }
 
 
