@@ -122,7 +122,7 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                 /* see: https://www.npmjs.com/package/serverless-dynamodb-local */
                 custom: {
                     "dynamodb": {
-                        stages: ["dev", ],
+                        stages: ["${self:provider.stage}", "dev"],
                         start: {
                             port: 8000,
                             inMemory: "true",
