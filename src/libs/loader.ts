@@ -43,6 +43,10 @@ export const INFRASTRUCTURE_MODES = {
  */
 export const loadInfrastructureComponent = (component, infrastructureMode: string | undefined) => {
 
+    // when the component is an array, return it
+    if (component !== undefined && Array.isArray(component) && component.length > 0) {
+        return component.map(c => loadInfrastructureComponent(c, infrastructureMode))
+    }
 
     try {
 
@@ -53,7 +57,6 @@ export const loadInfrastructureComponent = (component, infrastructureMode: strin
         }, []);
 
         //console.log("parseInfrastructureComponent: ", component, children);
-
 
 
         // overwrite the children in the props

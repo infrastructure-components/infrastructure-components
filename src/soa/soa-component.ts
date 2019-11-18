@@ -15,6 +15,7 @@ import { ServicePlugin } from "../service/service-plugin";
 import { isService } from "../service/service-component";
 import {DataLayerPlugin} from "../datalayer/datalayer-plugin";
 import {isDataLayer} from "../datalayer/datalayer-component";
+import {StoragePlugin} from "../storage/storage-plugin";
 
 export const SERVICEORIENTED_INSTANCE_TYPE = "ServiceOrientedComponent";
 
@@ -122,6 +123,12 @@ export default (props: IServiceOrientedArgs | any) => {
                 buildPath: props.buildPath,
                 configFilePath: configPath,
             }),
+
+
+            StoragePlugin({
+                buildPath: props.buildPath,
+                parserMode: parserMode
+            })
 
         ] : []
     };

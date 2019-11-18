@@ -15,6 +15,7 @@ import { SpaPlugin } from './spa-plugin';
 import { WebAppPlugin } from '../webapp/webapp-plugin';
 import { EnvironmentPlugin } from '../environment/environment-plugin';
 
+
 export const SINGLEPAGE_INSTANCE_TYPE = "SinglePageComponent";
 
 /**
@@ -66,8 +67,6 @@ export interface ISinglePageProps {
  */
 export default (props: ISinglePageArgs | any) => {
 
-    //console.log ("isomorphic: ",props );
-
     const infProps: IInfrastructure & IConfiguration = {
 
         // allows to identify this component as Infrastructure
@@ -91,7 +90,8 @@ export default (props: ISinglePageArgs | any) => {
             EnvironmentPlugin({
                 stage: stage,
                 parserMode: parserMode
-            })
+            }),
+
 
         ] : []
     };
