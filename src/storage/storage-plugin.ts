@@ -44,48 +44,35 @@ export const StoragePlugin = (props: IStoragePlugin): IPlugin => {
             infrastructureMode: string | undefined
         ): IConfigParseResult => {
 
-            const copyAssetsPostBuild = () => {
-                console.log("check for >>copyAssetsPostBuild<<", props.buildPath);
+            /**
+             * setup a local S3, only if we start it locally
+             */
+            const localS3Config = props.parserMode !== PARSER_MODES.MODE_START ? {} : {
 
-                /**
-                 * Sync the files with the folder in S3
-                 */
-                if (props.parserMode !== PARSER_MODES.MODE_DOMAIN && props.parserMode !== PARSER_MODES.MODE_DEPLOY) {
-                    // always copy the assets, unless we setup the domain
-                    console.log("copyAssetsPostBuild: now copy the assets!");
+                plugins: ["serverless-s3-local"],
 
-                    const storageBuildPath = path.join(require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(), props.buildPath);
+                /* see: https://www.npmjs.com/package/serverless-dynamodb-local */
+                custom: {
+                    "s3": {
+                        port: 3002,
+                        directory: "/.s3"
+                    }
+                },
 
-                    require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").copyAssets(
-                        path.join(storageBuildPath, "file-management"), path.join(storageBuildPath, component.id)
-                    );
-
-                } else {
-                    //copyAssets
+                provider: {
+                    staticBucket: "${self:provider.stackName, 'locals3'}",
                 }
-
-                /*   if (props.parserMode !== PARSER_MODES.MODE_DOMAIN && props.parserMode !== PARSER_MODES.MODE_DEPLOY) {
-                 // always copy the assets, unless we setup the domain
-                 console.log("copyAssetsPostBuild: now copy the assets!");
-
-                 webpackConfigs.map(config => require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").copyAssets( config.output.path, path.join(serverBuildPath, serverName, component.assetsPath)));
-
-                 } else {
-                 // delete the assets folder for we don't want to include all these bundled files in the deployment-package
-                 const rimraf = require("rimraf");
-                 rimraf.sync(path.join(serverBuildPath, serverName, component.assetsPath));
-
-                 }
-                 */
             };
 
             return {
-                slsConfigs: deepmerge.all(childConfigs.map(config => config.slsConfigs)),
+                slsConfigs: deepmerge.all([
+                    localS3Config
+                ].concat(childConfigs.map(config => config.slsConfigs))),
 
                 // add the server config
                 webpackConfigs: childConfigs.reduce((result, config) => result.concat(config.webpackConfigs), []),
 
-                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [copyAssetsPostBuild]),
+                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), []),
 
                 iamRoleStatements: forwardChildIamRoleStatements(childConfigs)
             }
