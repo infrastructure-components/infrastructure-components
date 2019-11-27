@@ -456,6 +456,14 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
 
             } : {};
 
+            const envS3Config = {
+                provider: {
+                    environment: {
+                        BUCKET_ID: "${self:provider.staticBucket}",
+                    }
+                }
+            };
+
             return {
                 stackType: "SOA",
                 
@@ -488,14 +496,14 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
 
                         domainConfig,
 
-
-
                         // add the IAM-Role-Statements
                         iamPermissions,
 
                         // assign the role
-                        // assign the role
-                        iamRoleAssignment
+                        iamRoleAssignment,
+
+                        // set the bucket as an env
+                        envS3Config
                     ]
                 ),
                 

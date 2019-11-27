@@ -18,6 +18,8 @@ import { AuthenticationPlugin } from '../authentication/authentication-plugin';
 import {isDataLayer} from "../datalayer/datalayer-component";
 import {ServicePlugin} from "../service/service-plugin";
 import {isService} from "../service/service-component";
+import {isStorage} from "../storage/storage-component";
+import {StoragePlugin} from "../storage/storage-plugin";
 
 export const ISOMORPHIC_INSTANCE_TYPE = "IsomorphicComponent";
 
@@ -128,6 +130,11 @@ export default (props: IIsomorphicArgs | any) => {
             
             ServicePlugin({}),
 
+            StoragePlugin({
+                buildPath: props.buildPath,
+                parserMode: parserMode
+            }),
+
             // isomorphic apps can have different environments
             EnvironmentPlugin({
                 stage: stage,
@@ -136,7 +143,7 @@ export default (props: IIsomorphicArgs | any) => {
 
             IdentityPlugin({}),
 
-            AuthenticationPlugin({})
+            AuthenticationPlugin({}),
 
         ] : []
     };
@@ -146,7 +153,7 @@ export default (props: IIsomorphicArgs | any) => {
 
         webApps: findComponentRecursively(props.children, isWebApp),
 
-        services: findComponentRecursively(props.children, isService),
+        services: findComponentRecursively(props.children,  c => isService(c) || isStorage(c)),
 
         dataLayerId: findComponentRecursively(props.children, isDataLayer).reduce((res, dl) => res ? res : dl.id, undefined)
     }

@@ -238,6 +238,13 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                 } : {};
 
 
+            const envS3Config = {
+                provider: {
+                    environment: {
+                        BUCKET_ID: "${self:provider.staticBucket}",
+                    }
+                }
+            };
 
             const additionalStatements: Array<any> = forwardChildIamRoleStatements(childConfigs).concat(
                 component.iamRoleStatements ? component.iamRoleStatements : []
@@ -251,7 +258,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
             iamRoleAssignment.functions[serverName] = {
                 role: "IsomorphicAppLambdaRole"
-            }
+            };
 
 
             const iamPermissions = {
@@ -342,7 +349,10 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
 
                     // assign the role
                     // assign the role
-                    iamRoleAssignment
+                    iamRoleAssignment,
+
+                    // set the bucket as an env
+                    envS3Config
 
                 ]),
                 

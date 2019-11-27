@@ -44,6 +44,25 @@ export const StoragePlugin = (props: IStoragePlugin): IPlugin => {
             infrastructureMode: string | undefined
         ): IConfigParseResult => {
 
+            const fs = require("fs");
+            const path = require ("path");
+
+            function createFolder() {
+                // start the sls-config
+                if (props.parserMode === PARSER_MODES.MODE_START) {
+
+                    const targetFolder = ".s3";
+                    //check if folder needs to be created or integrated
+                    if ( !fs.existsSync( targetFolder) ) {
+                        fs.mkdirSync( targetFolder, {recursive: true} );
+
+                    }
+                    fs.chmodSync( targetFolder, 0o777);
+                }
+            }
+
+
+
             /**
              * setup a local S3, only if we start it locally
              */
@@ -55,12 +74,15 @@ export const StoragePlugin = (props: IStoragePlugin): IPlugin => {
                 custom: {
                     "s3": {
                         port: 3002,
-                        directory: "/.s3"
+                        directory: path.join(
+                            require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),".s3"
+                        )
                     }
                 },
 
                 provider: {
-                    staticBucket: "${self:provider.stackName, 'locals3'}",
+                    staticBucket: "${self:provider.stackName}",
+
                 }
             };
 
@@ -72,7 +94,7 @@ export const StoragePlugin = (props: IStoragePlugin): IPlugin => {
                 // add the server config
                 webpackConfigs: childConfigs.reduce((result, config) => result.concat(config.webpackConfigs), []),
 
-                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), []),
+                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [createFolder]),
 
                 iamRoleStatements: forwardChildIamRoleStatements(childConfigs)
             }

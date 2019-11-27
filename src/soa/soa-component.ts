@@ -16,6 +16,7 @@ import { isService } from "../service/service-component";
 import {DataLayerPlugin} from "../datalayer/datalayer-plugin";
 import {isDataLayer} from "../datalayer/datalayer-component";
 import {StoragePlugin} from "../storage/storage-plugin";
+import {isStorage} from "../storage/storage-component";
 
 export const SERVICEORIENTED_INSTANCE_TYPE = "ServiceOrientedComponent";
 
@@ -142,7 +143,7 @@ export default (props: IServiceOrientedArgs | any) => {
 
         redirects: [],
 
-        services: findComponentRecursively(props.children, isService),
+        services: findComponentRecursively(props.children, c => isService(c) || isStorage(c)),
 
         dataLayerId: findComponentRecursively(props.children, isDataLayer).reduce((res, dl) => res ? res : dl.id, undefined)
     }

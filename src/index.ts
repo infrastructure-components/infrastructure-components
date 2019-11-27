@@ -22,6 +22,7 @@ export const AttachRequest = require('./components/attach-request').default;
 export const withIsomorphicState = require('./components/attach-isomorphic-state').withIsomorphicState;
 export const AttachIsomorphicState = require('./components/attach-isomorphic-state').default;
 
+export const uploadFile = require('./storage/storage-libs').uploadFile;
 
 export const SecuredEntry = require('./authentication/securedentry-component').default;
 export const Authentication = require('./authentication/authentication-component').default;
