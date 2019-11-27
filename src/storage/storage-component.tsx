@@ -89,10 +89,11 @@ export default (props: IStorageArgs | any) => {
 
                     const parsedBody = JSON.parse(req.body);
 
-                    console.log("this is the storage-service: ", parsedBody.part, " of ", parsedBody.total_parts);
 
                     const bucket = process.env.BUCKET_ID;
                     const isOffline = !(bucket.startsWith("infrcomp"));
+
+                    console.log("this is the storage-service: ", parsedBody.part, " of ", parsedBody.total_parts, ", offline: ", isOffline);
 
                     // prepare file data
                     //const matches = parsedBody.file_data.match(/^data:.+\/(.+);base64,(.*)$/);
@@ -142,14 +143,15 @@ export default (props: IStorageArgs | any) => {
                                     console.log(err);
                                     reject(err);
                                 } else {
-                                    console.log("Successfully Written File to tmp.");
+                                    //console.log("Successfully Written File to tmp.");
                                     resolve();
                                 }
 
                             });
                     });
 
-                    const getFilePartKey = (idx) => parsedBody.file + "_ICPART_" + idx;
+                    const getFilePartKey = (idx) => props.id + "/" + parsedBody.file + "_ICPART_" + idx;
+
 
                     await s3.upload({
                         Bucket: bucket,
@@ -200,11 +202,11 @@ export default (props: IStorageArgs | any) => {
                             }
                         )));
 
-                        //console.log(parts);
+                        //console.log("upload to: ", props.id + "/" +parsedBody.fil);
 
                         const finalparams = {
                             Bucket: bucket,
-                            Key: parsedBody.file,
+                            Key: props.id + "/" +parsedBody.file,
                             Body: parts,
                             //Expires:expiryDate
                         };

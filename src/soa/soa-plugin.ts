@@ -340,7 +340,8 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                                                     Action: [
                                                         "s3:Get*",
                                                         "s3:List*",
-                                                        "s3:Put*"
+                                                        "s3:Put*",
+                                                        "s3:Delete*"
                                                     ],
                                                     Resource: {
                                                         "Fn::Join": '["", ["arn:aws:s3:::", {"Ref": "StaticBucket" }, "/*"]]'

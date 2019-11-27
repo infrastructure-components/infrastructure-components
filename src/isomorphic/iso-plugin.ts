@@ -300,8 +300,12 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                                                     Action: [
                                                         "s3:Get*",
                                                         "s3:List*",
+                                                        "s3:Put*",
+                                                        "s3:Delete",
                                                     ],
-                                                    Resource: '"*"'
+                                                    Resource: {
+                                                        "Fn::Join": '["", ["arn:aws:s3:::", {"Ref": "StaticBucket" }, "/*"]]'
+                                                    }
                                                 },
 
                                             ].concat(additionalStatements)

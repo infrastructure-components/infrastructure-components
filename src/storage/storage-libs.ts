@@ -42,7 +42,7 @@ export const uploadFile = (
                 (data: any) => {
 
                     data.json().then(parsedBody => {
-                        console.log("parsedBody: ", parsedBody);
+                        //console.log("parsedBody: ", parsedBody);
 
                         const size_done = start + slice_size;
 
