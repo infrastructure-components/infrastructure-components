@@ -24,6 +24,7 @@ export const AttachIsomorphicState = require('./components/attach-isomorphic-sta
 
 export const uploadFile = require('./storage/storage-libs').uploadFile;
 export const listFiles = require('./storage/storage-libs').listFiles;
+export const LISTFILES_MODE = require('./storage/storage-libs').LISTFILES_MODE;
 export const FilesList = require('./storage/files-list').default;
 export const IFilesList = require('./storage/files-list').IFilesList;
 

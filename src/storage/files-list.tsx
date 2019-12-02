@@ -5,6 +5,7 @@ export interface IFilesList {
     children: any,
     storageId: string,
     prefix: string | undefined,
+    mode: string
 }
 
 export default function (props: IFilesList) {
@@ -15,6 +16,7 @@ export default function (props: IFilesList) {
     !(filesList || error) && listFiles(
         props.storageId,
         props.prefix ? props.prefix : "",
+        props.mode,
         setFilesList,
         setError
     );

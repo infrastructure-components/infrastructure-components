@@ -231,7 +231,7 @@ export const uploadFile = (
                     file_type: file.type,
                     prefix: prefix,
                     part: part,
-                    total_parts: totalParts
+                    total_parts: totalParts,
                 },
                 (data: any) => {
 
@@ -273,6 +273,12 @@ export const uploadFile = (
 
 };
 
+export const LISTFILES_MODE = {
+    FILES: "FILES",
+    FOLDERS: "FOLDERS",
+    ALL: "ALL"
+}
+
 /**
  * User-function to get a list of the files. Call from the front-end
  *
@@ -280,6 +286,7 @@ export const uploadFile = (
 export const listFiles = (
     storageId: string,
     prefix: string,
+    listMode: string,
     onComplete: (data: any) => void,
     onError: (err: string) => void
 ) => {
@@ -287,7 +294,8 @@ export const listFiles = (
         storageId,
         {
             action: STORAGE_ACTION.LIST,
-            prefix: prefix
+            prefix: prefix,
+            listMode: listMode
         },
         (data) => {
             data.json().then(parsedBody => onComplete(parsedBody.data));
@@ -314,21 +322,52 @@ export const listMiddleware = (storageId) => middleware({
 
         await s3.listObjectsV2({
             Bucket: getBucket(),
-            Prefix: storageId + "/"  + (parsedBody.prefix ? parsedBody.prefix : "")
+            Prefix: storageId + "/"  + (parsedBody.prefix ? parsedBody.prefix : "").replace(/(^\/)|(\/$)/g, "")
         }).promise().then(
             function (data) {
                 //console.log("listed: ", data);
+
+                const filesList = data.Contents.map(item => ({
+                    file: item.Key.substring(item.Key.lastIndexOf("/")+1),
+                    url: (isOffline() ? LOCAL_ENDPOINT + "/"+data.Name+"/" : "https://"+data.Name+".s3.amazonaws.com/")+item.Key,
+                    lastModified: item.LastModified,
+                    itemKey: item.Key.substring(item.Key.indexOf(storageId)+storageId.length)
+                })).filter(
+                    item => {
+                        if (parsedBody.listMode === LISTFILES_MODE.ALL) {
+                            return true;
+                        }
+
+                        const temp = path.join(storageId, parsedBody.prefix ? parsedBody.prefix : "").replace(/(^\/)|(\/$)/g, "");
+                        const isInThisFolder =  item.url.indexOf(temp)+temp.length+1 == item.url.indexOf(item.file);
+
+                        //console.log(temp, " | ", item.url, " | ", item.file);
+
+                        return (parsedBody.listMode === LISTFILES_MODE.FILES && isInThisFolder) ||
+                            (parsedBody.listMode === LISTFILES_MODE.FOLDERS && !isInThisFolder)
+                    }
+                );
+
 
                 res.status(200)
                     .set({
                         "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
                         "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
                     })
-                    .send({data: data.Contents.map(item => ({
-                        file: item.Key.substring(item.Key.lastIndexOf("/")+1),
-                        url: (isOffline() ? LOCAL_ENDPOINT + "/"+data.Name+"/" : "https://"+data.Name+".s3.amazonaws.com/")+item.Key,
-                        lastModified: item.LastModified
-                    }))});
+                    .send({data: parsedBody.listMode !== LISTFILES_MODE.FOLDERS ? filesList : Object.values(filesList.reduce(
+                        (result, current) => {
+                            // if we want a list of folders, map the result
+                            //console.log(current.itemKey);
+                            const folder = current.itemKey.substring(0,current.itemKey.lastIndexOf("/")).replace(/(^\/)|(\/$)/g, "");
+                            //console.log("key: ", folder);
+                            const obj = {};
+                            obj[folder] = Object.assign({
+                                folder: folder.indexOf("/") >= 0 ? folder.substring(0,folder.indexOf("/")) : folder
+                            }, current);
+                            return Object.assign(obj, result)
+
+                        }, {} // starting with an empty list
+                    ))});
 
                 return;
             },
