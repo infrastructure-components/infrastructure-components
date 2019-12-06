@@ -119,11 +119,11 @@ const createServer = (serviceOrientedId, isOffline) => {
             //console.log("now starting qgl-query/mutation")
             await graphql(dataLayer.getSchema(false), parsedBody.query).then(
                 result_type => {
-                    console.log("result_type: ", result_type);
+                    //console.log("result_type: ", result_type);
                     const entryQueryName = Object.keys(result_type.data)[0];
 
                     // when the query resolves, we get back
-                    console.log("pre-resolve | found entry: ", entryQueryName)
+                    //console.log("pre-resolve | found entry: ", entryQueryName)
 
                     new ConnectSequence(req, res, next)
                         .append(...dataLayer.entries.filter(entry => entry.providesQuery(entryQueryName)).map(entry=> entry.middleware.callback))
@@ -173,7 +173,7 @@ const createServer = (serviceOrientedId, isOffline) => {
     // split the clientApps here and define a function for each of the clientApps, with the right middleware
     soaApp.services.map(service => {
 
-        console.log("found service: ", service);
+        //console.log("found service: ", service);
 
         if (service.method.toUpperCase() == "GET") {
             app.get(service.path, ...unpackMiddlewares(service.middlewares));

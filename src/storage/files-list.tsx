@@ -1,29 +1,74 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { listFiles } from './storage-libs';
 
 export interface IFilesList {
     children: any,
     storageId: string,
     prefix: string | undefined,
-    mode: string
+    mode: string,
+    data: any,
+    onSetRefetch?: (refetch: ()=> any) => void
+};
+
+const STATE = {
+    //UNDEFINED: "UNDEFINED",
+    LOADING: "LOADING",
+    ERROR: "ERROR",
+    RESPONSE: "RESPONSE"
 }
 
 export default function (props: IFilesList) {
+    //const [isRefetchSet, setRefetch] = useState(false);
 
-    const [filesList, setFilesList] = useState(undefined);
-    const [error, setError] = useState(undefined);
+    //const [response, setResponse] = useState(undefined);
+    //const [error, setError] = useState(undefined);
+    const [state, setState] = useState({state: STATE.LOADING, data: undefined});
 
-    !(filesList || error) && listFiles(
-        props.storageId,
-        props.prefix ? props.prefix : "",
-        props.mode,
-        setFilesList,
-        setError
-    );
+    //console.log("response:  ", response);
+    const refetch = () => {
+        //setResponse(undefined);
+        //setError(undefined);
+        //setRefetch(false);
+        setState({state: STATE.LOADING, data: undefined});
+    };
+
+    useEffect(() => {
+        if (props.onSetRefetch && state.state === STATE.LOADING /*!isRefetchSet*/) {
+            props.onSetRefetch(()=>refetch);
+            //setRefetch(true);
+        }
+
+        state.state === STATE.LOADING && listFiles(
+            props.storageId,
+            props.prefix ? props.prefix : "",
+            props.mode,
+            props.data,
+            (data, files) => {
+                setState({
+                    state: STATE.RESPONSE,
+                    data: {
+                        data: data,
+                        files: files,
+                    }
+                })
+            },
+            (err) => {
+                setState({
+                    state: STATE.RESPONSE,
+                    data: err
+                })
+            }
+
+        );
+
+    }, [state]);
+
+
 
     return props.children({
-        loading: !(filesList || error),
-        data: filesList,
-        error: error
+        loading: state.state === STATE.LOADING,
+        data: state.state === STATE.RESPONSE ? state.data.data : undefined,
+        files: state.state === STATE.RESPONSE ? state.data.files : undefined,
+        error: state.state === STATE.ERROR ? state.data : undefined,
     });
 };

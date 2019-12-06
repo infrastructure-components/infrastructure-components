@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 
 import { StaticRouter, matchPath } from 'react-router';
 import { Switch, Route, BrowserRouter, HashRouter, Link, withRouter } from 'react-router-dom';
@@ -91,73 +91,57 @@ interface RoutedAppProps {
     
 };
 
-interface RoutedAppState {
-}
 
 
-class RawRoutedApp extends React.Component<RoutedAppProps, RoutedAppState> {
+const RawRoutedApp = (props: RoutedAppProps) => {
 
-    private unlisten: any;
+    useEffect(()=>{
+        if (props.listen) {
+            props.history.listen(props.listen);
+        }
+    });
 
-    componentWillMount() {
-        if (this.props.listen) {
-            this.unlisten = this.props.history.listen(this.props.listen);
+    //.filter(({ customType }) => customType !== Types.IFRAME)
+    // (p) => render(Object.assign({},p, props))
+    //console.log("RoutedApp: " , useContext(__RouterContext))
+
+    const ForceLogin = require("infrastructure-components").ForceLogin;
+
+    const routes = props.routes.map(({ path, exact, component, render, isSecured }, i) => {
+        //console.log("routepath: ", path)
+        // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
+
+        if (render !== undefined) {
+            const wrappedRender = (p) => isSecured ? <ForceLogin >{render(p)}</ForceLogin> : render(p);
+            return <Route key={'ROUTE_'+i} exact={exact} path={path} render={wrappedRender} />
+
+        } else if (isSecured) {
+
+            const C: any = component;
+            return <Route
+                key={'ROUTE_'+i}
+                exact={exact}
+                path={path}
+                render={(p) => <ForceLogin ><C {...p}/></ForceLogin>}
+            />
+
+        } else {
+
+            return <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />
         }
 
+    });
 
-    }
-
-
-    componentWillUnmount() {
-        if (this.unlisten) {
-            this.unlisten();
-        }
-
-    }
+    const redirects = props.redirects.map(({ from, to, status }, i) =>
+        <RedirectWithStatus key={'REDIRECT_'+i} from={from} to={to} status={status} />
+    );
 
 
-    render () {
-        //.filter(({ customType }) => customType !== Types.IFRAME)
-        // (p) => render(Object.assign({},p, props))
-        //console.log("RoutedApp: " , useContext(__RouterContext))
+    return <Switch>
+        {routes}
+        {redirects}
+    </Switch>;
 
-        const ForceLogin = require("infrastructure-components").ForceLogin;
-
-        const routes = this.props.routes.map(({ path, exact, component, render, isSecured }, i) => {
-            //console.log("routepath: ", path)
-            // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
-
-            if (render !== undefined) {
-                const wrappedRender = (p) => isSecured ? <ForceLogin >{render(p)}</ForceLogin> : render(p);
-                return <Route key={'ROUTE_'+i} exact={exact} path={path} render={wrappedRender} />
-
-            } else if (isSecured) {
-
-                const C: any = component;
-                return <Route
-                    key={'ROUTE_'+i}
-                    exact={exact}
-                    path={path}
-                    render={(p) => <ForceLogin ><C {...p}/></ForceLogin>}
-                />
-
-            } else {
-
-                return <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />
-            }
-
-        });
-
-        const redirects = this.props.redirects.map(({ from, to, status }, i) =>
-            <RedirectWithStatus key={'REDIRECT_'+i} from={from} to={to} status={status} />
-        );
-
-
-        return <Switch>
-            {routes}
-            {redirects}
-        </Switch>;
-    }
 
 
 };

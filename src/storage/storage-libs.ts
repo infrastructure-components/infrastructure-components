@@ -60,6 +60,7 @@ export const uploadMiddleware = (storageId) => middleware({
         }
         //console.log("this is the storage-service: ", parsedBody.part, " of ", parsedBody.total_parts, ", offline: ", isOffline());
 
+        //console.log("data: ", parsedBody.data);
 
         const s3 = getS3();
 
@@ -194,6 +195,7 @@ export const uploadFile = (
     storageId: string,
     prefix: string | undefined,
     file,
+    data,
     onProgess: (uploaded: number) => Boolean,
     onComplete: (uri: string) => void,
     onError: (err: string) => void
@@ -224,7 +226,7 @@ export const uploadFile = (
 
             require("infrastructure-components").callService(
                 storageId,
-                {
+                Object.assign({
                     action: STORAGE_ACTION.UPLOAD,
                     file_data: event.target.result,
                     file: file.name,
@@ -232,7 +234,9 @@ export const uploadFile = (
                     prefix: prefix,
                     part: part,
                     total_parts: totalParts,
-                },
+                }, part +1 == totalParts ? {
+                    data: data
+                } : {}),
                 (data: any) => {
 
                     data.json().then(parsedBody => {
@@ -287,7 +291,8 @@ export const listFiles = (
     storageId: string,
     prefix: string,
     listMode: string,
-    onComplete: (data: any) => void,
+    data: any,
+    onComplete: (data: any,  files: any) => void,
     onError: (err: string) => void
 ) => {
     require("infrastructure-components").callService(
@@ -295,10 +300,14 @@ export const listFiles = (
         {
             action: STORAGE_ACTION.LIST,
             prefix: prefix,
-            listMode: listMode
+            listMode: listMode,
+            data: data
         },
         (data) => {
-            data.json().then(parsedBody => onComplete(parsedBody.data));
+            data.json().then(parsedBody => {
+                //console.log(parsedBody);
+                onComplete(parsedBody.data, parsedBody.files)
+            });
         },
         (error) => {
             onError(error);
@@ -354,19 +363,21 @@ export const listMiddleware = (storageId) => middleware({
                         "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
                         "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
                     })
-                    .send({data: parsedBody.listMode !== LISTFILES_MODE.FOLDERS ? filesList : Object.values(filesList.reduce(
-                        (result, current) => {
-                            // if we want a list of folders, map the result
-                            //console.log(current.itemKey);
-                            const folder = current.itemKey.substring(0,current.itemKey.lastIndexOf("/")).replace(/(^\/)|(\/$)/g, "");
-                            //console.log("key: ", folder);
-                            const obj = {};
-                            obj[folder] = Object.assign({
-                                folder: folder.indexOf("/") >= 0 ? folder.substring(0,folder.indexOf("/")) : folder
-                            }, current);
-                            return Object.assign(obj, result)
+                    .send({
+                        data: res.locals,
+                        files: parsedBody.listMode !== LISTFILES_MODE.FOLDERS ? filesList : Object.values(filesList.reduce(
+                            (result, current) => {
+                                // if we want a list of folders, map the result
+                                //console.log(current.itemKey);
+                                const folder = current.itemKey.substring(0,current.itemKey.lastIndexOf("/")).replace(/(^\/)|(\/$)/g, "");
+                                //console.log("key: ", folder);
+                                const obj = {};
+                                obj[folder] = Object.assign({
+                                    folder: folder.indexOf("/") >= 0 ? folder.substring(0,folder.indexOf("/")) : folder
+                                }, current);
+                                return Object.assign(obj, result)
 
-                        }, {} // starting with an empty list
+                            }, {} // starting with an empty list
                     ))});
 
                 return;

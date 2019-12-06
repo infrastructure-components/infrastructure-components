@@ -1,6 +1,6 @@
 
 declare var require: any;
-import * as React from 'react';
+import React, { useEffect } from 'react';
 //import Cookies from 'universal-cookie';
 //import {IC_USER_ID} from "../authentication/auth-middleware";
 
@@ -20,7 +20,8 @@ export const isLoggedIn = (identityKey) => {
 
 
 interface ForceLoginProps {
-    userId: string | undefined
+    userId: string | undefined,
+    children: any,
     //request? : any // passed by `withRequest`
     //identityKey: string // the primaryKey-property of the applicable <Identity />-Component
 }
@@ -35,31 +36,28 @@ interface ForceLoginProps {
  *
  * how to check whether running on server or in browser: https://www.npmjs.com/package/exenv
  */
-class ForceLogin extends React.Component<ForceLoginProps, {}> {
+const ForceLogin = (props: ForceLoginProps) => {
 
 
     /**
      * When we run in the browser: if not logged in, then make the page reload from the server to
      * make the login-middlewares apply
      */
-    componentDidMount() {
+    useEffect(()=> {
         //console.log("ForceLogin-Component: ", this.props.identityKey)
 
-        if (this.props.userId == undefined) {
+        if (props.userId == undefined) {
             window.location.reload();
         }
         
-    }
+    });
 
 
-    render () {
-        
-        //console.log("ForceLogin: request ->", this.props.request)
+    //console.log("ForceLogin: request ->", this.props.request)
 
-        // we provide the information which user is logged in
-        return <div>{this.props.children}</div>
+    // we provide the information which user is logged in
+    return <div>{props.children}</div>
 
-    }
 }
 
 import {withUser} from "./attach-user";
