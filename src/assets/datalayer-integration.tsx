@@ -56,6 +56,7 @@ export const createServerSideClient = (link) => new ApolloClient({
 // here, we can also add stringified (json) data about the dataLayer, e.g. Schema
 // it works without ... window.__SCHEMA__ = \`${schema}\`
 export const importEnvironmentVariables = (preloadedState, url) => {
+    console.log("graphql-url: ", url);
     return `window.__APOLLO_STATE__ = ${JSON.stringify(preloadedState).replace(/</g, '\\\u003c')};
 window.__GRAPHQL__ = "${url}"`;
 
@@ -199,9 +200,12 @@ export const createApolloClient = (dataLayer, graphqlUrl, request) => {
 
 }
 
-export const getGraphqlUrl = () => {
+export const getGraphqlUrl = (isOffline) => {
     // does not work offline, but does not need to!
-    return process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
+    //console.log("Domain: ", process.env.DOMAIN_URL)
+
+    // TODO this should not be hard-coded - see SOA plugin!
+    return isOffline?  "http://localhost:3000/query" : process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
 }
 
 
@@ -252,7 +256,7 @@ export const connectWithDataLayer = (dataLayerId, request, isOffline) => async (
             return fetch(uri, options);
         };
 
-        const graphqlUrl = getGraphqlUrl(); // "https://yfse1b9v0m.execute-api.eu-west-1.amazonaws.com/dev/query";// process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
+        const graphqlUrl = getGraphqlUrl(isOffline); // "https://yfse1b9v0m.execute-api.eu-west-1.amazonaws.com/dev/query";// process.env.DOMAIN_URL + "/"+process.env.GRAPHQL_PATH;
 
         const client = createApolloClient(dataLayer, graphqlUrl, request);
         dataLayer.setClient(client);
@@ -269,7 +273,7 @@ export const connectWithDataLayer = (dataLayerId, request, isOffline) => async (
             await getDataFromTree(connectedApp).then(() => resolve({connectedApp: connectedApp, getState: () => {
                 //console.log("time to resolve");
                 const data = client.extract();
-                //console.log("data: ", data);
+                console.log("data: ", data);
                 return importEnvironmentVariables(data, graphqlUrl.trim())
             }}));
         } catch (error) {

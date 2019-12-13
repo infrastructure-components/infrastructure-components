@@ -61,7 +61,7 @@ const createServer = (serviceOrientedId, isOffline) => {
 
         //console.log ("Datalayer Active: ", dataLayer.id)
 
-        //console.log ("isOffline: ", isOffline);
+        console.log ("isOffline: ", isOffline);
 
         if (isOffline) {
             console.log("setOffline!")

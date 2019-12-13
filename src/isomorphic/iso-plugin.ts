@@ -301,7 +301,7 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                                                         "s3:Get*",
                                                         "s3:List*",
                                                         "s3:Put*",
-                                                        "s3:Delete",
+                                                        "s3:Delete*",
                                                     ],
                                                     Resource: {
                                                         "Fn::Join": '["", ["arn:aws:s3:::", {"Ref": "StaticBucket" }, "/*"]]'
@@ -314,6 +314,16 @@ export const IsoPlugin = (props: IIsoPlugin): IPlugin => {
                                 ]
                             }
                         },
+
+                        /*ProxyMethod: {
+                            Properties: {
+                                Integration: {
+                                    Uri: "https://${self:provider.staticBucket}.s3-${self:provider.region}.amazonaws.com/{proxy}"
+                                }
+                            }
+                            //"https://${self:provider.staticBucket}/{proxy}"
+                        },*/
+
                     },
                 }
             }
