@@ -21,7 +21,9 @@ export interface IRouteArgs {
 
     render?: any,
 
-    component?: any
+    component?: any,
+
+    exact?: boolean,
 }
 
 
@@ -35,7 +37,7 @@ export interface IRouteProps {
      */
     middlewares: Array<any>,
 
-    exact: boolean,
+
 
     isSecured?: boolean
 }
@@ -63,10 +65,9 @@ export default (props: IRouteArgs | any) => {
 
     const routeProps: IRouteProps = {
         middlewares:findComponentRecursively(props.children, isMiddleware),
-        exact: true
     }
 
-    return Object.assign(props, componentProps, routeProps);
+    return Object.assign({}, props, componentProps, routeProps, {exact: props.exact === undefined ? true : props.exact});
 
 
 };

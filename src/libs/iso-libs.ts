@@ -28,6 +28,6 @@ export const getBasename = () => {
         //delete window.__BASENAME__;
     }
 
-    return process.env.STAGE_PATH !== undefined && process.env.STAGE_PATH !== "undefined" ?
+    return process.env.STAGE_PATH && process.env.STAGE_PATH !== "undefined" ?
     "/"+process.env.STAGE_PATH : "/";
 };

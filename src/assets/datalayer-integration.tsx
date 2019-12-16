@@ -273,7 +273,7 @@ export const connectWithDataLayer = (dataLayerId, request, isOffline) => async (
             await getDataFromTree(connectedApp).then(() => resolve({connectedApp: connectedApp, getState: () => {
                 //console.log("time to resolve");
                 const data = client.extract();
-                console.log("data: ", data);
+                //console.log("data: ", data);
                 return importEnvironmentVariables(data, graphqlUrl.trim())
             }}));
         } catch (error) {

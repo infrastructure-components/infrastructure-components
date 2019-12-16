@@ -259,8 +259,8 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
         ({ path, exact }) => {
             foundPath = matchPath(parsedUrl,
                 {
-                    path,
-                    exact,
+                    path: path,
+                    exact: exact,
                     strict: false
                 }
             )
@@ -269,7 +269,8 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
     let { path } = matchResult;
 
     //console.log("found: ", foundPath);
-    //console.log("server: path params: ", foundPath ? foundPath.params : "---");
+    console.log("server: path params: ", foundPath ? foundPath.params : "---");
+    //console.log("url: ", req.url);
 
     const routePath = foundPath ? (
         foundPath.path.indexOf("/:") > 0 ?
@@ -319,8 +320,9 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
 
         //console.log("resolved...")
 
-        // collect the styles from the connected app
-        const htmlData = ReactDOMServer.renderToString(sheet.collectStyles(connectedApp));
+        // collect the styles from the connected appsheet.collectStyles(
+        const htmlData = ReactDOMServer.renderToString(connectedApp);
+        //console.log(htmlData);
 
         // getting all the tags from the sheet
         const styles = sheet.getStyleTags();
@@ -332,7 +334,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
 
             // render a page with the state and return it in the response
         res.status(200).send(
-            fRender(htmlData, styles, getState(), getIsomorphicState(), helmetData, basename, routePath, clientApp, assetsDir)
+            fRender(htmlData, styles, getState(), getIsomorphicState(), helmetData, basename, req.url, clientApp, assetsDir)
         ).end();
     });
 

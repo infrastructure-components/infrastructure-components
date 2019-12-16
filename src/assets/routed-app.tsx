@@ -95,6 +95,7 @@ interface RoutedAppProps {
 
 const RawRoutedApp = (props: RoutedAppProps) => {
 
+
     useEffect(()=>{
         if (props.listen) {
             props.history.listen(props.listen);
@@ -107,9 +108,12 @@ const RawRoutedApp = (props: RoutedAppProps) => {
 
     const ForceLogin = require("infrastructure-components").ForceLogin;
 
+    //console.log("RawRoutedApp: ", props.routes);
+
     const routes = props.routes.map(({ path, exact, component, render, isSecured }, i) => {
-        //console.log("routepath: ", path)
         // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
+
+        //console.log("RoutedApp: ", path, exact);
 
         if (render !== undefined) {
             const wrappedRender = (p) => isSecured ? <ForceLogin >{render(p)}</ForceLogin> : render(p);
@@ -127,6 +131,7 @@ const RawRoutedApp = (props: RoutedAppProps) => {
 
         } else {
 
+
             return <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />
         }
 
@@ -136,6 +141,8 @@ const RawRoutedApp = (props: RoutedAppProps) => {
         <RedirectWithStatus key={'REDIRECT_'+i} from={from} to={to} status={status} />
     );
 
+
+    //console.log(routes);
 
     return <Switch>
         {routes}
@@ -197,13 +204,14 @@ export const createServerApp = (
     setServerValue: any
 ) => {
 
+    //console.log("createServerApp: ", url, basename);
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
     const AttachUser = require("infrastructure-components").AttachUser;
     const AttachAuth = require("infrastructure-components").AttachAuth;
     const AttachIsomorphicState = require("infrastructure-components").AttachIsomorphicState;
 
-    return <StaticRouter context={context} location={url} basename={basename}>
+    return <StaticRouter context={context} location={url} basename={basename !== "/"  ? basename : undefined}>
         <AttachRequest request={request}>
             <AttachUser>
                 <AttachAuth authCallback={authCallback}>
