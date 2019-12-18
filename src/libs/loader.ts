@@ -13,10 +13,12 @@ import Types from '../types';
  */
 export function loadConfiguration(configFilePath: string, infrastructureMode: string | undefined) {
 
+    //console.log("loadConfiguration");
     return loadConfigurationFromModule(require(configFilePath), infrastructureMode);
 }
 
 export function loadConfigurationFromModule(configModule: any, infrastructureMode: string | undefined) {
+    //console.log("loadConfigurationFromModule");
     return loadInfrastructureComponent(configModule.default,infrastructureMode);
 }
 
@@ -42,6 +44,8 @@ export const INFRASTRUCTURE_MODES = {
  * Loads an InfrastructureComponent (of any type)
  */
 export const loadInfrastructureComponent = (component, infrastructureMode: string | undefined) => {
+
+    //console.log("loadInfrastructureComponent");
 
     // when the component is an array, return it
     if (component !== undefined && Array.isArray(component) && component.length > 0) {
@@ -79,7 +83,7 @@ export const loadInfrastructureComponent = (component, infrastructureMode: strin
             return loadInfrastructureComponent(result,infrastructureMode);
         }
 
-        //console.log("parsed: ", parsed);
+        //console.log("result: ", result);
 
 
         return result;

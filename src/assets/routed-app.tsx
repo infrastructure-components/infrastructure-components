@@ -3,6 +3,7 @@ import React, { ReactNode, useEffect } from 'react';
 import { StaticRouter, matchPath } from 'react-router';
 import { Switch, Route, BrowserRouter, HashRouter, Link, withRouter } from 'react-router-dom';
 
+
 //import {useContext} from "react"
 //import {__RouterContext} from "react-router"
 
@@ -169,7 +170,8 @@ export const createClientApp = (
     basename: string, 
     listen?: (location, action) => any,
     authCallback?: any,
-    preloadedState? : any
+    preloadedState? : any,
+    preloadedFiles?: any
 ) => {
     
     const AttachRequest = require("infrastructure-components").AttachRequest;
@@ -177,6 +179,7 @@ export const createClientApp = (
     const AttachUser = require("infrastructure-components").AttachUser;
     const AttachAuth = require("infrastructure-components").AttachAuth;
     const AttachIsomorphicState = require("infrastructure-components").AttachIsomorphicState;
+    const AttachStorage = require("infrastructure-components").AttachStorage;
 
     return <BrowserRouter basename={basename}>
         <AttachRequest>
@@ -184,7 +187,9 @@ export const createClientApp = (
                 <AttachAuth authCallback={authCallback}>
                     <AttachRoutes routes={routes}>
                         <AttachIsomorphicState preloadedState={preloadedState}>
-                            <RoutedApp routes={routes} redirects={redirects} listen={listen}/>
+                            <AttachStorage preloadedFiles={preloadedFiles}>
+                                <RoutedApp routes={routes} redirects={redirects} listen={listen}/>
+                            </AttachStorage>
                         </AttachIsomorphicState>
                     </AttachRoutes>
                 </AttachAuth>
@@ -201,23 +206,31 @@ export const createServerApp = (
     context: any,
     request: any,
     authCallback: any,
-    setServerValue: any
+    setServerValue: any,
+    addToRenderList: (fRender, hashValue) => void,
+    config: any,
+    isOffline: Boolean = false,
+    renderListResults: any, //only filled when we have the results!
+    isomorphicState: any, //only filled when we have the results!
 ) => {
 
-    //console.log("createServerApp: ", url, basename);
+    console.log("createServerApp: ", isomorphicState);
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
     const AttachUser = require("infrastructure-components").AttachUser;
     const AttachAuth = require("infrastructure-components").AttachAuth;
     const AttachIsomorphicState = require("infrastructure-components").AttachIsomorphicState;
+    const AttachStorage = require("infrastructure-components").AttachStorage;
 
     return <StaticRouter context={context} location={url} basename={basename !== "/"  ? basename : undefined}>
         <AttachRequest request={request}>
             <AttachUser>
                 <AttachAuth authCallback={authCallback}>
                     <AttachRoutes routes={routes}>
-                        <AttachIsomorphicState setServerValue={setServerValue}>
-                            <RoutedApp routes={routes} redirects={redirects} />
+                        <AttachIsomorphicState setServerValue={setServerValue} preloadedState={isomorphicState}>
+                            <AttachStorage addToRenderList={addToRenderList} config={config} isOffline={isOffline} renderListResults={renderListResults}>
+                                <RoutedApp routes={routes} redirects={redirects}/>
+                            </AttachStorage>
                         </AttachIsomorphicState>
                     </AttachRoutes>
                 </AttachAuth>

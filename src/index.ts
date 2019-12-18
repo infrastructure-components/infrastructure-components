@@ -28,6 +28,7 @@ export const LISTFILES_MODE = require('./storage/storage-libs').LISTFILES_MODE;
 export const FilesList = require('./storage/files-list').default;
 export const IFilesList = require('./storage/files-list').IFilesList;
 export const STORAGE_ACTION = require('./storage/storage-libs').STORAGE_ACTION;
+export const AttachStorage = require('./components/attach-storage').default;
 
 export const SecuredEntry = require('./authentication/securedentry-component').default;
 export const Authentication = require('./authentication/authentication-component').default;

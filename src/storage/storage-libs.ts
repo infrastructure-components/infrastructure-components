@@ -72,7 +72,7 @@ export const uploadMiddleware = (storageId) => middleware({
             fs.writeFile(tmpName, buffer,
                 (err) => {
                     if (err) {
-                        console.log(err);
+                        //console.log(err);
                         reject(err);
                     } else {
                         //console.log("Successfully Written File to tmp.");
@@ -293,8 +293,12 @@ export const listFiles = (
     listMode: string,
     data: any,
     onComplete: (data: any,  files: any) => void,
-    onError: (err: string) => void
+    onError: (err: string) => void,
+    config: any = undefined,
+    isOffline: Boolean = false
 ) => {
+
+    //console.log("listFiles")
     require("infrastructure-components").callService(
         storageId,
         {
@@ -310,8 +314,11 @@ export const listFiles = (
             });
         },
         (error) => {
+            //console.log("error: ", error);
             onError(error);
-        }
+        },
+        config,
+        isOffline
     );
 }
 

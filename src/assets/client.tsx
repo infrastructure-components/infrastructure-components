@@ -9,6 +9,7 @@ declare global {
     interface Window {
         __BASENAME__: any;
         __ISOMORPHICSTATE__: any;
+        __RENDERLISTSTATE__: any;
     }
 }
 
@@ -83,6 +84,9 @@ const createClientWebApp = () => {
 
 
     const preloadedState = typeof window != 'undefined' && window.__ISOMORPHICSTATE__ ? window.__ISOMORPHICSTATE__ : undefined;
+    const preloadedFiles = typeof window != 'undefined' && window.__RENDERLISTSTATE__ ? window.__RENDERLISTSTATE__ : undefined;
+
+
 
     // when we have a datalayer, we can hydrate the state!
     const fHydrate = webApp.dataLayerId !== undefined ? (node) => hydrateFromDataLayer(
@@ -105,7 +109,8 @@ const createClientWebApp = () => {
                 basename,
                 webApp.listenOnBrowserHistory,
                 require('infrastructure-components').getAuthCallback(isoConfig, webApp.authenticationId),
-                preloadedState
+                preloadedState,
+                preloadedFiles
             )
         ),
         document.getElementById('root')

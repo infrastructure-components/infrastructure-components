@@ -27,7 +27,6 @@ import Types from '../types';
 import { extractObject, INFRASTRUCTURE_MODES, loadConfigurationFromModule } from '../libs/loader';
 import { connectWithDataLayer } from './datalayer-integration';
 
-
 import {
     graphql,
     GraphQLSchema,
@@ -44,9 +43,9 @@ import { getClientFilename } from '../libs/server-libs';
 
 const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) => {
 
+
     // express is the web-framework that lets us configure the endpoints
     const app = express();
-
 
     // in production, API-Gateway proxy redirects the request to S3
     // serve static files - the async components of the server - only used of localhost
@@ -85,7 +84,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
 
 
         } else {
-            console.log("NOT offline!")
+            //console.log("NOT offline!")
 
             const cors = require('cors');
 
@@ -232,6 +231,8 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
 
 async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline) {
 
+    //console.log("serve - isOffline: ", isOffline)
+
     //TODO use try catch depending on the environment
     //try {
 
@@ -305,6 +306,32 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
             return {connectedApp: app, getState: () => ""};
         };
 
+    /*const serverApp = await new Promise((resolve, reject) => {
+
+    });*/
+
+    var renderList = [];
+    const addToRenderList = (fRenderSsr, hashValue) => {
+        //console.log("add to Render: ", fRender)
+        renderList = renderList.concat([{fRenderSsr: fRenderSsr, hashValue: hashValue}]);
+    }
+
+    const completeSSR = (htmlData, getState, renderListResults) => {
+
+        // getting all the tags from the sheet
+        const styles = sheet.getStyleTags();
+
+        //render helmet data aka meta data in <head></head>
+        const helmetData = helmet.renderStatic();
+
+        const fRender = clientApp.renderHtmlPage ? clientApp.renderHtmlPage : renderHtmlPage;
+
+        // render a page with the state and return it in the response
+        res.status(200).send(
+            fRender(htmlData, styles, getState(), getIsomorphicState(), `window.__RENDERLISTSTATE__ = ${JSON.stringify(renderListResults)}`, helmetData, basename, req.url, clientApp, assetsDir)
+        ).end();
+    }
+
     // create the app and connect it with the DataAbstractionLayer
     await fConnectWithDataLayer(
         createServerApp(
@@ -315,27 +342,122 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
             context,
             req,
             require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId),
-            setServerValue)
-    ).then(({connectedApp, getState}) => {
+            setServerValue,
+            addToRenderList,
+            isoConfig,
+            isOffline,
+            undefined,
+            undefined
+        )
+    ).then(async ({connectedApp, getState}) => {
 
-        //console.log("resolved...")
+        console.log("resolved... renderList: ", renderList);
 
         // collect the styles from the connected appsheet.collectStyles(
         const htmlData = ReactDOMServer.renderToString(connectedApp);
         //console.log(htmlData);
 
-        // getting all the tags from the sheet
-        const styles = sheet.getStyleTags();
+        const renderListResults = await Promise.all(
+            
+            renderList.filter((item, index, arr)=> {
+                const c = arr.map(item=> item.hashValue);
+                return  index === c.indexOf(item.hashValue)
+            }).map(({fRenderSsr, hashValue}) => new Promise((resolve, reject) => {
+                return fRenderSsr(
+                    (data, files)=>{
+                        //console.log("resolved: ", files);
+                        resolve({
+                            hashValue: hashValue,
+                            data: data,
+                            files: files,
+                        })
+                    }, err=>{
+                        //console.log("rejected: ", err);
+                        reject(err);
+                    }
+                )
+            }))
+        );
 
-        //render helmet data aka meta data in <head></head>
-        const helmetData = helmet.renderStatic();
+        if (renderListResults && renderListResults.length > 0) {
+            console.log("need to rerender! got renderListResults: ", renderListResults);
 
-        const fRender = clientApp.renderHtmlPage ? clientApp.renderHtmlPage : renderHtmlPage;
+            // create the app and connect it with the DataAbstractionLayer
+            await fConnectWithDataLayer(
+                createServerApp(
+                    clientApp.routes,
+                    clientApp.redirects,
+                    basename,
+                    req.url,
+                    context,
+                    req,
+                    require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId),
+                    setServerValue,
+                    addToRenderList,
+                    isoConfig,
+                    isOffline,
+                    renderListResults,
+                    serverState
+                )
+            ).then(async ({connectedApp, getState}) => {
 
-            // render a page with the state and return it in the response
-        res.status(200).send(
-            fRender(htmlData, styles, getState(), getIsomorphicState(), helmetData, basename, req.url, clientApp, assetsDir)
-        ).end();
+                console.log("finished second app creation!");
+                //const tempServerState = Object.assign({}, serverState);
+                //const tempApolloState = getState();
+
+                // collect the styles from the connected appsheet.collectStyles(
+                const newHtmlData = ReactDOMServer.renderToString(connectedApp);
+
+                console.log("did something change?")
+
+                //TODO: we need a check that shows whether we really need the third cycle
+                //console.log(tempApolloState, " -- ", getState());
+
+                //if (newHtmlData !== htmlData) {
+                    console.log("need to rerender again!");
+
+                    // create the app and connect it with the DataAbstractionLayer
+                    await fConnectWithDataLayer(
+                        createServerApp(
+                            clientApp.routes,
+                            clientApp.redirects,
+                            basename,
+                            req.url,
+                            context,
+                            req,
+                            require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId),
+                            setServerValue,
+                            addToRenderList,
+                            isoConfig,
+                            isOffline,
+                            renderListResults,
+                            serverState
+                        )
+                    ).then(async ({connectedApp, getState}) => {
+
+                        console.log("finished third app creation!");
+
+                        // collect the styles from the connected appsheet.collectStyles(
+                        const LatestHtmlData = ReactDOMServer.renderToString(connectedApp);
+
+
+                        completeSSR(LatestHtmlData, getState, renderListResults);
+
+                    });
+
+                /*} else {
+                    completeSSR(newHtmlData, getState, renderListResults);
+                };*/
+
+            });
+
+        } else {
+            completeSSR(htmlData, getState, renderListResults);
+        }
+
+
+
+
     });
 
 
@@ -381,7 +503,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
  * @param preloadedState the state in form of a script
  * @param helmet
  */
-function renderHtmlPage(html, styles, preloadedState, isomorphicState, helmet, basename, routePath, clientApp, assetsDir) {
+function renderHtmlPage(html, styles, preloadedState, isomorphicState, renderListResults, helmet, basename, routePath, clientApp, assetsDir) {
     //<link rel="icon" href="/assets/favicon.ico" type="image/ico" />
     //console.log(preloadedState);
     const path = require('path');
@@ -418,6 +540,7 @@ function renderHtmlPage(html, styles, preloadedState, isomorphicState, helmet, b
         <script>
           ${preloadedState}
           ${isomorphicState}
+          ${renderListResults}
           window.__BASENAME__ = "${basename}";
         </script>
         <script>

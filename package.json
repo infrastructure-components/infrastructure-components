@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.3.4-alpha.41",
+  "version": "0.3.4-alpha.89",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -44,6 +44,7 @@
     "isomorphic-fetch": "^2.2.1",
     "jsonwebtoken": "^8.5.1",
     "node-machine-id": "^1.1.12",
+    "object-hash": "^2.0.1",
     "react": "^16.10.2",
     "react-apollo": "^2.5.8",
     "react-dom": "^16.10.2",
