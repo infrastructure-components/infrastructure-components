@@ -169,7 +169,7 @@ export default (props: IDataLayerArgs | any) => {
                     const result = entry.deleteEntry(args, context, process.env.TABLE_NAME, complementedProps["isOffline"]);
 
 
-                    console.log("result: ", result);
+                    //console.log("result: ", result);
                     return result;
                 }
             };
@@ -198,7 +198,7 @@ export default (props: IDataLayerArgs | any) => {
                 resolve: (source, args, context, info) => {
 
 
-                    console.log("resolve list: ", resolveWithData, source, args, context, complementedProps["isOffline"]);
+                    //console.log("resolve list: ", resolveWithData, source, args, context, complementedProps["isOffline"]);
 
                     if (!resolveWithData) {
                         return entry.id;
@@ -219,7 +219,7 @@ export default (props: IDataLayerArgs | any) => {
                 type: resolveWithData ? new GraphQLList(listType): listType,
                 resolve: (source, args, context, info) => {
 
-                    console.log("resolve: ", resolveWithData, source, args, context, complementedProps["isOffline"]);
+                    //console.log("resolve: ", resolveWithData, source, args, context, complementedProps["isOffline"]);
 
                     if (!resolveWithData) {
                         return entry.id;
@@ -246,7 +246,7 @@ export default (props: IDataLayerArgs | any) => {
                 resolve: (source, args, context, info) => {
 
 
-                    console.log("resolve: ", resolveWithData, source, args, context);
+                    //console.log("resolve: ", resolveWithData, source, args, context);
 
                     if (!resolveWithData) {
                         return entry.id;
@@ -270,7 +270,7 @@ export default (props: IDataLayerArgs | any) => {
                 resolve: (source, args, context, info) => {
 
 
-                    console.log("resolve scan: ", resolveWithData, source, args, context);
+                    //console.log("resolve scan: ", resolveWithData, source, args, context);
 
                     if (!resolveWithData) {
                         return entry.id;
@@ -293,7 +293,7 @@ export default (props: IDataLayerArgs | any) => {
                 resolve: (source, args, context, info) => {
 
 
-                    console.log("resolve scan: ", resolveWithData, source, args, context);
+                    //console.log("resolve scan: ", resolveWithData, source, args, context);
 
                     if (!resolveWithData) {
                         return entry.id;
@@ -314,7 +314,7 @@ export default (props: IDataLayerArgs | any) => {
                 resolve: (source, args, context, info) => {
 
 
-                    console.log("resolve scan: ", resolveWithData, source, args, context);
+                    //console.log("resolve scan: ", resolveWithData, source, args, context);
 
                     if (!resolveWithData) {
                         return entry.id;

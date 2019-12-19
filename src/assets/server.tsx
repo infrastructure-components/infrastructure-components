@@ -108,7 +108,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
         }
 
         app.use('/query', async (req, res, next) => {
-            console.log("query-endpoint / offline: ", isOffline);
+            //console.log("query-endpoint / offline: ", isOffline);
             const parsedBody = JSON.parse(req.body);
             //console.log(parsedBody)
             
@@ -317,9 +317,9 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
 
     var renderList = [];
     const addToRenderList = (fRenderSsr, hashValue) => {
-        //console.log("add to Render: ", fRender)
+        //console.log("add to Render: ", hashValue);
         renderList = renderList.concat([{fRenderSsr: fRenderSsr, hashValue: hashValue}]);
-    }
+    };
 
     const completeSSR = (htmlData, getState, renderListResults) => {
 
@@ -337,18 +337,21 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
         ).end();
     };
 
-    async function renderApp (apolloState, oldServerState, storageState, htmlData, getApolloState) {
+    async function renderApp (apolloState, oldServerState, oldStorageState, htmlData, getApolloState, newStorageState) {
 
         const tempApolloState = getApolloState();
         const tempServerState = Object.assign({}, serverState);
 
-        console.log("APOLLO STATE BEFORE", apolloState, "\nAPOLLO STATE AFTER ", tempApolloState);
+        /*console.log("APOLLO STATE BEFORE", apolloState, "\nAPOLLO STATE AFTER ", tempApolloState);
         console.log("SERVER STATE BEFORE", oldServerState, "\nSERVER STATE AFTER ", serverState);
-
+        console.log("STORAGE STATE BEFORE", oldStorageState, "\nSTORAGE STATE AFTER ", newStorageState);
+        */
 
         if (JSON.stringify(apolloState) !== JSON.stringify(tempApolloState) ||
-            JSON.stringify(oldServerState) !== JSON.stringify(serverState)) {
-            console.log("----- need to rerender again!------");
+            JSON.stringify(oldServerState) !== JSON.stringify(serverState) ||
+            (oldStorageState && oldStorageState.length !== newStorageState.length)
+        ) {
+            //console.log("--------- need to render --------");
 
             // create the app and connect it with the DataAbstractionLayer
             await fConnectWithDataLayer(
@@ -364,25 +367,55 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
                     addToRenderList,
                     isoConfig,
                     isOffline,
-                    storageState,
+                    newStorageState,
                     serverState
                 )
             ).then(async ({connectedApp, getState}) => {
 
-
+                //console.log("renderList before: ", renderList)
                 // collect the styles from the connected appsheet.collectStyles(
                 const newHtmlData = ReactDOMServer.renderToString(connectedApp);
 
+                const addToStorage = await Promise.all(
+                    renderList.filter((item, index, arr)=> {
+                        const c = arr.map(item=> item.hashValue);
+                        return  index === c.indexOf(item.hashValue)
+                    }).map(({fRenderSsr, hashValue}) => new Promise((resolve, reject) => {
+                        return fRenderSsr(
+                            (data, files)=>{
+                                //console.log("resolved: ", files);
+                                resolve({
+                                    hashValue: hashValue,
+                                    data: data,
+                                    files: files,
+                                })
+                            }, err=>{
+                                //console.log("rejected: ", err);
+                                reject(err);
+                            }
+                        )
+                    }))
+                );
+
+                //console.log("renderList after: ", renderList)
+                renderList.length = 0;
+
+                //console.log("addToStorage: ", addToStorage);
+
                 //completeSSR(newHtmlData, getState, storageState);
-                await renderApp (tempApolloState, tempServerState, storageState, newHtmlData, getState);
+                await renderApp (tempApolloState, tempServerState, newStorageState,
+                    newHtmlData, getState, newStorageState.concat(addToStorage));
             });
 
         } else {
-            console.log("----- no difference, return ------");
-            completeSSR(htmlData, getApolloState, storageState);
+            //console.log("----- no difference, return ------");
+            completeSSR(htmlData, getApolloState, newStorageState);
         };
     };
 
+    await renderApp ({}, serverState, undefined, "", ()=> "", []);
+
+    /*
     // create the app and connect it with the DataAbstractionLayer
     await fConnectWithDataLayer(
         createServerApp(
@@ -409,7 +442,6 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
         //console.log(htmlData);
 
         const renderListResults = await Promise.all(
-            
             renderList.filter((item, index, arr)=> {
                 const c = arr.map(item=> item.hashValue);
                 return  index === c.indexOf(item.hashValue)
@@ -432,92 +464,15 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
 
 
         if (renderListResults && renderListResults.length > 0) {
-            console.log("need to rerender! got renderListResults: ", renderListResults);
+            //console.log("need to rerender! got renderListResults: ", renderListResults);
 
             await renderApp ({}, serverState, renderListResults, htmlData, getState);
-
-            /*
-            const tempApolloState = getState();
-            const tempServerState = Object.assign({}, serverState);
-
-            // create the app and connect it with the DataAbstractionLayer
-            await fConnectWithDataLayer(
-                createServerApp(
-                    clientApp.routes,
-                    clientApp.redirects,
-                    basename,
-                    req.url,
-                    context,
-                    req,
-                    require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId),
-                    setServerValue,
-                    addToRenderList,
-                    isoConfig,
-                    isOffline,
-                    renderListResults,
-                    serverState
-                )
-            ).then(async ({connectedApp, getState}) => {
-
-                console.log("finished second app creation!");
-
-
-                // collect the styles from the connected appsheet.collectStyles(
-                const newHtmlData = ReactDOMServer.renderToString(connectedApp);
-
-                console.log("did something change?");
-
-                //TODO: we need a check that shows whether we really need the third cycle
-                console.log("APOLLO STATE BEFORE", tempApolloState, "\nAPOLLO STATE AFTER ", getState());
-                console.log("SERVER STATE BEFORE", tempServerState, "\nSERVER STATE AFTER ", serverState);
-
-                if (JSON.stringify(tempApolloState) !== JSON.stringify(getState()) ||
-                    JSON.stringify(tempServerState) !== JSON.stringify(serverState)) {
-                    console.log("need to rerender again!");
-
-                    // create the app and connect it with the DataAbstractionLayer
-                    await fConnectWithDataLayer(
-                        createServerApp(
-                            clientApp.routes,
-                            clientApp.redirects,
-                            basename,
-                            req.url,
-                            context,
-                            req,
-                            require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId),
-                            setServerValue,
-                            addToRenderList,
-                            isoConfig,
-                            isOffline,
-                            renderListResults,
-                            serverState
-                        )
-                    ).then(async ({connectedApp, getState}) => {
-
-                        console.log("finished third app creation!");
-
-                        // collect the styles from the connected appsheet.collectStyles(
-                        const LatestHtmlData = ReactDOMServer.renderToString(connectedApp);
-
-
-                        completeSSR(LatestHtmlData, getState, renderListResults);
-
-                    });
-
-                } else {
-                    completeSSR(newHtmlData, getState, renderListResults);
-                };
-
-            });*/
 
         } else {
             completeSSR(htmlData, getState, renderListResults);
         }
 
-
-
-
-    });
+    });*/
 
 }
 

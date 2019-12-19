@@ -19,7 +19,7 @@ export async function callService(
     isOffline: Boolean = false
 ) {
 
-    console.log("callService: ", id, args);
+    //console.log("callService: ", id, args);
 
 
     const path = require("path");
@@ -88,8 +88,7 @@ export async function callService(
         //console.error("post-error: ", error);
         onError(error);
     });
-    //
-    console.log("callService done")
+    //console.log("callService done")
 }
 
 export function getServiceUrl(id: string, args: any) {

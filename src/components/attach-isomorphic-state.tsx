@@ -54,10 +54,16 @@ export function withIsomorphicState(Component) {
                         const useServerState = (id, intialValue) => {
                             //console.log("useServerState: ", id, " -> ", intialValue);
                             if (value.setServerValue) {
-                                value.setServerValue(id, value.preloadedState ? value.preloadedState[id]: intialValue, true);
+                                value.setServerValue(
+                                    id,
+                                    value.preloadedState && value.preloadedState[id] ? value.preloadedState[id]: intialValue,
+                                    true);
                             };
 
-                            const [serverValue, setValue] = useState(value.preloadedState ? value.preloadedState[id]:intialValue);
+                            const [serverValue, setValue] = useState(
+                                value.preloadedState && value.preloadedState[id] ? value.preloadedState[id]:intialValue
+                            );
+
                             const setServerValue = (newValue) => {
 
                                 // "value" is the function "setServerValue" from the Context

@@ -33,14 +33,13 @@ export default withStorageSsrRendering(function ({renderSsr, config, isOffline, 
 
     //console.log("hashValue: ", hashValue);
 
-    const [state, setState] = useState({state: STATE.LOADING, data: undefined});
+    const [state, setState] = useState({state: STATE.LOADING, data: undefined, setRefetch: true, ignorePreloaded: false});
 
     const refetch = () => {
-        setState({state: STATE.LOADING, data: undefined});
+        setState({state: STATE.LOADING, data: undefined, setRefetch: true, ignorePreloaded: true});
     };
 
     const loadData = (onSuccess, onError) => {
-        console.log("loadData");
         listFiles(
             props.storageId,
             props.prefix ? props.prefix : "",
@@ -54,11 +53,20 @@ export default withStorageSsrRendering(function ({renderSsr, config, isOffline, 
     }
 
     const getPreloaded = () => {
+        if (state.ignorePreloaded) {
+            return undefined;
+        }
+
         if (!ExecutionEnvironment.canUseDOM) {
 
             if (renderListResults) {
-                return renderListResults.find(el => el.hashValue == hashValue);
-            } else if (state.state === STATE.LOADING) {
+                const foundVal = renderListResults.find(el => el.hashValue == hashValue);
+                if (foundVal) {
+                    return foundVal;
+                }
+            }
+
+            if (state.state === STATE.LOADING) {
                 renderSsr(loadData, hashValue);
                 return undefined;
             }
@@ -75,37 +83,54 @@ export default withStorageSsrRendering(function ({renderSsr, config, isOffline, 
 
 
     if (preloaded && state.state === STATE.LOADING) {
-        setState({state: STATE.RESPONSE, data: {
-            data: preloaded.data,
-            files: preloaded.files,
-        }});
+        setState({
+            state: STATE.RESPONSE,
+            data: {
+                data: preloaded.data,
+                files: preloaded.files,
+            },
+            setRefetch: state.setRefetch,
+            ignorePreloaded: state.ignorePreloaded
+        });
     };
 
     //console.log("state: ", state.data);
 
     useEffect(() => {
-        if (props.onSetRefetch && state.state === STATE.LOADING /*!isRefetchSet*/) {
+        if (props.onSetRefetch && state.setRefetch /*state.state === STATE.LOADING /*!isRefetchSet*/) {
             props.onSetRefetch(()=>refetch);
-            //setRefetch(true);
         }
 
-        state.state === STATE.LOADING && loadData(
-            (data, files) => {
-                setState({
-                    state: STATE.RESPONSE,
-                    data: {
-                        data: data,
-                        files: files,
-                    }
-                });
-            },
-            (err) => {
-                setState({
-                    state: STATE.RESPONSE,
-                    data: err
-                });
+        if (state.state === STATE.LOADING) {
+            loadData(
+                (data, files) => {
+                    setState({
+                        state: STATE.RESPONSE,
+                        data: {
+                            data: data,
+                            files: files,
+                        },
+                        setRefetch: false,
+                        ignorePreloaded: state.ignorePreloaded
+                    });
+                },
+                (err) => {
+                    setState({
+                        state: STATE.RESPONSE,
+                        data: err,
+                        setRefetch: false,
+                        ignorePreloaded: state.ignorePreloaded
+                    });
 
+                });
+        } else if (state.setRefetch) {
+            setState({
+                state: state.state,
+                data: state.data,
+                setRefetch: false,
+                ignorePreloaded: state.ignorePreloaded
             });
+        }
 
     }, [state]);
 
