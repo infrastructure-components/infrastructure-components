@@ -148,7 +148,7 @@ export const serviceWithDataLayer = (complementedCallback: (cbdataLayer, cbreq, 
 export const serviceAttachDataLayer = (dataLayer) => {
     return (req, res, next) => {
 
-        const client = createApolloClient(dataLayer, getGraphqlUrl(dataLayer.), req);
+        const client = createApolloClient(dataLayer, getGraphqlUrl(dataLayer.isOffline), req);
         dataLayer.setClient(client);
 
         //console.log("attaching the dataLayer, client: ", client);
