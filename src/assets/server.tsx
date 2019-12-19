@@ -246,7 +246,6 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
     // creating the stylesheet
     const sheet = new ServerStyleSheet();
 
-
     const parsedUrl = req.url.indexOf("?") >= 0 ? req.url.substring(0, req.url.indexOf("?")) : req.url;
     //console.log("parsedUrl: ", parsedUrl);
 
@@ -281,6 +280,12 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
 
     //console.log("routePath: ", routePath);
     ////////// END OF REFACTORING required
+
+
+
+
+
+
 
     //console.log("app data layer id: ", clientApp.dataLayerId);
 
@@ -330,7 +335,53 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
         res.status(200).send(
             fRender(htmlData, styles, getState(), getIsomorphicState(), `window.__RENDERLISTSTATE__ = ${JSON.stringify(renderListResults)}`, helmetData, basename, req.url, clientApp, assetsDir)
         ).end();
-    }
+    };
+
+    async function renderApp (apolloState, oldServerState, storageState, htmlData, getApolloState) {
+
+        const tempApolloState = getApolloState();
+        const tempServerState = Object.assign({}, serverState);
+
+        console.log("APOLLO STATE BEFORE", apolloState, "\nAPOLLO STATE AFTER ", tempApolloState);
+        console.log("SERVER STATE BEFORE", oldServerState, "\nSERVER STATE AFTER ", serverState);
+
+
+        if (JSON.stringify(apolloState) !== JSON.stringify(tempApolloState) ||
+            JSON.stringify(oldServerState) !== JSON.stringify(serverState)) {
+            console.log("----- need to rerender again!------");
+
+            // create the app and connect it with the DataAbstractionLayer
+            await fConnectWithDataLayer(
+                createServerApp(
+                    clientApp.routes,
+                    clientApp.redirects,
+                    basename,
+                    req.url,
+                    context,
+                    req,
+                    require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId),
+                    setServerValue,
+                    addToRenderList,
+                    isoConfig,
+                    isOffline,
+                    storageState,
+                    serverState
+                )
+            ).then(async ({connectedApp, getState}) => {
+
+
+                // collect the styles from the connected appsheet.collectStyles(
+                const newHtmlData = ReactDOMServer.renderToString(connectedApp);
+
+                //completeSSR(newHtmlData, getState, storageState);
+                await renderApp (tempApolloState, tempServerState, storageState, newHtmlData, getState);
+            });
+
+        } else {
+            console.log("----- no difference, return ------");
+            completeSSR(htmlData, getApolloState, storageState);
+        };
+    };
 
     // create the app and connect it with the DataAbstractionLayer
     await fConnectWithDataLayer(
@@ -351,7 +402,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
         )
     ).then(async ({connectedApp, getState}) => {
 
-        console.log("resolved... renderList: ", renderList);
+        //console.log("resolved... renderList: ", renderList);
 
         // collect the styles from the connected appsheet.collectStyles(
         const htmlData = ReactDOMServer.renderToString(connectedApp);
@@ -379,8 +430,15 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
             }))
         );
 
+
         if (renderListResults && renderListResults.length > 0) {
             console.log("need to rerender! got renderListResults: ", renderListResults);
+
+            await renderApp ({}, serverState, renderListResults, htmlData, getState);
+
+            /*
+            const tempApolloState = getState();
+            const tempServerState = Object.assign({}, serverState);
 
             // create the app and connect it with the DataAbstractionLayer
             await fConnectWithDataLayer(
@@ -402,18 +460,19 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
             ).then(async ({connectedApp, getState}) => {
 
                 console.log("finished second app creation!");
-                //const tempServerState = Object.assign({}, serverState);
-                //const tempApolloState = getState();
+
 
                 // collect the styles from the connected appsheet.collectStyles(
                 const newHtmlData = ReactDOMServer.renderToString(connectedApp);
 
-                console.log("did something change?")
+                console.log("did something change?");
 
                 //TODO: we need a check that shows whether we really need the third cycle
-                //console.log(tempApolloState, " -- ", getState());
+                console.log("APOLLO STATE BEFORE", tempApolloState, "\nAPOLLO STATE AFTER ", getState());
+                console.log("SERVER STATE BEFORE", tempServerState, "\nSERVER STATE AFTER ", serverState);
 
-                //if (newHtmlData !== htmlData) {
+                if (JSON.stringify(tempApolloState) !== JSON.stringify(getState()) ||
+                    JSON.stringify(tempServerState) !== JSON.stringify(serverState)) {
                     console.log("need to rerender again!");
 
                     // create the app and connect it with the DataAbstractionLayer
@@ -445,11 +504,11 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
 
                     });
 
-                /*} else {
+                } else {
                     completeSSR(newHtmlData, getState, renderListResults);
-                };*/
+                };
 
-            });
+            });*/
 
         } else {
             completeSSR(htmlData, getState, renderListResults);
@@ -459,7 +518,6 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
 
 
     });
-
 
 }
 

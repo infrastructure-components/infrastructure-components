@@ -56,7 +56,7 @@ export const createServerSideClient = (link) => new ApolloClient({
 // here, we can also add stringified (json) data about the dataLayer, e.g. Schema
 // it works without ... window.__SCHEMA__ = \`${schema}\`
 export const importEnvironmentVariables = (preloadedState, url) => {
-    console.log("graphql-url: ", url);
+    //console.log("graphql-url: ", url);
     return `window.__APOLLO_STATE__ = ${JSON.stringify(preloadedState).replace(/</g, '\\\u003c')};
 window.__GRAPHQL__ = "${url}"`;
 

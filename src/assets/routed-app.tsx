@@ -214,7 +214,7 @@ export const createServerApp = (
     isomorphicState: any, //only filled when we have the results!
 ) => {
 
-    console.log("createServerApp: ", isomorphicState);
+    //console.log("createServerApp: ", isomorphicState);
     const AttachRequest = require("infrastructure-components").AttachRequest;
     const AttachRoutes = require("infrastructure-components").AttachRoutes;
     const AttachUser = require("infrastructure-components").AttachUser;

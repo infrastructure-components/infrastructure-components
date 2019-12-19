@@ -40,7 +40,7 @@ export function withIsomorphicState(Component) {
             <IsomorphicStateContext.Consumer>
                 {(value: any) => {
 
-                    console.log("IsomorphicStateContext preloadedState: ", value.preloadedState);
+                    //console.log("IsomorphicStateContext preloadedState: ", value.preloadedState);
 
                     if (ExecutionEnvironment.canUseDOM) {
 
@@ -52,7 +52,7 @@ export function withIsomorphicState(Component) {
                     } else {
 
                         const useServerState = (id, intialValue) => {
-                            console.log("useServerState: ", id, " -> ", intialValue);
+                            //console.log("useServerState: ", id, " -> ", intialValue);
                             if (value.setServerValue) {
                                 value.setServerValue(id, value.preloadedState ? value.preloadedState[id]: intialValue, true);
                             };
@@ -69,7 +69,7 @@ export function withIsomorphicState(Component) {
                                 setValue(newValue);
                             }
 
-                            console.log("serverValue: ", serverValue);
+                            //console.log("serverValue: ", serverValue);
                             return [serverValue, setServerValue];
                         }
 
