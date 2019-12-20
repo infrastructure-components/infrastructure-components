@@ -292,7 +292,7 @@ export const listFiles = (
     prefix: string,
     listMode: string,
     data: any,
-    onComplete: (data: any,  files: any) => void,
+    onComplete: (result: any) => void,
     onError: (err: string) => void,
     config: any = undefined,
     isOffline: Boolean = false
@@ -310,7 +310,7 @@ export const listFiles = (
         (data) => {
             data.json().then(parsedBody => {
                 //console.log(parsedBody);
-                onComplete(parsedBody.data, parsedBody.files)
+                onComplete({data: parsedBody.data, files: parsedBody.files, folders: parsedBody.folders})
             });
         },
         (error) => {
@@ -341,51 +341,91 @@ export const listMiddleware = (storageId) => middleware({
             Prefix: storageId + "/"  + (parsedBody.prefix ? parsedBody.prefix : "").replace(/(^\/)|(\/$)/g, "")
         }).promise().then(
             function (data) {
+                //console.log("parsed Prefix: ", parsedBody.prefix);
                 //console.log("listed: ", data);
 
-                const filesList = data.Contents.map(item => ({
+                const rawFilesList = data.Contents.map(item => ({
                     file: item.Key.substring(item.Key.lastIndexOf("/")+1),
                     url: (isOffline() ? LOCAL_ENDPOINT + "/"+data.Name+"/" : "https://"+data.Name+".s3.amazonaws.com/")+item.Key,
                     lastModified: item.LastModified,
-                    itemKey: item.Key.substring(item.Key.indexOf(storageId)+storageId.length)
-                })).filter(
-                    item => {
-                        if (parsedBody.listMode === LISTFILES_MODE.ALL) {
-                            return true;
-                        }
+                    itemKey: item.Key.substring(item.Key.indexOf(storageId)+storageId.length),
+                }));
 
-                        const temp = path.join(storageId, parsedBody.prefix ? parsedBody.prefix : "").replace(/(^\/)|(\/$)/g, "");
-                        const isInThisFolder =  item.url.indexOf(temp)+temp.length+1 == item.url.indexOf(item.file);
 
-                        //console.log(temp, " | ", item.url, " | ", item.file);
-
-                        return (parsedBody.listMode === LISTFILES_MODE.FILES && isInThisFolder) ||
-                            (parsedBody.listMode === LISTFILES_MODE.FOLDERS && !isInThisFolder)
-                    }
-                );
-
+                const userPrefix = parsedBody.prefix.replace(/(^\/)|(\/$)/g, "");
+                const baseFolder = userPrefix.length == 0 ? ["."] : [];
 
                 res.status(200)
                     .set({
                         "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
                         "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
                     })
-                    .send({
-                        data: res.locals,
-                        files: parsedBody.listMode !== LISTFILES_MODE.FOLDERS ? filesList : Object.values(filesList.reduce(
+                    .send(Object.assign(
+                        {data: res.locals},
+                        parsedBody.listMode !== LISTFILES_MODE.FOLDERS ?
+                            {
+                                files: rawFilesList.filter(
+                                    item => {
+                                        if (parsedBody.listMode === LISTFILES_MODE.ALL) {
+                                            return true;
+                                        }
+
+                                        const temp = path.join(storageId, parsedBody.prefix ? parsedBody.prefix : "").replace(/(^\/)|(\/$)/g, "");
+                                        const isInThisFolder =  item.url.indexOf(temp)+temp.length+1 == item.url.indexOf(item.file);
+
+                                        //console.log(temp, " | ", item.url, " | ", item.file);
+
+                                        return (parsedBody.listMode === LISTFILES_MODE.FILES && isInThisFolder) /*||
+                                            (parsedBody.listMode === LISTFILES_MODE.FOLDERS && !isInThisFolder)*/;
+                                    }
+                                )
+                            } : {
+                                folders: Array.from(new Set(baseFolder.concat(rawFilesList.map(item => {
+
+                                    const temp = path.join(storageId, parsedBody.prefix ? parsedBody.prefix : "").replace(/(^\/)|(\/$)/g, "");
+                                    const isInThisFolder =  item.url.indexOf(temp)+temp.length+1 == item.url.indexOf(item.file);
+
+
+                                    // remove files
+                                    const wf = item.itemKey.substring(0, item.itemKey.lastIndexOf("/")).replace(/(^\/)|(\/$)/g, "")+"/";
+
+                                    //console.log("removed files: ", wf);
+
+                                    if (wf == userPrefix+"/") {
+                                        return "."
+                                    };
+
+
+                                    //wf.substring(wf.indexOf(parsedBody.prefix)+parsedBody.prefix.length),
+
+                                    //console.log("userPrefix: ", userPrefix);
+                                    const folder = userPrefix && userPrefix.length > 0 ? (
+                                        wf.startsWith(userPrefix+"/")? wf.substring(userPrefix.length).replace(/(^\/)|(\/$)/g, ""):""
+                                    ): wf;
+
+                                    //console.log("folder: ", folder);
+
+                                    // return only direct children
+                                    return folder.indexOf("/") >= 0 ? folder.substring(0, folder.indexOf("/")) : folder
+                                }).filter(item => item.length > 0))))
+                            }/*
                             (result, current) => {
                                 // if we want a list of folders, map the result
                                 //console.log(current.itemKey);
-                                const folder = current.itemKey.substring(0,current.itemKey.lastIndexOf("/")).replace(/(^\/)|(\/$)/g, "");
+
                                 //console.log("key: ", folder);
-                                const obj = {};
+
+                                /*const obj = {};
                                 obj[folder] = Object.assign({
                                     folder: folder.indexOf("/") >= 0 ? folder.substring(0,folder.indexOf("/")) : folder
                                 }, current);
-                                return Object.assign(obj, result)
+                                return Object.assign(obj, result)* /
 
-                            }, {} // starting with an empty list
-                    ))});
+
+                            }, {} // starting with an empty list*/
+                        //))}
+
+                    ));
 
                 return;
             },

@@ -94,6 +94,7 @@ export const SoaPlugin = (props: ISoaPlugin): IPlugin => {
                         "react-apollo": path.join(
                             require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
                             "node_modules", "react-apollo"),
+
                     }, {
                         __SERVICEORIENTED_ID__: `"${component.instanceId}"`,
                         __ISOFFLINE__: props.parserMode === PARSER_MODES.MODE_START,

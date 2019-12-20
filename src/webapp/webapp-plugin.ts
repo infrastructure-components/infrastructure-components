@@ -89,6 +89,7 @@ export const WebAppPlugin = (props: IWebAppPlugin): IPlugin => {
                                     "react-apollo": path.join(
                                         require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),
                                         "node_modules", "react-apollo"),
+
                                 }, {
                                     __ISOMORPHIC_ID__: `"${component.instanceId}"`,
 

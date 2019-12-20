@@ -29,6 +29,9 @@ export const FilesList = require('./storage/files-list').default;
 export const IFilesList = require('./storage/files-list').IFilesList;
 export const STORAGE_ACTION = require('./storage/storage-libs').STORAGE_ACTION;
 export const AttachStorage = require('./components/attach-storage').default;
+export const serviceWithStorage = require('./components/attach-storage').serviceWithStorage;
+
+export const withServiceAccess = require('./components/attach-service').withServiceAccess;
 
 export const SecuredEntry = require('./authentication/securedentry-component').default;
 export const Authentication = require('./authentication/authentication-component').default;
@@ -105,3 +108,4 @@ export const getBasename = require('./libs/iso-libs').getBasename;
 
 export const fetchData = require('./libs/scripts-libs').fetchData;
 
+export const hash = require('object-hash').default;

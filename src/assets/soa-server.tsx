@@ -11,6 +11,13 @@ import ReactDOMServer from "react-dom/server";
 import express from "express";
 import serverless from "serverless-http";
 
+import { serviceAttachStorage } from '../components/attach-storage';
+import { listFiles } from '../storage/storage-libs';
+import { findComponentRecursively } from '../libs';
+import {isStorage} from "../storage/storage-component";
+
+import { serviceAttachService } from '../components/attach-service';
+import { callService } from './service-libs';
 
 
 import Types from '../types';
@@ -159,16 +166,55 @@ const createServer = (serviceOrientedId, isOffline) => {
 
     };
 
+    // let's extract it from the root configuration
+    const storages = findComponentRecursively(soaConfig,  c => isStorage(c));
+
+    const reqListFiles = (
+        storageId: string,
+        prefix: string,
+        listMode: string,
+        data: any,
+        onComplete: (data: any) => void,
+        onError: (err: string) => void
+    ) => {
+
+        //console.log("listFiles function: ", storageId);
+        //console.log("found storages: ", storages);
+
+        const storage = storages.find(storage => storage.id == storageId);
+        if (storage) {
+            listFiles(storageId, prefix, listMode, data, onComplete, onError, storage, isOffline);
+        } else {
+            onError("could not find storage with id "+ storageId);
+        }
+    };
+
+    const reqCallService = (
+        id: string,
+        args: any,
+        onResult: (result: any) => void,
+        onError: (error: any) => void,
+        config: any,
+        isOffline: Boolean = false
+    ) => callService(id, args,onResult,onError,soaConfig,isOffline);
+
+
     // flattens the callbacks
     const unpackMiddlewares = (middlewares) => {
         // always returns the list of callbacks
         const cbList = (mw) => Array.isArray(mw.callback) ? mw.callback : [mw.callback];
-        return middlewares.reduce((res,mw) => res.concat(...cbList(mw)), dataLayer ? [
-            // when we have a dataLayer, let's attach it to the request
-            serviceAttachDataLayer(dataLayer)
-        ] : [])
-    };
+        return middlewares.reduce(
+            (res,mw) => res.concat(...cbList(mw)),
+            // attach the callService-function
+            [serviceAttachService(reqCallService)].concat(
+                // when we have a dataLayer, let's attach it to the request
+                dataLayer ? [serviceAttachDataLayer(dataLayer)] : [],
 
+                //when we have a storage, attach the listFiles-function
+                storages ? [ serviceAttachStorage(reqListFiles)] : []
+            )
+        );
+    };
 
     // split the clientApps here and define a function for each of the clientApps, with the right middleware
     soaApp.services.map(service => {

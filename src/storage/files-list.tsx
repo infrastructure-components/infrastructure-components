@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { listFiles } from './storage-libs';
 import { withStorageSsrRendering } from '../components/attach-storage';
 import ExecutionEnvironment from 'exenv';
-import hash from 'object-hash';
+//import hash from 'object-hash';
 
 export interface IFilesList {
     children: any,
@@ -24,7 +24,7 @@ const STATE = {
 export default withStorageSsrRendering(function ({renderSsr, config, isOffline, preloadedFiles, renderListResults, ...props}) {
 
 
-    const hashValue = hash({
+    const hashValue = require("infrastructure-components").hash({
         storageId: props.storageId,
         prefix: props.prefix ? props.prefix : "",
         mode: props.mode,
@@ -103,7 +103,8 @@ export default withStorageSsrRendering(function ({renderSsr, config, isOffline, 
 
         if (state.state === STATE.LOADING) {
             loadData(
-                (data, files) => {
+                ({data, files, folders}) => {
+                    //console.log(data, files, folders)
                     setState({
                         state: STATE.RESPONSE,
                         data: {

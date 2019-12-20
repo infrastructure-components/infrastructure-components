@@ -28,6 +28,26 @@ const AttachStorage = (props: IAttachStorage) => {
 
 };
 
+
+export const serviceWithStorage = (complementedCallback: (listFiles, cbreq, cbres, cbnext) => any) => {
+
+    // we return an array of valid middleware-callbacks
+    return [
+        async function (req, res, next) {
+            return await complementedCallback(req.listFiles, req, res, next)
+        }
+    ]
+};
+
+
+export const serviceAttachStorage = (listFiles) => {
+    return (req, res, next) => {
+
+        req.listFiles = listFiles;
+        next();
+    };
+}
+
 export function withStorageSsrRendering(Component) {
     return function WrapperComponent(props) {
         return (
