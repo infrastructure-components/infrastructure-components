@@ -2,6 +2,7 @@
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
+// @ts-ignore
 import { machineIdSync } from 'node-machine-id';
 
 

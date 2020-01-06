@@ -23,8 +23,8 @@ const STATE = {
 
 export default withStorageSsrRendering(function ({renderSsr, config, isOffline, preloadedFiles, renderListResults, ...props}) {
 
-
-    const hashValue = require("infrastructure-components").hash({
+    const hash = require('object-hash');
+    const hashValue = hash({
         storageId: props.storageId,
         prefix: props.prefix ? props.prefix : "",
         mode: props.mode,

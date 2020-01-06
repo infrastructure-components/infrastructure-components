@@ -103,6 +103,7 @@ export const uploadMiddleware = (storageId) => middleware({
 
         if (parseInt(parsedBody.part) + 1 == parseInt(parsedBody.total_parts)) {
 
+            // @ts-ignore
             const parts = Buffer.concat(await Promise.all(Array.apply(null, Array(parseInt(parsedBody.total_parts))).map(
                 function (part, idx) {
                     return new Promise((resolve, reject) => {
@@ -220,14 +221,17 @@ export const uploadFile = (
 
 
         reader.onload = function( event ) {
+            // @ts-ignore
             if ( event.target.readyState !== FileReader.DONE ) {
                 return;
             }
+
 
             require("infrastructure-components").callService(
                 storageId,
                 Object.assign({
                     action: STORAGE_ACTION.UPLOAD,
+                    // @ts-ignore
                     file_data: event.target.result,
                     file: file.name,
                     file_type: file.type,

@@ -107,5 +107,3 @@ export const getServiceUrl = require('./assets/service-libs').getServiceUrl;
 export const getBasename = require('./libs/iso-libs').getBasename;
 
 export const fetchData = require('./libs/scripts-libs').fetchData;
-
-export const hash = require('object-hash').default;
