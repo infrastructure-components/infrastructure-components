@@ -126,9 +126,9 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                         start: {
                             port: 8000,
                             //inMemory: "true",
-                            dbPath: path.join(
+                            /*dbPath: path.join(
                                 require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),".s3"
-                            ),
+                            ),*/
                             heapInitial: "200m",
                             heapMax: "1g",
                             migrate: "true",
