@@ -408,6 +408,7 @@ export default (props: IDataLayerArgs | any) => {
 
         updateEntryQuery: (entryId, fDictKey: (oldData) => any) => {
 
+            //console.log("updateEntryQuery: ", entryId);
             return {
                 entryId: entryId,
                 getEntryQuery: () => datalayerProps.getEntryQuery(entryId, fDictKey({})),

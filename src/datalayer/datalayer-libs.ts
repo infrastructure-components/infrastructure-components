@@ -328,7 +328,7 @@ export const getEntryListQuery = ( entryId, data, fields, context={}) => {
 };
 
 export const getEntryQuery = ( entryId, data, fields, context={}) => {
-    //console.log("getEntryQuery: ", entryId, data, fields, context);
+    console.log("getEntryQuery: ", entryId, data, fields, context);
 
     if (data == undefined) {
         console.error("getEntryQuery requires a data argument");
@@ -352,7 +352,7 @@ export const getEntryQuery = ( entryId, data, fields, context={}) => {
         },{})
     );
 
-    //console.log("listQuery string: ", query(queryObj));
+    console.log("listQuery string: ", query(queryObj));
 
     return {
         query:gql`${query(queryObj)}`,
@@ -503,10 +503,13 @@ export async function mutate (client, { mutation, context={}}) {
  */
 export async function update (client, { entryId, getEntryQuery, setEntryMutation}) {
 
+    console.log("update: ", entryId, getEntryQuery());
     const oldData = await select(
         client,
         getEntryQuery()
     );
+
+    console.log("oldData: ", oldData)
 
 
     return await mutate(

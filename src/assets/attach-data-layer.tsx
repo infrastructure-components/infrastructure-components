@@ -112,7 +112,16 @@ export function withDataLayer(Component) {
                             context: context,
                             client: context.apolloClient
                         })
-                    }
+                    };
+
+                    const updateEntryQuery = (entryId, fDictKey: (oldData) => any) => {
+
+                        return context.dataLayer.updateEntryQuery(
+                            entryId,
+                            fDictKey
+                        );
+
+                    };
 
                     //console.log("entryListQuery: ", entryListQuery);
                     
@@ -127,6 +136,7 @@ export function withDataLayer(Component) {
                         createSetMutation={createSetMutation}
                         createDeleteMutation={createDeleteMutation}
                         createQuery={createQuery}
+                        updateEntryQuery={updateEntryQuery}
                     />
                 }}
             </DataLayerContext.Consumer>
