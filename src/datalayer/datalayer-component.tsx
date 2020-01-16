@@ -426,6 +426,10 @@ export default (props: IDataLayerArgs | any) => {
 
         setOffline: (offline: boolean) => {
             complementedProps["isOffline"] = offline;
+            // provide offline flags to children (esp. to Auth)
+            findComponentRecursively(props.children, (child) => child.setIsOffline !== undefined).forEach( child => {
+                child.setIsOffline(offline);
+            });
         }
 
     };
@@ -447,6 +451,8 @@ export default (props: IDataLayerArgs | any) => {
     findComponentRecursively(props.children, (child) => child.setDataLayerId !== undefined).forEach( child => {
         child.setDataLayerId(props.id)
     });
+
+
 
     findComponentRecursively(props.children, (child) => child.setStoreData !== undefined).forEach( child => {
 

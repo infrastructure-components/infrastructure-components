@@ -39,6 +39,7 @@ export const AuthenticationProvider = {
 };
 
 export const AUTH_RESPONSE = {
+    //EMAIL_SENT: "EMAIL_SENT", // the email was sent
     EMAIL_INVALID: "EMAIL_INVALID", // the e-mail format is invalid
     NOT_IMPLEMENTED: "NOT_IMPLEMENTED" // the authCallback is not implemented for this provider
 };
@@ -86,17 +87,18 @@ export const createRequestLoginMiddleware = (clientId: string, callbackUrl: stri
  * Create a function that creates a function that fetches the AccessToken of the provider
  */
 export const createFetchAccessTokenFunction = (
+    isOffline: () => boolean,
     clientId: string,
     callbackUrl: string,
     provider: string,
     senderEmail?: string,
     getSubject?: (recipient: string) => string,
-    getHtmlText?: (recipient: string, url: string) => string,
+    getHtmlText?: (recipient: string, url: string) => string
 ) => (req: any) => {
 
     if (provider === AuthenticationProvider.EMAIL) {
 
-        console.log("this is the EMAIL - createFetchAccessTokenFunction middleware");
+        console.log("this is the EMAIL - createFetchAccessTokenFunction middleware, offline: ", isOffline);
 
         const { email, password, page } = req.query;
         
@@ -150,34 +152,50 @@ export const createFetchAccessTokenFunction = (
                         ],
                     };
 
-                    console.log("this is the fFetch of the mail-authentication");
+
                     // this is the response
                     return new Promise(function(resolve, reject) {
 
-                        // Create the promise and SES service object
-                        var sendPromise = new AWS.SES({apiVersion: '2010-12-01'}).sendEmail(params).promise();
+                        // TODO: Email sending does not work on localhost
+                        if (isOffline) {
 
-                        // Handle promise's fulfilled/rejected states
-                        sendPromise.then(
-                            function(data) {
-                                console.log(data.MessageId);
+                            console.log("Link to activate this user: ",
+                                `${callbackUrl}?${EMAIL_CONFIRMATION_PARAM}=${access_token}&${EMAIL_PARAM}=${email}`);
 
-                                resolve({
-                                    id: email, // we take the email - that should be unique
-                                    name: "",
-                                    username: "",
-                                    imageUrl:"",
-                                    access_token: access_token,
-                                    email: email,
-                                    encrypted_password: password,
-                                    status: AUTH_STATUS.PENDING
-                                })
-                            }).catch(
-                            function(err) {
-                                console.error(err, err.stack);
-                                reject(err);
-                            });
+                            resolve({
+                                id: email, // we take the email - that should be unique
+                                name: "",
+                                username: "",
+                                imageUrl:"",
+                                access_token: access_token,
+                                email: email,
+                                encrypted_password: password,
+                                status: AUTH_STATUS.PENDING});
+                        } else {
+                            // Create the promise and SES service object
+                            var sendPromise = new AWS.SES({apiVersion: '2010-12-01'}).sendEmail(params).promise();
 
+                            // Handle promise's fulfilled/rejected states
+                            sendPromise.then(
+                                function(data) {
+                                    console.log(data.MessageId);
+
+                                    resolve({
+                                        id: email, // we take the email - that should be unique
+                                        name: "",
+                                        username: "",
+                                        imageUrl:"",
+                                        access_token: access_token,
+                                        email: email,
+                                        encrypted_password: password,
+                                        status: AUTH_STATUS.PENDING
+                                    })
+                                }).catch(
+                                function(err) {
+                                    console.error(err, err.stack);
+                                    reject(err);
+                                });
+                        }
 
                     });
                 }/*fetch(callbackUrl,{
@@ -475,7 +493,13 @@ export interface IAuthenticationProps {
      *
      * @param triggerRedirect function that triggers a redirect, that we can call with an argument
      */
-    authCallback: (email: string, password: string, page: string, onResponse: (code:string)=> void) => void
+    authCallback: (email: string, password: string, page: string, onResponse: (code:string)=> void) => void,
+
+    /**
+     * set to true when running in offline mode
+     */
+    isOffline: boolean,
+    setIsOffline: (offline: boolean) => void
 }
 
 
@@ -494,9 +518,10 @@ export default (props: IAuthenticationArgs | any) => {
         instanceId: props.id,
     };
 
+    const complementedProps = {};
 
 
-    const authenticationProps: IAuthenticationProps = {
+    const authenticationProps = {
 
         // set our storeData-Property
         setStoreIdentityData: (storeIdentityData: (request: any, key: string, val: any, jsonData: any) => void) => {
@@ -511,7 +536,7 @@ export default (props: IAuthenticationArgs | any) => {
         },
 
         authCallback: (email: string, password: string, page: string, onResponse: (code:string) => void) => {
-            console.log("this is the auth-Callback");
+
 
             if (props.provider === AuthenticationProvider.EMAIL) {
                 // verify the format of the e-mail address
@@ -523,12 +548,17 @@ export default (props: IAuthenticationArgs | any) => {
                 // redirect to the provided url that is
                 // TODO encrypt the password!
                 window.location.href = `${props.callbackUrl}?${EMAIL_PARAM}=${email}&${PASSWORD_PARAM}=${password}&page=${page}`;
+                //onResponse(AUTH_RESPONSE.EMAIL_SENT)
                 return;
             }
 
 
             onResponse(AUTH_RESPONSE.NOT_IMPLEMENTED);
 
+        },
+
+        setIsOffline: (offline: boolean) => {
+            complementedProps["isOffline"] = offline;
         }
 
     };
@@ -597,7 +627,7 @@ export default (props: IAuthenticationArgs | any) => {
     });
 
     /**
-     * The data-layer replaces the authentication component with its children
+     * The component replaces the authentication component with its children
      */
     const mappedChildren = {
         // we provide the middlewares that we require
@@ -619,12 +649,14 @@ export default (props: IAuthenticationArgs | any) => {
                     createMiddleware({ callback: createCallbackMiddleware(
                         getClientSecret(props.provider),
                         createFetchAccessTokenFunction(
+                            () => complementedProps["isOffline"],
                             props.clientId,
                             props.callbackUrl,
                             props.provider,
                             props.senderEmail,
                             props.getSubject,
-                            props.getHtmlText
+                            props.getHtmlText,
+
 
                         ), //fetchAccessToken
                         createGetUserFunction(props.provider),
@@ -658,8 +690,8 @@ export default (props: IAuthenticationArgs | any) => {
         ].concat(getChildrenArray(props.children))
     };
 
-    console.log("authentication: ", findComponentRecursively(props.children, isWebApp));
-    return Object.assign(props, componentProps, authenticationProps, mappedChildren);
+    //console.log("authentication: ", findComponentRecursively(props.children, isWebApp));
+    return Object.assign(props, componentProps, authenticationProps, complementedProps, mappedChildren);
     
 };
 

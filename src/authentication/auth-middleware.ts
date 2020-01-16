@@ -41,7 +41,7 @@ export const AUTH_STATUS = {
  */
 export const createAuthMiddleware = (clientSecret, onAuthenticated: (userid:string) => void) => (req, res, next) => {
 
-    console.log("createAuthMiddleware", req.universalCookies);
+    //console.log("createAuthMiddleware", req.universalCookies);
 
     const webtoken = req.universalCookies.get(IC_WEB_TOKEN);
     const userId = req.universalCookies.get(IC_USER_ID);
@@ -140,7 +140,7 @@ export const createCallbackMiddleware = (
 
     const path = require('path');
 
-    console.log("THIS IS THE AUTH CALLBACK");
+    console.log("THIS IS THE AUTH CALLBACK - authMiddleware");
 
     
     // we use this middleware also as endpoint for email confirmation, then the token-parameter must be specified
@@ -161,7 +161,7 @@ export const createCallbackMiddleware = (
             email_param//val: any,
         );
 
-        console.log("retrieved auth-data-list: ", authDataList);
+        //console.log("retrieved auth-data-list: ", authDataList);
 
         // check whether the user already exists
         const parsedAuthDataList = authDataList.map(raw=> JSON.parse(raw.jsonData));
@@ -215,7 +215,7 @@ export const createCallbackMiddleware = (
                     cur.encryptedAccessToken === email_confirmation ? cur: undefined
                 ), undefined);
 
-            console.log("retrieved auth-data: ", authData);
+            //console.log("retrieved auth-data: ", authData);
 
             if (authData !== undefined) {
 
@@ -233,12 +233,12 @@ export const createCallbackMiddleware = (
                     })
                 );
 
-                console.log("webtoken: ", webtoken, email_param)
+                //console.log("webtoken: ", webtoken, email_param)
 
                 req.universalCookies.set(IC_WEB_TOKEN, webtoken, { path: '/' });
                 req.universalCookies.set(IC_USER_ID, email_param, { path: '/' });
 
-                console.log("store email verified result: ", storeResult);
+                //console.log("store email verified result: ", storeResult);
 
                 res.redirect(`${path.join(getBasename(), page !== undefined ? page : "/")}?message=mailverified`);
 
@@ -312,7 +312,7 @@ export const createCallbackMiddleware = (
             }
 
 
-            console.log("done") //'http://' +path.join(req.headers.host +  +
+            //console.log("done") //'http://' +path.join(req.headers.host +  +
             res.redirect(path.join(getBasename(), redirectPage));
             return;
         });

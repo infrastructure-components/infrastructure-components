@@ -54,7 +54,6 @@ export const getAuthCallback = (isoConfig, authenticationId) => {
         authenticationId
     );
 
-
     const authCallback = authComp !== undefined ? authComp.authCallback : (triggerRedirect) => {
         console.log("this is the dummy auth callback");
         return undefined;
