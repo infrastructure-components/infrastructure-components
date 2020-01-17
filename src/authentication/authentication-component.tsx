@@ -28,6 +28,14 @@ import {SERVICE_INSTANCE_TYPE} from "../service/service-component";
 
 export const AUTHENTICATION_INSTANCE_TYPE = "AuthenticationComponent";
 
+export const AUTH_MESSAGE = {
+    SUCCESS: "success",
+    FAILED: "failed",
+    MAILED: "mailed",
+    VERIFICATIONPENDING: "pending",
+    NOTLOGGEDIN: "notloggedin",
+    MAILVERIFIED: "verified"
+}
 
 export const AuthenticationProvider = {
     EMAIL: "AUTH_EMAIL",
@@ -64,7 +72,7 @@ export const createRequestLoginMiddleware = (clientId: string, callbackUrl: stri
 
     const path = require('path');
 
-    console.log("createRequestLoginMiddleware: ", err);
+    //console.log("createRequestLoginMiddleware: ", err);
 
     if (provider === AuthenticationProvider.EMAIL) {
         console.log("request login from: ", loginUrl);
@@ -96,9 +104,9 @@ export const createFetchAccessTokenFunction = (
     getHtmlText?: (recipient: string, url: string) => string
 ) => (req: any) => {
 
-    if (provider === AuthenticationProvider.EMAIL) {
+    const path = require('path');
 
-        console.log("this is the EMAIL - createFetchAccessTokenFunction middleware, offline: ", isOffline);
+    if (provider === AuthenticationProvider.EMAIL) {
 
         const { email, password, page } = req.query;
         
@@ -106,7 +114,7 @@ export const createFetchAccessTokenFunction = (
             
             // the function fFetch must call a service that responds with a json. this json is fed into createGetUserFunction
             return {
-                redirectPage: page,
+                redirectPage: page+"?message="+AUTH_MESSAGE.MAILED,
                 fFetch: async function () {
 
                     const uuidv4 = require('uuid/v4');
@@ -134,7 +142,7 @@ export const createFetchAccessTokenFunction = (
                                 Html: {
                                     Charset: "UTF-8",
                                     Data: getHtmlText(email,
-                                        `${callbackUrl}?${EMAIL_CONFIRMATION_PARAM}=${access_token}&${EMAIL_PARAM}=${email}`)
+                                        `${path.join(process.env.DOMAIN_URL,callbackUrl)}?${EMAIL_CONFIRMATION_PARAM}=${access_token}&${EMAIL_PARAM}=${email}`)
                                 },
                                 /*Text: {
                                     Charset: "UTF-8",
@@ -157,10 +165,10 @@ export const createFetchAccessTokenFunction = (
                     return new Promise(function(resolve, reject) {
 
                         // TODO: Email sending does not work on localhost
-                        if (isOffline) {
+                        if (isOffline()) {
 
-                            console.log("Link to activate this user: ",
-                                `${callbackUrl}?${EMAIL_CONFIRMATION_PARAM}=${access_token}&${EMAIL_PARAM}=${email}`);
+                            console.log("OFFLINE! Link to activate this user: ",
+                                `${path.join(getBasename(),callbackUrl)}?${EMAIL_CONFIRMATION_PARAM}=${access_token}&${EMAIL_PARAM}=${email}`);
 
                             resolve({
                                 id: email, // we take the email - that should be unique
@@ -178,7 +186,7 @@ export const createFetchAccessTokenFunction = (
                             // Handle promise's fulfilled/rejected states
                             sendPromise.then(
                                 function(data) {
-                                    console.log(data.MessageId);
+                                    //console.log(data.MessageId);
 
                                     resolve({
                                         id: email, // we take the email - that should be unique
@@ -232,7 +240,7 @@ export const createFetchAccessTokenFunction = (
 
         } else if (code !== undefined) {
 
-            console.log("found redirect page: ", page)
+            //console.log("found redirect page: ", page)
 
             return {
                 redirectPage: page,
@@ -256,7 +264,7 @@ export const createFetchAccessTokenFunction = (
 
     } else if (provider === AuthenticationProvider.MEDIUM) {
 
-        console.log("Medium callback: ", req.query)
+        //console.log("Medium callback: ", req.query)
         const { state, code, error } = req.query;
 
         
@@ -280,7 +288,7 @@ export const createFetchAccessTokenFunction = (
                             "Accept-Charset": "utf-8"
                         }
                     }).then(function (response) {
-                        console.log("request data: ", response)
+                        //console.log("request data: ", response)
                         return response.json();
                     })
                 }
@@ -297,7 +305,7 @@ export const createFetchAccessTokenFunction = (
 
 export const createGetUserFunction = (provider: string) => async function (resJson: any): Promise<IUserData> {
 
-    console.log("createGetUserFunction: ", resJson);
+    //console.log("createGetUserFunction: ", resJson);
 
     if (provider === AuthenticationProvider.EMAIL) {
 
@@ -375,7 +383,7 @@ export const createGetUserFunction = (provider: string) => async function (resJs
 
 
     } else if (provider === AuthenticationProvider.MEDIUM) {
-        console.log("fetch user data of medium-user")
+        //console.log("fetch user data of medium-user")
         const { token_type, access_token, refresh_token, scope, expires_at } = resJson;
 
         // try the freshly acquired token and get the user's Medium.com id
@@ -395,7 +403,7 @@ export const createGetUserFunction = (provider: string) => async function (resJs
 
         }).then(function({data}){
 
-            console.log("user data parsed: ", data);
+            //console.log("user data parsed: ", data);
             return {
                 id: data.id,
                 name: data.name,
@@ -538,6 +546,8 @@ export default (props: IAuthenticationArgs | any) => {
         authCallback: (email: string, password: string, page: string, onResponse: (code:string) => void) => {
 
 
+            const path = require('path');
+
             if (props.provider === AuthenticationProvider.EMAIL) {
                 // verify the format of the e-mail address
                 if (!(/^([A-Za-z0-9_\-.])+@([A-Za-z0-9_\-.])+\.([A-Za-z]{2,})$/.test(email))) {
@@ -547,7 +557,7 @@ export default (props: IAuthenticationArgs | any) => {
 
                 // redirect to the provided url that is
                 // TODO encrypt the password!
-                window.location.href = `${props.callbackUrl}?${EMAIL_PARAM}=${email}&${PASSWORD_PARAM}=${password}&page=${page}`;
+                window.location.href = `${path.join(getBasename(), props.callbackUrl)}?${EMAIL_PARAM}=${email}&${PASSWORD_PARAM}=${password}&page=${page}`;
                 //onResponse(AUTH_RESPONSE.EMAIL_SENT)
                 return;
             }
@@ -568,7 +578,7 @@ export default (props: IAuthenticationArgs | any) => {
      * @param userid
      */
     const onAuthenticated = (userid:string): void => {
-        console.log("just authenticated, tell the securedEntries about it")
+        //console.log("just authenticated, tell the securedEntries about it")
         // we need to provide some data to the secured entries
         findComponentRecursively(props.children, (c) => c.setUserId !== undefined).forEach( se => {
             //console.log("found secured entry: ", se);
@@ -655,8 +665,7 @@ export default (props: IAuthenticationArgs | any) => {
                             props.provider,
                             props.senderEmail,
                             props.getSubject,
-                            props.getHtmlText,
-
+                            props.getHtmlText
 
                         ), //fetchAccessToken
                         createGetUserFunction(props.provider),
@@ -665,8 +674,8 @@ export default (props: IAuthenticationArgs | any) => {
                         },//props.storeAuthData
                         async function (request: any, matchBrowserIdentity: boolean, key: string, val: any) {
                             return await props.getAuthData(request, matchBrowserIdentity, key, val)
-                        } //getAuthData
-                        
+                        }, //getAuthData
+                        props.loginUrl
                     )}),
 
                     createMiddleware({

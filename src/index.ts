@@ -40,7 +40,7 @@ export const SecuredRoute = require('./authentication/securedroute-component').d
 export const SecuredService = require('./authentication/securedservice-component').default;
 export const Identity = require('./identity/identity-component').default;
 export const AUTH_RESPONSE = require('./authentication/authentication-component').AUTH_RESPONSE;
-
+export const AUTH_MESSAGE = require('./authentication/authentication-component').AUTH_MESSAGE;
 
 export const INFRASTRUCTURE_MODES = require('./libs/loader').INFRASTRUCTURE_MODES;
 export const loadInfrastructureComponent = require('./libs/loader').loadInfrastructureComponent;

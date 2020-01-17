@@ -44,8 +44,6 @@ export function withIsomorphicState(Component) {
 
                     if (ExecutionEnvironment.canUseDOM) {
 
-
-                        //const [clientValue, clientSetter] = useState(value);
                         // we ignore the clientProps...but we take the props from the preloadedState!
                         return <Component {...props} useIsomorphicState={(id, initialValue) => useState( value.preloadedState? value.preloadedState[id]:undefined)} />
 
@@ -70,6 +68,8 @@ export function withIsomorphicState(Component) {
                                 if (value.setServerValue) {
                                     value.setServerValue(id, newValue);
                                 }
+
+                                //console.log("setValue ", newValue)
 
                                 // the normal hook setter
                                 setValue(newValue);

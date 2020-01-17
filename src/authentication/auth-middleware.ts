@@ -1,3 +1,4 @@
+import {AUTH_MESSAGE} from "./authentication-component";
 /**
  * Created by frank.zickert on 28.02.19.
  */
@@ -47,8 +48,8 @@ export const createAuthMiddleware = (clientSecret, onAuthenticated: (userid:stri
     const userId = req.universalCookies.get(IC_USER_ID);
 
     if (webtoken !== undefined && userId !== undefined) {
-        console.log("webtoken: ", webtoken);
-        console.log("userId: ", userId);
+        //console.log("webtoken: ", webtoken);
+        //console.log("userId: ", userId);
 
         try {
             const decoded = jwt.verify(webtoken, clientSecret);
@@ -56,26 +57,26 @@ export const createAuthMiddleware = (clientSecret, onAuthenticated: (userid:stri
 
                 const { id } = decoded;
 
-                console.log("id: ", id);
+                //console.log("id: ", id);
 
                 // we might have numbers... then the "===" comparison does not work
                 if (id.toString() === userId.toString()) {
                     // the token contains the correct id
-                    console.log("token matches :-)")
+                    //console.log("token matches :-)")
                     onAuthenticated(id.toString());
                     return next();
                 }
 
             }
-            return next("UserId in Token does not match UserId in cookie");
+            return next(AUTH_MESSAGE.FAILED);
             //throw new Error("UserId in Token does not match UserId in cookie");
         } catch(err) {
-            return next(err);
+            return next(AUTH_MESSAGE.FAILED);
             //throw new Error(err);
         }
 
     } else {
-        return next('No token present!');
+        return next(AUTH_MESSAGE.NOTLOGGEDIN);
         //throw new Error('No token present!');
     }
 
@@ -135,12 +136,13 @@ export const createCallbackMiddleware = (
     fetchAccessToken: (req: any) => any,
     getUserData: (resJson: any) => Promise<IUserData>,
     storeAuthData: (request: any, key: string, val: any, jsonData: any) => void,
-    getAuthData: (request: any, matchBrowserIdentity: boolean, key: string, val: any) => any
+    getAuthData: (request: any, matchBrowserIdentity: boolean, key: string, val: any) => any,
+    loginUrl: string
 ) => async function (req, res, next) {
 
     const path = require('path');
 
-    console.log("THIS IS THE AUTH CALLBACK - authMiddleware");
+    //console.log("THIS IS THE AUTH CALLBACK - authMiddleware");
 
     
     // we use this middleware also as endpoint for email confirmation, then the token-parameter must be specified
@@ -149,7 +151,7 @@ export const createCallbackMiddleware = (
     const password_param = req.query[PASSWORD_PARAM];
     const page = req.query["page"];
 
-    console.log("received params: ", email_confirmation, email_param, password_param);
+    //console.log("received params: ", email_confirmation, email_param, password_param);
 
     if (email_param) {
         // get the entry of the database
@@ -170,12 +172,19 @@ export const createCallbackMiddleware = (
         if (password_param !== undefined && parsedAuthDataList.length > 0) {
 
             const authData = parsedAuthDataList
-                .reduce((result, cur) => result !== undefined ? result : (
+                .reduce((result, cur) => result !== undefined ? (
+                    // check whether we have a better state!
+                    cur.status == AUTH_STATUS.ACTIVE ? cur : result
+                ) : (
                     // check whether the password is correct
                     cur.encrypted_password === password_param ? cur: undefined
                 ), undefined);
 
             if (authData !== undefined) {
+
+                if (authData.status == AUTH_STATUS.PENDING) {
+                    return next(AUTH_MESSAGE.VERIFICATIONPENDING);
+                }
 
                 // create a new webtoken, i.e. other browser will be logged out!
                 const { webtoken, encryptedAccessToken } = getEncryptedAccessToken(email_param, clientSecret, password_param);
@@ -195,14 +204,14 @@ export const createCallbackMiddleware = (
                 req.universalCookies.set(IC_USER_ID, email_param, { path: '/' });
 
 
-                console.log("store password verified result: ", storeResult);
+                //console.log("store password verified result: ", storeResult);
 
-                res.redirect(`${path.join(getBasename(), page !== undefined ? page : "/")}?message=success`);
+                res.redirect(`${path.join(getBasename(), page !== undefined ? page : loginUrl)}?message=${AUTH_MESSAGE.SUCCESS}`);
 
 
             } else {
-                console.log ("could not verify password, ", password_param,email_param);
-                return next("login failure");
+                //console.log ("could not verify password, ", password_param,email_param);
+                return next(AUTH_MESSAGE.FAILED);
             }
 
             return;
@@ -240,13 +249,13 @@ export const createCallbackMiddleware = (
 
                 //console.log("store email verified result: ", storeResult);
 
-                res.redirect(`${path.join(getBasename(), page !== undefined ? page : "/")}?message=mailverified`);
+                res.redirect(`${path.join(getBasename(), page !== undefined ? page : loginUrl)}?message=${AUTH_MESSAGE.MAILVERIFIED}`);
 
 
             } else {
-                console.log ("could not verify access token, ", email_confirmation,email_param);
+                //console.log ("could not verify access token, ", email_confirmation,email_param);
 
-                return next("access token is wrong");
+                return next(AUTH_MESSAGE.FAILED);
             }
             return;
         }
@@ -266,12 +275,12 @@ export const createCallbackMiddleware = (
 
         // try the freshly acquired token and get the user's Medium.com id
         await getUserData(resJson).then(async function(data) {
-            console.log("get user data: ", JSON.stringify(data));
+            //console.log("get user data: ", JSON.stringify(data));
 
             const {id, name, username, imageUrl, access_token, email, status } = data;
 
-            console.log("id: ", id);
-            console.log("name: ", name);
+            //console.log("id: ", id);
+            //console.log("name: ", name);
 
             const { webtoken, encryptedAccessToken } = getEncryptedAccessToken(id, clientSecret, access_token);
 
@@ -301,7 +310,7 @@ export const createCallbackMiddleware = (
                 } : {}) //jsonData: any
             );
 
-            console.log("storeResult: ", storeResult);
+            //console.log("storeResult: ", storeResult);
 
 
             // give the webtoken to back to the user - if the account is valid, only!
