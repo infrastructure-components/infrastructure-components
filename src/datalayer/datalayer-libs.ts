@@ -328,7 +328,7 @@ export const getEntryListQuery = ( entryId, data, fields, context={}) => {
 };
 
 export const getEntryQuery = ( entryId, data, fields, context={}) => {
-    console.log("getEntryQuery: ", entryId, data, fields, context);
+    //console.log("getEntryQuery: ", entryId, data, fields, context);
 
     if (data == undefined) {
         console.error("getEntryQuery requires a data argument");
@@ -352,7 +352,7 @@ export const getEntryQuery = ( entryId, data, fields, context={}) => {
         },{})
     );
 
-    console.log("listQuery string: ", query(queryObj));
+    //console.log("listQuery string: ", query(queryObj));
 
     return {
         query:gql`${query(queryObj)}`,

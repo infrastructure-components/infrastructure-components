@@ -56,7 +56,7 @@ const ForceLogin = (props: ForceLoginProps) => {
     //console.log("ForceLogin: request ->", this.props.request)
 
     // we provide the information which user is logged in
-    return <div>{props.children}</div>
+    return <>{props.children}</>
 
 }
 
