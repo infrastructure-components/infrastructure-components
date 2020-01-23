@@ -5,7 +5,8 @@ import * as React from 'react';
 const RequestContext = React.createContext({});
 
 interface AttachRequestProps {
-    request?: any
+    request?: any,
+    response?: any
 }
 /**
  * This HOC attaches the req sent to the server down to the Components - on server side only, of course!
@@ -18,7 +19,10 @@ interface AttachRequestProps {
 const AttachRequest: React.SFC<AttachRequestProps> = (props) => {
 
     //console.log("attached request: " , props.request);
-    return <RequestContext.Provider value={props.request}>{props.children}</RequestContext.Provider>
+    return <RequestContext.Provider value={{
+        request: props.request,
+        response: props.response
+    }}>{props.children}</RequestContext.Provider>
 
 
 };
@@ -34,9 +38,9 @@ export function withRequest(Component) {
     return function WrapperComponent(props) {
         return (
             <RequestContext.Consumer>
-                {value => {
+                {(value: any) => {
                     //console.log("with request: ", value);
-                    return <Component {...props} request={value} />
+                    return <Component {...props} request={value.request} response={value.response} />
                 }}
             </RequestContext.Consumer>
         );

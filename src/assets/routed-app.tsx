@@ -204,6 +204,7 @@ export const createServerApp = (
     url: string,
     context: any,
     request: any,
+    response: any,
     authCallback: any,
     setServerValue: any,
     addToRenderList: (fRender, hashValue) => void,
@@ -222,7 +223,7 @@ export const createServerApp = (
     const AttachStorage = require("infrastructure-components").AttachStorage;
 
     return <StaticRouter context={context} location={url} basename={basename !== "/"  ? basename : undefined}>
-        <AttachRequest request={request}>
+        <AttachRequest request={request} response={response}>
             <AttachUser>
                 <AttachAuth authCallback={authCallback}>
                     <AttachRoutes routes={routes}>

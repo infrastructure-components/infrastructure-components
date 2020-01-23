@@ -406,6 +406,7 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
                     req.url,
                     context,
                     req,
+                    res,
                     require('infrastructure-components').getAuthCallback(isoConfig, clientApp.authenticationId),
                     setServerValue,
                     addToRenderList,
