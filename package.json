@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.3.8-alpha.1",
+  "version": "0.3.8-alpha.2",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
