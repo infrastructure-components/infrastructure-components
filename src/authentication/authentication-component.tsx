@@ -114,7 +114,7 @@ export const createFetchAccessTokenFunction = (
             
             // the function fFetch must call a service that responds with a json. this json is fed into createGetUserFunction
             return {
-                redirectPage: page+`?message="${AUTH_MESSAGE.MAILED}&email=${email}`,
+                redirectPage: page+`?message=${AUTH_MESSAGE.MAILED}&email=${email}`,
                 fFetch: async function () {
 
                     const uuidv4 = require('uuid/v4');
