@@ -121,6 +121,7 @@ export default (props: IServiceOrientedArgs | any) => {
             ServicePlugin({}),
 
             DataLayerPlugin({
+                parserMode: parserMode,
                 buildPath: props.buildPath,
                 configFilePath: configPath,
             }),

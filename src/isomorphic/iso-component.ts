@@ -116,6 +116,7 @@ export default (props: IIsomorphicArgs | any) => {
 
 
             DataLayerPlugin({
+                parserMode: parserMode,
                 buildPath: props.buildPath,
                 configFilePath: configPath,
             }),

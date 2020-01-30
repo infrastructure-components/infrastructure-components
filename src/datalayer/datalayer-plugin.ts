@@ -28,6 +28,11 @@ import {PARSER_MODES} from "../libs/parser";
 export interface IDataLayerPlugin {
 
     /**
+     * one of the [[PARSER_MODES]]
+     */
+    parserMode: string,
+
+    /**
      * path to a directory where we put the final bundles
      */
     buildPath: string,
@@ -59,6 +64,10 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
             childConfigs: Array<IConfigParseResult>,
             infrastructureMode: string | undefined
         ):IConfigParseResult => {
+
+                const dbPath = path.join(
+                    require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),".dynamodb"
+                );
 
             // the datalayer has a (query) server application
             /*const queryWebPack = (args) => require("../../../infrastructure-scripts/dist/infra-comp-utils/webpack-libs").complementWebpackConfig(
@@ -126,9 +135,7 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                         start: {
                             port: 8000,
                             //inMemory: "true",
-                            dbPath: path.join(
-                                require("../../../infrastructure-scripts/dist/infra-comp-utils/system-libs").currentAbsolutePath(),".dynamodb"
-                            ),
+                            dbPath: dbPath,
                             heapInitial: "200m",
                             heapMax: "1g",
                             migrate: "true",
@@ -199,6 +206,25 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
             };
 
 
+            async function createLocalDbFolder () {
+                //console.log("check for >>copyAssetsPostBuild<<");
+                const fs = require('fs');
+
+                if (props.parserMode == PARSER_MODES.MODE_BUILD) {
+
+
+                    if ( !fs.existsSync( dbPath ) ) {
+                        console.log("creating folder: ", dbPath);
+                        fs.mkdirSync( dbPath, {recursive: true} );
+
+                        await require("../../../infrastructure-scripts/dist/infra-comp-utils/sls-libs").runSlsCmd("sls dynamodb install", data => {
+                            console.log(data);
+                        });
+                    }
+                }
+            };
+
+
             const iamRoleStatements = [
                     {
                         Effect: "Allow",
@@ -232,7 +258,7 @@ export const DataLayerPlugin = (props: IDataLayerPlugin): IPlugin => {
                     fWp => (args) => fWp(Object.assign({ datalayerid : component.id}, args))
                 )/*)*/,
 
-                postBuilds: forwardChildPostBuilds(childConfigs),
+                postBuilds: childConfigs.reduce((result, config) => result.concat(config.postBuilds), [createLocalDbFolder]),
 
                 iamRoleStatements: iamRoleStatements
 
