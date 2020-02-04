@@ -291,6 +291,17 @@ export const SpaPlugin = (props: ISpaPlugin): IPlugin => {
 
                     domainConfig,
 
+
+                    {
+                        plugins: ["serverless-pseudo-parameters"],
+
+                        /** we need to add a dummy value-anything-to custom. Otherwise, the pseudo-parameters plugin doesn't work*/
+                        custom: {
+                            dummy: "none"
+                        }
+
+                    },
+
                     ...childConfigs.map(config => config.slsConfigs)
                     ]
                 ),
