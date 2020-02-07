@@ -305,7 +305,7 @@ export const createFetchAccessTokenFunction = (
 
 export const createGetUserFunction = (provider: string) => async function (resJson: any): Promise<IUserData> {
 
-    //console.log("createGetUserFunction: ", resJson);
+    console.log("createGetUserFunction: ", resJson);
 
     if (provider === AuthenticationProvider.EMAIL) {
 
@@ -383,8 +383,10 @@ export const createGetUserFunction = (provider: string) => async function (resJs
 
 
     } else if (provider === AuthenticationProvider.MEDIUM) {
-        //console.log("fetch user data of medium-user")
         const { token_type, access_token, refresh_token, scope, expires_at } = resJson;
+
+        console.log("fetch user data of medium-user: ", access_token);
+
 
         // try the freshly acquired token and get the user's Medium.com id
         return await fetch('https://api.medium.com/v1/me',{
@@ -397,13 +399,13 @@ export const createGetUserFunction = (provider: string) => async function (resJs
             }
         }).then(function(response) {
 
-            //console.log("user data fetched: ", response);
+            console.log("user data fetched: ", response);
             // now parse the json
             return response.json();
 
         }).then(function({data}){
 
-            //console.log("user data parsed: ", data);
+            console.log("user data parsed: ", data);
             return {
                 id: data.id,
                 name: data.name,
