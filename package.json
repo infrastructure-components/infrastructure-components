@@ -29,7 +29,7 @@
     "apollo-client": "^2.6.8",
     "apollo-link-http": "^1.5.16",
     "apollo-link-schema": "^1.2.4",
-    "aws-lambda": "^0.1.2",
+    "aws-lambda": "^1.0.5",
     "body-parser": "^1.19.0",
     "connect-sequence": "^2.1.1",
     "cors": "^2.8.5",
