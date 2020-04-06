@@ -43,7 +43,9 @@ export const AuthenticationProvider = {
     GITHUB: "AUTH_GITHUB",
 
     // TODO Medium Auth only partly implemented!!!
-    MEDIUM: "AUTH_MEDIUM"
+    MEDIUM: "AUTH_MEDIUM",
+
+    FIREBASE_EMAIL: "AUTH_FIREBASE_EMAIL"
 };
 
 export const AUTH_RESPONSE = {
@@ -85,6 +87,13 @@ export const createRequestLoginMiddleware = (clientId: string, callbackUrl: stri
         res.redirect(`https://github.com/login/oauth/authorize?scope=user:email&client_id=${clientId}&redirect_uri=${callbackUrl}?page=${req.url}`);
     } else if (provider === AuthenticationProvider.MEDIUM) {
         res.redirect(`https://medium.com/m/oauth/authorize?client_id=${clientId}&scope=basicProfile,listPublications,publishPost&state=${req.url}&response_type=code&redirect_uri=${callbackUrl}`);
+    } else if (provider === AuthenticationProvider.FIREBASE_EMAIL) {
+        console.log("request login from: ", loginUrl);
+
+        const page = err && req.query && req.query.page ? req.query.page : req.url;
+
+        res.redirect(`${path.join(getBasename(), loginUrl)}?page=${page}${err ? `&message=${err}` : "" }`);
+
     }
 
     return;
@@ -295,6 +304,35 @@ export const createFetchAccessTokenFunction = (
             }
         }
 
+    } else if (provider === AuthenticationProvider.FIREBASE_EMAIL) {
+
+        const { email, password, page } = req.query;
+        
+        if (email !== undefined && password !== undefined) {
+            return {
+                redirectPage: page,
+                fFetch: async function () {
+                    return await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=[API_KEY]',{
+                        method: 'POST',
+                        body: JSON.stringify({
+                            "email": email,
+                            "password":password,
+                            "returnSecureToken":true
+                        }),
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json",
+                            "Accept-Charset": "utf-8"
+                        }
+                    }).then(function(response) {
+                        return response.json();
+                    })
+                }
+            }
+        }
+
+
+
     }
 
 
@@ -419,6 +457,50 @@ export const createGetUserFunction = (provider: string) => async function (resJs
         });
 
 
+    } else if(provider === AuthenticationProvider.FIREBASE_EMAIL){
+        // try the freshly acquired token and get the user's Medium.com id
+        return await fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=[API_KEY]',
+        {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Accept-Charset": "utf-8",
+            }
+        }).then(function(response) {
+
+            // now parse the json
+            return response.json();
+
+        }).then(function(data){
+
+            /*
+                "localId":	            string	The uid of the current user.
+                "email":	            string	The email of the account.
+                "emailVerified":	    boolean	Whether or not the account's email has been verified.
+                "displayName":	        string	The display name for the account.
+                "providerUserInfo":	    List of JSON objects	List of all linked provider objects which contain "providerId" and "federatedId".
+                "photoUrl":	            string	The photo Url for the account.
+                "passwordHash":	        string	Hash version of password.
+                "passwordUpdatedAt":	double	The timestamp, in milliseconds, that the account password was last changed.
+                "validSince":	        string	The timestamp, in seconds, which marks a boundary, before which Firebase ID token are considered revoked.
+                "disabled":	            boolean	Whether the account is disabled or not.
+                "lastLoginAt":	        string	The timestamp, in milliseconds, that the account last logged in at.
+                "createdAt":	        string	The timestamp, in milliseconds, that the account was created at.
+                "customAuth":	        boolean	Whether the account is authenticated by the developer.            
+            */
+
+            return {
+                id: data.localId,
+                name: data.displayName,
+                username: data.email,
+                imageUrl: data.photoUrl,
+                email: data.email,
+                access_token: access_token,
+                status: AUTH_STATUS.ACTIVE
+            }
+
+        });
     }
 
 
