@@ -312,7 +312,7 @@ export const createFetchAccessTokenFunction = (
             return {
                 redirectPage: page,
                 fFetch: async function () {
-                    return await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=[API_KEY]',{
+                    return await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${getClientSecret(provider)}`,{
                         method: 'POST',
                         body: JSON.stringify({
                             "email": email,
@@ -490,13 +490,15 @@ export const createGetUserFunction = (provider: string) => async function (resJs
                 "customAuth":	        boolean	Whether the account is authenticated by the developer.            
             */
 
+            console.log("firebase data parsed: ", data);
+
             return {
                 id: data.localId,
                 name: data.displayName,
                 username: data.email,
                 imageUrl: data.photoUrl,
                 email: data.email,
-                access_token: access_token,
+                access_token: "access_token", //TODO
                 status: AUTH_STATUS.ACTIVE
             }
 
