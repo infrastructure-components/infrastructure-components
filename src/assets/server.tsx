@@ -298,16 +298,20 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
     var foundPath = undefined;
 
 
+
     // match request url to our React Router paths and grab the path-params
     let matchResult = clientApp.routes.find(
         ({ path, exact }) => {
+            //console.log("match path: ", new RegExp(path))
+
             foundPath = matchPath(parsedUrl,
                 {
-                    path: path,
+                    path: new RegExp(path),
                     exact: exact,
                     strict: false
                 }
-            )
+            );
+            //console.log("foundPath: ", foundPath)
             return foundPath
         }) || {};
     let { path } = matchResult;
@@ -317,17 +321,16 @@ async function serve (req, res, next, clientApp, assetsDir, isoConfig, isOffline
     //console.log("url: ", req.url);
 
     const routePath = foundPath ? (
-        foundPath.path.indexOf("/:") > 0 ?
-            foundPath.path.substring(0, foundPath.path.indexOf("/:")) :
-            foundPath.path
+        (typeof foundPath.path === 'string' || foundPath.path instanceof String) ? (
+            foundPath.path.indexOf("/:") > 0 ?
+                foundPath.path.substring(0, foundPath.path.indexOf("/:")) :
+                foundPath.path
+        ) : req.url
+
     ) : "";
 
     //console.log("routePath: ", routePath);
     ////////// END OF REFACTORING required
-
-
-
-
 
 
 

@@ -15,7 +15,7 @@ export const ROUTE_INSTANCE_TYPE = "RouteComponent";
  */
 export interface IRouteArgs {
 
-    path: string,
+    path: any,
 
     name: string,
 

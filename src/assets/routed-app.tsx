@@ -19,7 +19,7 @@ export interface IRoute {
     /**
      * the relative  path of the route, e.g. "/" for the root, or "/something"
      */
-    path: string,
+    path: any,
 
     /**
      * The http method of the route, e.g. get, post, ...
@@ -113,11 +113,13 @@ const RawRoutedApp = (props: RoutedAppProps) => {
     const routes = props.routes.map(({ path, exact, component, render, isSecured }, i) => {
         // NOT using routeConfig.pathToRoute(path) for the Router includes a basename already!
 
-        //console.log("RoutedApp: ", path, exact);
+        //console.log("RoutedApp: ", path, typeof path);
+
+        const fixPath = p => p;//(typeof p === 'string' || p instanceof String) ? p : new RegExp(p.toString().replace("/\\/g", "\\\\")).toString();
 
         if (render !== undefined) {
             const wrappedRender = (p) => isSecured ? <ForceLogin >{render(p)}</ForceLogin> : render(p);
-            return <Route key={'ROUTE_'+i} exact={exact} path={path} render={wrappedRender} />
+            return <Route key={'ROUTE_'+i} exact={exact} path={fixPath(path)} render={wrappedRender} />
 
         } else if (isSecured) {
 
@@ -125,14 +127,14 @@ const RawRoutedApp = (props: RoutedAppProps) => {
             return <Route
                 key={'ROUTE_'+i}
                 exact={exact}
-                path={path}
+                path={fixPath(path)}
                 render={(p) => <ForceLogin ><C {...p}/></ForceLogin>}
             />
 
         } else {
 
 
-            return <Route key={'ROUTE_'+i} exact={exact} path={path} component={component} />
+            return <Route key={'ROUTE_'+i} exact={exact} path={fixPath(path)} component={component} />
         }
 
     });
