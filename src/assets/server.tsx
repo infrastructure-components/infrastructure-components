@@ -106,7 +106,7 @@ const createServer = (assetsDir, resolvedAssetsPath, isomorphicId, isOffline) =>
                 res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
                 //res.header('Access-Control-Allow-Headers', 'Content-Type,token');
                 next();
-            }
+            };
             app.use(allowCrossDomain);
 
         }
