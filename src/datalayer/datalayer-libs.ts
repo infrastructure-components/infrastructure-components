@@ -363,6 +363,8 @@ export const getEntryQuery = ( entryId, data, fields, context={}) => {
 
 export const updateEntryQuery = ( entryId, callback, context={}) => {
     return {entryId: entryId, callback: callback, context: context };
+
+
 }
 
 
@@ -483,7 +485,7 @@ export async function mutate (client, { mutation, context={}}) {
     }
 
 
-    //console.log("mutate: ", mutation, context);
+    console.log("mutate: ", mutation, context);
 
     //console.log("mutation string: ", mutation(mutationObj));
 
@@ -501,22 +503,22 @@ export async function mutate (client, { mutation, context={}}) {
  * @param context
  * @returns {Promise<any>}
  */
-export async function update (client, { entryId, getEntryQuery, setEntryMutation}) {
+export async function update (client, { entryId, getEntryQuery, setEntryMutation }) {
 
-    console.log("update: ", entryId, getEntryQuery());
+
+    //console.log("update: ", getEntryQuery, setEntryMutation);
     const oldData = await select(
         client,
         getEntryQuery()
     );
 
-    console.log("oldData: ", oldData)
+    //console.log("oldData: ", oldData[`get_${entryId}`])
 
-
+    //console.log(setEntryMutation)
     return await mutate(
         client,
         setEntryMutation(oldData[`get_${entryId}`])
     );
-
 
 };
 

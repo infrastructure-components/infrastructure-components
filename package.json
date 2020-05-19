@@ -1,6 +1,6 @@
 {
   "name": "infrastructure-components",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -38,8 +38,6 @@
     "exenv": "^1.2.2",
     "express": "^4.17.1",
     "extract-domain": "^2.2.1",
-    "graphql": "^14.3.1",
-    "graphql-tag": "^2.10.1",
     "isomorphic-fetch": "^2.2.1",
     "jsonwebtoken": "^8.5.1",
     "node-machine-id": "^1.1.12",
@@ -57,6 +55,8 @@
   },
   "devDependencies": {
     "aws-sdk": "^2.601.0",
+    "graphql": "^14.3.1",
+    "graphql-tag": "^2.10.1",
     "react": "^16.12.0",
     "react-helmet": "^5.2.0",
     "serverless-http": "^1.10.1",
@@ -66,5 +66,11 @@
   "bundledDependencies": [
     "react-router",
     "react-router-dom"
-  ]
+  ],
+  "peerDependencies": {
+    "react": "^16.12.0",
+    "graphql": "^14.3.1",
+    "graphql-tag": "^2.10.1"
+
+  }
 }
