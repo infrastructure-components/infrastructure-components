@@ -39,7 +39,7 @@
     "express": "^4.17.1",
     "extract-domain": "^2.2.1",
     "isomorphic-fetch": "^2.2.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "node-machine-id": "^1.1.12",
     "object-hash": "^2.0.1",
     "react-apollo": "^2.5.8",
